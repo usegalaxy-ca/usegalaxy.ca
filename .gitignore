@@ -1,0 +1,13 @@
+.idea/workspace.xml
+.idea/misc.xml
+.idea/*
+
+*.*\~
+*.swp
+*.pyc
+*.pyo
+.vagrant
+
+.vault-password.txt
+
+*/roles/*
