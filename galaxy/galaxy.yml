@@ -1,0 +1,52 @@
+
+---
+
+- hosts: galaxyservers
+  become: true
+  become_user: root
+  vars_files:
+  - group_vars/secret.yml
+
+  vars:
+
+  pre_tasks:
+    - name: Install Dependencies
+      package:
+        update_cache: yes
+        name: ['acl', 'bzip2', 'git', 'make', 'python3-dev','python3-psycopg2','python3-cffi','virtualenv', 'tar']
+
+
+  tasks:
+
+    # Following 3 tasks are to manage certs for a local galaxy in a VM (Virtual box)
+
+    - name: Create private key (RSA, 4096 bits)
+      community.crypto.openssl_privatekey:
+        path: /etc/ssl/private/galaxy1.local.cg.pem
+
+    - name: Copy Certificate to list of trusted certs
+      become: yes
+      ansible.builtin.copy:
+        remote_src: true
+        src: /etc/ssl/certs/galaxy1.local.cg.crt
+        dest: /usr/local/share/ca-certificates/galaxy1.local.cg.crt
+
+    - name: Update trusted CA Root certificates with the self signed cert (To run utils locally like Ephemeris, Planemo, Conda, etc.)
+      command: update-ca-certificates
+      become: yes
+
+
+  roles:
+    - galaxyproject.postgresql
+    - role: galaxyproject.postgresql_objects
+      become: true
+      become_user: postgres
+    - geerlingguy.pip
+    - galaxyproject.galaxy
+    - role: uchida.miniconda
+      become: true
+      become_user: "{{ galaxy_user.name }}"
+    - galaxyproject.nginx
+    - galaxyproject.self_signed_certs
+
+
