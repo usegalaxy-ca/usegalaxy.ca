@@ -3,8 +3,6 @@
 - Based on the step 1 of the tutorial [Galaxy Installation with Ansible][GIWA] 
   and the  [Ansible-Galaxy Role][AGR]
 
-- Simply wrapped with Vagrant for local development installation on a VM using VirtualBox
-
 ## Installation Steps
 
 You can setup several different galaxies with different settings to test. "galaxy1" is
@@ -24,19 +22,23 @@ provided all set and ready for your first working example)
 
 - Ansible will then encript it and replace group_vars/secret.yml
 
-### Give an IP address and a host name to each Galaxy experiment 
-- Edit `Vagrantfile`
-- Edit `/etc/hosts` to add your hostname as it appears in `galaxyservers.inv`
 
+### Install ansible-roles
+There is an issue with the resolver, this fix below is needed first in your sudoers (cg-admin) account. 
+This issue should be resolved eventually by ansible
+```
+- sudo apt install -y pip
+- pip install ansible-core
+- pip install -Iv 'resolvelib<0.6.0'
+```
+
+Then install the ansible roles and collection of roles
+```
+cd galaxy/
+ansible-galaxy install -r requirements.yml
+```
  
-### Then you are ready to build
-- At the root of the repo
-
-`vagrant up galaxy1` 
-
-or to update if your VM is already up
-
-`vagrant provision galaxy1`
+### Run the playbook
 
 
 License
