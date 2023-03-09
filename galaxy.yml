@@ -1,0 +1,33 @@
+
+---
+
+- hosts: galaxyserver
+  become: true
+  become_user: root
+  vars_files:
+  - group_vars/secret.yml
+
+  vars:
+
+  pre_tasks:
+    - name: Install Dependencies
+      package:
+        update_cache: yes
+        name: ['acl', 'bzip2', 'git', 'make', 'python3-dev','python3-psycopg2','python3-cffi','virtualenv', 'tar']
+
+
+
+  roles:
+    - galaxyproject.postgresql
+    - role: galaxyproject.postgresql_objects
+      become: true
+      become_user: postgres
+    - geerlingguy.pip
+    - galaxyproject.galaxy
+    - role: uchida.miniconda
+      become: true
+      become_user: "{{ galaxy_user.name }}"
+    - galaxyproject.nginx
+    - galaxyproject.self_signed_certs
+
+
