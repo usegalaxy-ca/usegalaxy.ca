@@ -2,10 +2,10 @@
 
 [globalz:vars]
 
-[galaxyservers]
+[galaxyserver]
 cg-usegal-portal.usegalaxy.ca
 
-[galaxyservers:vars]
+[galaxyserver:vars]
 
 
 

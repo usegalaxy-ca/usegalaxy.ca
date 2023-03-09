@@ -1,7 +1,7 @@
 
 ---
 
-- hosts: galaxyservers
+- hosts: galaxyserver
   become: true
   become_user: root
   vars_files:
