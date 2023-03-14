@@ -4,18 +4,16 @@ roles:
   version: 0.10.8
 - src: galaxyproject.nginx
   version: 0.7.0
-- src: galaxyproject.self_signed_certs
-  version: 0.0.3
 - src: galaxyproject.postgresql
-  version: 1.0.3
+  version: 1.1.2
 - src: galaxyproject.postgresql_objects
-  version: 1.1.0
+  version: 1.2.0
 - src: geerlingguy.pip
-  version: 2.0.0
+  version: 2.2.0
 - src: uchida.miniconda
   version: 0.3.0
 - src: usegalaxy_eu.certbot
-  version: 0.1.5
+  version: 0.1.7
 
 collections:
 - community.crypto

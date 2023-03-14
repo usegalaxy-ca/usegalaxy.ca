@@ -28,12 +28,12 @@ galaxy_commit_id: release_22.05
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
 miniconda_version: 4.7.12
-miniconda_manage_dependencies: false
+miniconda_manage_dependencies: true
 
 galaxy_config:
   galaxy:
     brand: "🧬🔬🚀"
-    admin_users: admin@example.org
+    admin_users: carol.gauthier@usherbrooke.ca
     database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
     file_path: /data
     check_migrate_tools: false
@@ -41,6 +41,7 @@ galaxy_config:
     object_store_store_by: uuid
     id_secret: "{{ vault_id_secret }}"
     job_config_file: "{{ galaxy_config_dir }}/job_conf.yml"
+
     # SQL Performance
     database_engine_option_server_side_cursors: true
     slow_query_log_threshold: 5
