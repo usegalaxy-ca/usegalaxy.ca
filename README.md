@@ -24,6 +24,7 @@ provided all set and ready for your first working example)
 
 
 ### Install ansible-roles
+
 There is an issue with the resolver, this fix below is needed first in your sudoers (cg-admin) account. 
 This issue should be resolved eventually by ansible
 ```
@@ -31,14 +32,18 @@ This issue should be resolved eventually by ansible
 - pip install ansible-core
 - pip install -Iv 'resolvelib<0.6.0'
 ```
+Then install the ansible roles and collections. They will be installed in ~/.ansible/ by default
 
-Then install the ansible roles and collection of roles
 ```
-cd galaxy/
 ansible-galaxy install -r requirements.yml
 ```
- 
+
 ### Run the playbook
+Note that the hosts inventory is indicated in the ansible.cfg file
+```
+ansible-playbook galaxy.yml
+```
+
 
 
 License

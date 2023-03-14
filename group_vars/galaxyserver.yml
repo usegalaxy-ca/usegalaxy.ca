@@ -5,7 +5,6 @@ pip_virtualenv_command: /usr/bin/python3 -m virtualenv # usegalaxy_eu.certbot, u
 certbot_virtualenv_package_name: python3-virtualenv    # usegalaxy_eu.certbot
 pip_package: python3-pip                               # geerlingguy.pip
 
-
 # PostgreSQL
 postgresql_objects_users:
   - name: galaxy
@@ -102,7 +101,7 @@ certbot_auth_method: --webroot
 certbot_install_method: virtualenv
 certbot_auto_renew: yes
 certbot_auto_renew_user: root
-certbot_environment: staging
+certbot_environment: production
 certbot_well_known_root: /srv/nginx/_well-known_root
 certbot_share_key_users:
   - nginx
@@ -120,18 +119,13 @@ nginx_servers:
 nginx_ssl_servers:
   - galaxy
 
-#nginx_servers:
-#  - galaxy
-
 nginx_enable_default_server: false
 
 nginx_conf_http:
   client_max_body_size: 1g
 
-nginx_ssl_role: galaxyproject.self_signed_certs
-
 openssl_domains: # Identical behaviour to certbot_domains
-  - galaxy1.local.cg
+  - cg-usegal-portal.usegalaxy.ca
 
 # These can be set to wherever you want your certificates and PK stored.
 nginx_ssl_role: usegalaxy_eu.certbot
