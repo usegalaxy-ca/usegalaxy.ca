@@ -34,6 +34,11 @@ galaxy_config:
   galaxy:
     brand: "🧬🔬🚀"
     admin_users: carol.gauthier@usherbrooke.ca
+
+    dependency_resolvers_config_file: "{{ galaxy_config_dir }}/dependency_resolvers_conf.xml"
+    containers_resolvers_config_file: "{{ galaxy_config_dir }}/container_resolvers_conf.xml"
+
+    tool_data_table_config_path: /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml
     database_connection: "postgresql:///galaxy?host=/var/run/postgresql"
     file_path: /data
     check_migrate_tools: false
@@ -64,6 +69,8 @@ galaxy_config:
     allow_user_impersonation: true
     # Tool security
     outputs_to_working_directory: true
+    # TUS
+    tus_upload_store: /data/tus
 
 
   gravity:
@@ -90,6 +97,10 @@ galaxy_config:
 galaxy_config_templates:
   - src: templates/galaxy/config/job_conf.yml.j2
     dest: "{{ galaxy_config.galaxy.job_config_file }}"
+  - src: templates/galaxy/config/container_resolvers_conf.xml.j2
+    dest: "{{ galaxy_config.galaxy.containers_resolvers_config_file }}"
+  - src: templates/galaxy/config/dependency_resolvers_conf.xml
+    dest: "{{ galaxy_config.galaxy.dependency_resolvers_config_file }}"
 
 # systemd
 galaxy_manage_systemd: true
@@ -133,4 +144,22 @@ nginx_ssl_role: usegalaxy_eu.certbot
 nginx_conf_ssl_certificate: /etc/ssl/certs/fullchain.pem
 nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-nginx.pem
 
+# Golang
+golang_gopath: '/opt/workspace-go'
+# Singularity target version
+singularity_version: "3.7.4"
+singularity_go_path: "{{ golang_install_dir }}"
+
+# TUS
+galaxy_tusd_port: 1080
+tusd_instances:
+  - name: main
+    user: "{{ galaxy_user.name }}"
+    group: "galaxy"
+    args:
+      - "-host=localhost"
+      - "-port={{ galaxy_tusd_port }}"
+      - "-upload-dir={{ galaxy_config.galaxy.tus_upload_store }}"
+      - "-hooks-http=https://{{ inventory_hostname }}/api/upload/hooks"
+      - "-hooks-http-forward-headers=X-Api-Key,Cookie"
 

@@ -2,11 +2,11 @@
 
 [globalz:vars]
 
-[galaxyserver]
+[galaxyservers]
 cg-usegal-portal.usegalaxy.ca ansible_user=cg-admin
 
 
-[galaxyserver:vars]
+[galaxyservers:vars]
 
 
 

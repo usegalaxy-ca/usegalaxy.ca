@@ -27,6 +27,27 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
+
+        proxy_connect_timeout       600;
+        proxy_send_timeout          600;
+        proxy_read_timeout          600;
+        send_timeout                600;
+    }
+
+    location /api/upload/resumable_upload {
+        # Disable request and response buffering
+        proxy_request_buffering     off;
+        proxy_buffering             off;
+        proxy_http_version          1.1;
+
+        # Add X-Forwarded-* headers
+        proxy_set_header X-Forwarded-Host   $host;
+        proxy_set_header X-Forwarded-Proto  $scheme;
+
+        proxy_set_header Upgrade            $http_upgrade;
+        proxy_set_header Connection         "upgrade";
+        client_max_body_size        0;
+        proxy_pass http://localhost:{{ galaxy_tusd_port }}/files;
     }
 
     # Static files can be more efficiently served by Nginx. Why send the

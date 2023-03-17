@@ -1,7 +1,7 @@
 
 ---
 
-- hosts: galaxyserver
+- hosts: galaxyservers
   become: true
   become_user: root
 
@@ -20,11 +20,16 @@
       become: true
       become_user: postgres
     - geerlingguy.pip
+
+    - gantsign.golang
+    - cyverse-ansible.singularity
+
     - galaxyproject.galaxy
 
     - role: uchida.miniconda
       become: true
       become_user: "{{ galaxy_user.name }}"
     - galaxyproject.nginx
-
+    - galaxyproject.tusd
+    - galaxyproject.cvmfs
 

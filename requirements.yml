@@ -14,6 +14,15 @@ roles:
   version: 0.3.0
 - src: usegalaxy_eu.certbot
   version: 0.1.7
+- src: galaxyproject.cvmfs
+  version: 0.2.21
+- name: galaxyproject.tusd
+  version: 0.0.1
+
+- src: cyverse-ansible.singularity
+  version: 048c4f178077d05c1e67ae8d9893809aac9ab3b7
+- src: gantsign.golang
+  version: 2.6.3
 
 collections:
 - community.crypto
