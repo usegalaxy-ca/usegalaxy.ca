@@ -34,7 +34,7 @@ miniconda_manage_dependencies: true
 galaxy_config:
   galaxy:
     brand: "🧬🔬🚀"
-    admin_users: carol.gauthier@usherbrooke.ca
+    admin_users: Carol.Gauthier@USherbrooke.ca
     
     library_import_dir: /libraries/admin
     user_library_import_dir: /libraries/user
@@ -61,8 +61,6 @@ galaxy_config:
     watch_job_rules: 'auto'
     allow_path_paste: true
     enable_quotas: true
-    allow_user_deletion: true
-    show_welcome_with_login: true
     expose_user_name: true
     expose_dataset_path: true
     expose_potentially_sensitive_job_metrics: true
@@ -75,6 +73,19 @@ galaxy_config:
     outputs_to_working_directory: true
     # TUS
     tus_upload_store: /data/tus
+
+    # Users login page stuff
+    show_welcome_with_login: false
+    allow_user_creation: true
+    allow_user_deletion: true
+
+    # OIDC Stuff
+    # Enables and disables OpenID Connect (OIDC) support.
+    enable_oidc: true
+    # Sets the path to OIDC configuration file.
+    oidc_config_file: "{{ galaxy_config_dir }}/oidc_config.xml"
+    # Sets the path to OIDC backends configuration file.
+    oidc_backends_config_file: "{{ galaxy_config_dir }}/oidc_backends_config.xml"
 
 
   gravity:
@@ -107,6 +118,10 @@ galaxy_config_templates:
     dest: "{{ galaxy_config.galaxy.dependency_resolvers_config_file }}"
   - src: templates/galaxy/config/reports.yml
     dest: "{{ galaxy_reports_path }}"
+  - src: templates/galaxy/config/oidc_config.xml
+    dest: "{{ galaxy_config.galaxy.oidc_config_file }}"
+  - src: templates/galaxy/config/oidc_backends_config.xml.j2
+    dest: "{{ galaxy_config.galaxy.oidc_backends_config_file }}"
 
 # systemd
 galaxy_manage_systemd: true
