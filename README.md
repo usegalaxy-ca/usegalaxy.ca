@@ -41,7 +41,7 @@ ansible-galaxy install -r requirements.yml
 ### Run the playbook
 Note that the hosts inventory is indicated in the ansible.cfg file
 ```
-ansible-playbook galaxy.yml
+ansible-playbook -i galaxyservers-XYZ.inv galaxy.yml
 ```
 
 
