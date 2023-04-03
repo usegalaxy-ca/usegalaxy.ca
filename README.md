@@ -1,4 +1,4 @@
-# cg-usegalaxy.ca
+# usegalaxy.ca
 
 - Based on the step 1 of the tutorial [Galaxy Installation with Ansible][GIWA] 
   and the  [Ansible-Galaxy Role][AGR]
