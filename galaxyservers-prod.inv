@@ -1,0 +1,12 @@
+[globalz]
+
+[globalz:vars]
+
+[galaxyservers]
+usegal-portal.usegalaxy.ca ansible_user=usegal-admin
+
+
+[galaxyservers:vars]
+
+
+
