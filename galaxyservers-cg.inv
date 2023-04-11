@@ -1,6 +1,7 @@
 [globalz]
 
 [globalz:vars]
+secret_file=group_vars/secret.yml
 
 [galaxyservers]
 cg-usegal-portal.usegalaxy.ca ansible_user=cg-admin

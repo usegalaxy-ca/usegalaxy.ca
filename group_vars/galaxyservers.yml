@@ -24,13 +24,13 @@ galaxy_manage_paths: true
 galaxy_layout: root-dir
 galaxy_root: /srv/galaxy
 galaxy_user: {name: galaxy, shell: /bin/bash}
+#galaxy_commit_id: release_22.05
 galaxy_commit_id: release_23.0
-#galaxy_commit_id: release_23.0
 galaxy_force_checkout: true
 galaxy_reports_path: "{{ galaxy_config_dir }}/reports.yml"
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
-# miniconda_version: py39_23.1.0-1
-miniconda_version: py310_22.11.1-1
+miniconda_version: py39_23.1.0-1
+# miniconda_version: py310_22.11.1-1
 miniconda_manage_dependencies: true
 
 galaxy_config:
@@ -77,14 +77,15 @@ galaxy_config:
     tus_upload_store: /data/tus
 
     # Users login (CILogon OIDC and No login/password)
-    show_welcome_with_login: false
-    allow_user_creation: false
-    require_login: true
+    show_welcome_with_login: true
+    allow_user_creation: true
+    require_login: false
     use_remote_user: false
     auth_config_file: "{{ galaxy_config_dir }}/auth_conf.xml"
     enable_oidc: true
     oidc_config_file: "{{ galaxy_config_dir }}/oidc_config.xml"
     oidc_backends_config_file: "{{ galaxy_config_dir }}/oidc_backends_config.xml"
+    oidc_auto_redirect: false
 
 
   gravity:

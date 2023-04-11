@@ -3,3 +3,11 @@
 cvmfs_role: client
 galaxy_cvmfs_repos_enabled: config-repo
 cvmfs_quota_limit: 500
+
+# Vault id secret
+vault_id_secret: "{{ lookup('env','VAULT_ID_SECRET') }}"
+
+# CILogon setup variables
+CILOGON_CLIENT_ID: "{{ lookup('env','CILOGON_CLIENT_ID') }}"
+CILOGON_CLIENT_SECRET: "{{ lookup('env','CILOGON_CLIENT_SECRET') }}"
+CILOGON_REDIRECT_URI: "{{ lookup('env','CILOGON_REDIRECT_URI') }}"
