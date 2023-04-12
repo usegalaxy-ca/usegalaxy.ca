@@ -7,7 +7,10 @@
 *.pyc
 *.pyo
 .vagrant
+
 .git/
+terraform.tfstate
+terraform.tfstate.backup
 
 .vault-password.txt
 
