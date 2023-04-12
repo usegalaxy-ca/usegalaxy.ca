@@ -12,22 +12,6 @@ provider "openstack" {
   region = "RegionOne"
 }
 
-variable "INSTANCE_NAME_PREFIX" {
-  type    = string
-}
-
-variable "PUBLIC_IP" {
-  type    = string
-}
-
-variable "USERNAME" {
-  type    = string
-}
-
-variable "PUBLIC_KEY" {
-  type    = string
-}
-
 locals {
     gateway_user_data  = templatefile("cloudinit/gateway.yml", {
        username = "${var.USERNAME}"
