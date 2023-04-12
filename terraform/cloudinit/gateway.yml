@@ -1,0 +1,46 @@
+#cloud-config
+
+users:
+  - default
+  - name: ${ username }
+    groups: sudo, docker
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ public_key }
+
+timezone: US/Eastern
+
+apt:
+  sources:
+    docker.list:
+      source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+package_update: true
+package_upgrade: true
+packages:
+  - apt-transport-https
+  - ca-certificates
+  - gnupg-agent
+  - software-properties-common
+  - curl
+  - git
+  - fail2ban
+
+write_files:
+  - path: /etc/sysctl.d/enabled.conf
+    content: |
+      net.ipv4.conf.all.forwarding=1
+      net.bridge.bridge-nf-call-iptables=1
+
+runcmd:
+  - swapoff -a
+  #fail2ban
+  - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local
+  - systemctl enable fail2ban
+  #ssh
+  - sed -i -e '/^\(#\|\)PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+  - sed -i -e '/^\(#\|\)PasswordAuthentication/s/^.*$/PasswordAuthentication no/' /etc/ssh/sshd_config
+  - sed -i '$a AllowUsers ${ username }' /etc/ssh/sshd_config
+  - systemctl restart ssh
