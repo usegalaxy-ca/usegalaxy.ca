@@ -38,7 +38,7 @@ resource "openstack_compute_instance_v2" "galaxy" {
     delete_on_termination = true
     destination_type      = "volume"
     source_type           = "image"
-    uuid                  = "43f6cb7a-43cd-4205-8d10-01b052bd6819"
+    uuid                  = "db73980e-1f9c-441e-8268-c1881f99c8ef"
     volume_size           = 30 
   }
   security_groups = ["web", "TUSd", "default"]
