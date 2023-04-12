@@ -38,6 +38,7 @@ resource "openstack_compute_instance_v2" "galaxy" {
     delete_on_termination = true
     destination_type      = "volume"
     source_type           = "image"
+    #under compute -> images, must match the image name
     uuid                  = "db73980e-1f9c-441e-8268-c1881f99c8ef"
     volume_size           = 30 
   }
