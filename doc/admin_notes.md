@@ -38,10 +38,15 @@ doppler run --command="echo \$SECRET_VAR_NAME"
 
 
 ## Terraform 
+```
+cd terraform/
+terraform init
+# To run terraform. Terraform will show you what will be changed (its "plan of action") before applying the changes.
+doppler run -- terraform apply
+```
 
 
 ## Ansible
-
 
 ### Install ansible-roles
 
