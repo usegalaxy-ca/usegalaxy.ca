@@ -1,15 +1,77 @@
 
-# UseGalaxy.ca
+# UseGalaxy.ca : Notes on Installation and Administration
 
-## Notes for installation and administration 
+- Started with [Galaxy Installation with Ansible][GIWA] using  [Ansible-Galaxy Role][AGR]
+
+## Doppler
+
+Doppler is used to keep secret variables in your project. Projects are divided in roles so you can set 
+different values for each of your environment. Dev, testing, prod, etc...
+
+- Setup your Doppler account and projet here: [Doppler.com][Dopp]
+
+- Authenticate and authorise the Doppler Client (CLI) in your client machine account
+```
+# Just follow the instruction
+doppler login
+```
+
+- Link your working directory (root of the project) with an "Access Service Token" generated via the doppler web site in your project and corresponding role (environment). 
+- ... and run the setup command to link the project
+
+```
+cd /your-project-directory/
+echo 'THE_GENERATED_TOKEN' | doppler configure set token --scope /usr/src/app
+doppler setup
+```
+
+- To have Doppler inject all your secrets through environmenet variables accessible at run time by your application
+```
+doppler run -- your-command-here
+```
+
+- Other doppler commands:
+```
+# Display the value of one secret variable
+doppler run --command="echo \$SECRET_VAR_NAME"
+```
+
+
+## Terraform 
+
+
+## Ansible
+
+
+### Install ansible-roles
+
+This fix below is needed first in your account prior to install the ansible roles and collections.
+
+This issue should be resolved eventually by ansible
+```
+- sudo apt install -y pip
+- pip install ansible-core
+- pip install -Iv 'resolvelib<0.6.0'
+```
+
+Then install the ansible roles and collections. They will be installed in ~/.ansible/ by default
+
+```
+ansible-galaxy install -r requirements.yml
+```
+
+### Run the playbook
+Note that the hosts inventory is indicated in the ansible.cfg file
+```
+ansible-playbook -i galaxyservers-XYZ.inv galaxy.yml
+```
 
 
 
-### Doppler 
 
 
-### Terraform 
 
 
-### Ansible 
-
+[Dopp]: https://www.doppler.com/
+[AGR]: https://github.com/galaxyproject/ansible-galaxy
+[GIWA]: https://training.galaxyproject.org/training-material/topics/admin/tutorials/ansible-galaxy/tutorial.html
