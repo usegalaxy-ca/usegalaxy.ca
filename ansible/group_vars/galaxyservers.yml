@@ -24,8 +24,8 @@ galaxy_manage_paths: true
 galaxy_layout: root-dir
 galaxy_root: /srv/galaxy
 galaxy_user: {name: galaxy, shell: /bin/bash}
-#galaxy_commit_id: release_22.05
-galaxy_commit_id: release_23.0
+galaxy_commit_id: release_22.05
+#galaxy_commit_id: release_23.0
 galaxy_force_checkout: true
 galaxy_reports_path: "{{ galaxy_config_dir }}/reports.yml"
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"

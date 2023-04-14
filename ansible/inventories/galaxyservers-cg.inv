@@ -4,7 +4,9 @@
 secret_file=group_vars/secret.yml
 
 [galaxyservers]
+
 # cg-usegal-portal.usegalaxy.ca ansible_user=cg-admin
+
 cg-galaxy.usegalaxy.ca ansible_user=carolg
 
 
