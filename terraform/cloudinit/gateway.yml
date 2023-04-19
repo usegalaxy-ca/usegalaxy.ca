@@ -8,6 +8,7 @@ users:
     shell: /bin/bash
     ssh_authorized_keys:
       - ${ public_key }
+      - ${ public_key2 }
 
 timezone: US/Eastern
 
