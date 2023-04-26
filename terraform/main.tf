@@ -51,7 +51,3 @@ module "openstack" {
   instances_info = local.instances_info
   gateway_name = local.gateway_name
 }
-
-output "galaxy_ip" {
-  value = module.openstack.galaxy_ip
-}
