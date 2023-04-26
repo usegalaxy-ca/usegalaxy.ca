@@ -5,7 +5,8 @@ output "public_IP" {
 }
 
 output "private_IPs" {
-  for_each = local.instances_info
-  description = "Private IP address of the ${each.key} instance"
-  value       = openstack_compute_instance_v2.instances[each.key].access_ip_v4 
+  description = "Private IP address of the each instance"
+  value       = {
+      for name, instance_info in var.instances_info: name => openstack_compute_instance_v2.instances[name].access_ip_v4
+  }
 }
