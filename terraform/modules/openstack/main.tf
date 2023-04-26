@@ -30,7 +30,7 @@ resource "openstack_compute_floatingip_associate_v2" "fip_1" {
 }
 
 resource "openstack_compute_instance_v2" "instances" {
-  for_each = var.resources
+  for_each = var.instances_info
   name        = "${var.INSTANCE_NAME_PREFIX}-${var.project_name}-${each.key}"
   image_name  = each.value.image
   flavor_name = each.value.flavor

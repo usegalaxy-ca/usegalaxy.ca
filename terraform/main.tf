@@ -20,7 +20,7 @@ module "openstack" {
   PUBLIC_IP = var.PUBLIC_IP
   USERNAME = var.USERNAME
   PUBLIC_KEY = var.PUBLIC_KEY
-  resource = {
+  instances_info = {
       proxy = {
           flavor = "p2-3.75gb"
       },

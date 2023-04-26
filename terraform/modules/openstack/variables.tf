@@ -30,7 +30,7 @@ variable "project_name" {
   default = "usegal"
 }
 
-variable "resources" {
+variable "instances_info" {
     type = map(object({
         flavor = string
         volume_size = optional(number, 30)
