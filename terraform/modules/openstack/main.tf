@@ -8,8 +8,8 @@ terraform {
 }
 
 provider "openstack" {
-  auth_url = "https://beluga.cloud.computecanada.ca:5000/v3"
-  region = "RegionOne"
+  auth_url = var.openstack.auth_url
+  region = var.openstack.region
 }
 
 locals {
@@ -25,25 +25,26 @@ locals {
 
 resource "openstack_compute_floatingip_associate_v2" "fip_1" {
   floating_ip           = "${var.PUBLIC_IP}"
-  instance_id           = openstack_compute_instance_v2.galaxy.id
+  instance_id           = openstack_compute_instance_v2.proxy.id
   wait_until_associated = true
 }
 
-resource "openstack_compute_instance_v2" "galaxy" {
-  name        = "${var.INSTANCE_NAME_PREFIX}-galaxy"
-  image_name  = "Ubuntu-22.04.2-Jammy-x64-2023-02"
-  flavor_name = "p4-7.5gb"
+resource "openstack_compute_instance_v2" "instances" {
+  for_each = var.resources
+  name        = "${var.INSTANCE_NAME_PREFIX}-${var.project_name}-${each.key}"
+  image_name  = each.value.image
+  flavor_name = each.value.flavor
   user_data   = local.node_user_data
   block_device {
     delete_on_termination = true
     destination_type      = "volume"
     source_type           = "image"
     #under compute -> images, must match the image name
-    uuid                  = "db73980e-1f9c-441e-8268-c1881f99c8ef"
-    volume_size           = 30 
+    uuid                  = each.value.image_uuid
+    volume_size           = each.value.volume_size
   }
-  security_groups = ["web", "TUSd", "default"]
+  security_groups = each.value.security_groups
   network {
-    uuid = "39e2642a-7afe-4e64-abf2-5c6a7b05912d"
+    uuid = each.value.network_uuid
   }
 }

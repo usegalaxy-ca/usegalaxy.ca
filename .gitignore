@@ -2,16 +2,17 @@
 .idea/misc.xml
 .idea/*
 
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+
 *.*\~
 *.swp
 *.pyc
 *.pyo
 .vagrant
 .git/
-
-.git/
-terraform.tfstate
-terraform.tfstate.backup
 
 .vault-password.txt
 

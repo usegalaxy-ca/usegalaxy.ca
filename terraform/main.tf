@@ -20,6 +20,29 @@ module "openstack" {
   PUBLIC_IP = var.PUBLIC_IP
   USERNAME = var.USERNAME
   PUBLIC_KEY = var.PUBLIC_KEY
+  resource = {
+      proxy = {
+          flavor = "p2-3.75gb"
+      },
+      galaxy = {
+          flavor = "p4-7.5gb"
+      },
+      db = {
+          flavor = "p4-7.5gb"
+      },
+      tus = {
+          flavor = "p1-2gb"
+      },
+      grafana = {
+          flavor = "p2-3.75gb"
+      },
+      sentry = {
+          flavor = "p2-3.75gb"
+      },
+      htcondor = {
+          flavor = "p2-3.75gb"
+      }
+  }
 }
 
 output "galaxy_ip" {
