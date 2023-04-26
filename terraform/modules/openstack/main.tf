@@ -25,7 +25,7 @@ locals {
 
 resource "openstack_compute_floatingip_associate_v2" "fip_1" {
   floating_ip           = "${var.PUBLIC_IP}"
-  instance_id           = openstack_compute_instance_v2.proxy.id
+  instance_id           = openstack_compute_instance_v2.instances[var.gateway_name].id
   wait_until_associated = true
 }
 

@@ -30,6 +30,10 @@ variable "project_name" {
   default = "usegal"
 }
 
+variable "gateway_name" {
+  type    = string
+}
+
 variable "instances_info" {
     type = map(object({
         flavor = string
