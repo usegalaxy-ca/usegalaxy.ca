@@ -1,5 +1,59 @@
-global:
-  instances_info:
+prod:
+  instances:
+    proxy:
+      flavor: "p2-3.75gb"
+    galaxy:
+      flavor: "p4-7.5gb"
+    db:
+      flavor: "p4-7.5gb"
+    tus:
+      flavor: "p1-2gb"
+    grafana:
+      flavor: "p2-3.75gb"
+    sentry:
+      flavor: "p2-3.75gb"
+    htcondor:
+      flavor: "p2-3.75gb"
+  gateway_name: "proxy"
+
+dev:
+  instances:
+    proxy:
+      flavor: "p2-3.75gb"
+    galaxy:
+      flavor: "p4-7.5gb"
+    db:
+      flavor: "p4-7.5gb"
+    tus:
+      flavor: "p1-2gb"
+    grafana:
+      flavor: "p2-3.75gb"
+    sentry:
+      flavor: "p2-3.75gb"
+    htcondor:
+      flavor: "p2-3.75gb"
+  gateway_name: "proxy"
+
+laperlej:
+  instances:
+    proxy:
+      flavor: "p2-3.75gb"
+    galaxy:
+      flavor: "p4-7.5gb"
+    db:
+      flavor: "p4-7.5gb"
+    tus:
+      flavor: "p1-2gb"
+    grafana:
+      flavor: "p2-3.75gb"
+    sentry:
+      flavor: "p2-3.75gb"
+    htcondor:
+      flavor: "p2-3.75gb"
+  gateway_name: "proxy"
+
+carolg:
+  instances:
     proxy:
       flavor: "p2-3.75gb"
     galaxy:

@@ -15,9 +15,10 @@ variable "PUBLIC_KEY" {
 }
 
 locals {
-    config = yamldecode(file(format("%s/cluster.yml", path.module)))
-    instances_info = local.config.global.instances_info
-    gateway_name = local.config.global.gateway_name
+    global_config = yamldecode(file(format("%s/cluster.yml", path.module)))
+    user_config = local.global_config[var.USERNAME]
+    instances_info = local.user_config.instances
+    gateway_name = local.user_config.gateway_name
 }
 
 
