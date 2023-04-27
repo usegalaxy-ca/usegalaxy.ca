@@ -18,7 +18,7 @@ prod:
       flavor: "p2-3.75gb"
   gateway_name: "proxy"
 
-dev:
+test:
   instances:
     proxy:
       flavor: "p2-3.75gb"

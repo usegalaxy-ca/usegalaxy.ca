@@ -10,3 +10,10 @@ output "private_IPs" {
       for name, instance_info in var.instances_info: name => openstack_compute_instance_v2.instances[name].access_ip_v4
   }
 }
+
+output "instance_names" {
+    description = "Names of each instance"
+    value       = {
+        for name, instance_info in var.instances_info: name => openstack_compute_instance_v2.instances[name].name
+    }
+}

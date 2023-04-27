@@ -1,7 +1,0 @@
-all:
-  children:
-    galaxyservers:
-      hosts:
-        jl-usegal-portal.usegalaxy.ca:
-          ansible_user: laperlej
-    globalz: {}

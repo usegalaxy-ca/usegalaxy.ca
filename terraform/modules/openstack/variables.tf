@@ -38,7 +38,6 @@ variable "openstack" {
 
 variable "project_name" {
   type    = string
-  default = "usegal"
 }
 
 variable "gateway_name" {
