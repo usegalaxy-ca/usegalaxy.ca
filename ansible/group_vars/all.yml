@@ -1,13 +1,11 @@
+---
+# Python 3 support
+pip_virtualenv_command: /usr/bin/python3 -m venv # usegalaxy_eu.certbot, usegalaxy_eu.tiaas2, galaxyproject.galaxy
 
-# CVMFS vars
-cvmfs_role: client
-galaxy_cvmfs_repos_enabled: config-repo
-cvmfs_quota_limit: 500
+# Common variables needed by all hosts
+galaxy_user_name: galaxy
+galaxy_db_name: galaxy
 
-# Vault id secret
-vault_id_secret: "{{ lookup('env','VAULT_ID_SECRET') }}"
-
-# CILogon setup variables
-CILOGON_CLIENT_ID: "{{ lookup('env','CILOGON_CLIENT_ID') }}"
-CILOGON_CLIENT_SECRET: "{{ lookup('env','CILOGON_CLIENT_SECRET') }}"
-CILOGON_REDIRECT_URI: "{{ lookup('env','CILOGON_REDIRECT_URI') }}"
+#domain
+usegalaxy_domain: "{{ lookup('env', 'GALAXY_HOSTNAME') }}"
+galaxy_subnet: "{{ lookup('env', 'GALAXY_SUBNET') }}"

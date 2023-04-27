@@ -1,37 +1,40 @@
-
 ---
-
-- hosts: galaxyservers
+- hosts: dbservers
   become: true
   become_user: root
-
+  vars_files:
+    - group_vars/secret.yml
   pre_tasks:
     - name: Install Dependencies
       package:
-        update_cache: yes
-        name: ['acl', 'bzip2', 'git', 'make', 'python3-dev','python3-psycopg2','python3-cffi','virtualenv', 'tar']
-
-    - git:
-        repo: 'https://github.com/usegalaxy-eu/libraries-training-repo'
-        dest: /libraries/
-
+        name: "acl"
   roles:
     - galaxyproject.postgresql
     - role: galaxyproject.postgresql_objects
       become: true
       become_user: postgres
-    - geerlingguy.pip
 
-    - gantsign.golang
-    - cyverse-ansible.singularity
-
+- hosts: galaxyservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+  pre_tasks:
+    - name: Install Dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+  roles:
     - galaxyproject.galaxy
-
-    - role: uchida.miniconda
+    - role: galaxyproject.miniconda
       become: true
-      become_user: "{{ galaxy_user.name }}"
+      become_user: "{{ galaxy_user_name }}"
     - galaxyproject.nginx
-    - galaxyproject.tusd
-    - galaxyproject.cvmfs
-    - galaxyproject.gxadmin
-

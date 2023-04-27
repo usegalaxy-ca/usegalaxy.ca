@@ -40,13 +40,13 @@ test:
 
 laperlej:
   instances:
-    proxy:
-      flavor: "p2-3.75gb"
     galaxy:
       flavor: "p4-7.5gb"
+      security_groups: ["usegal", "web"]
     db:
       flavor: "p4-7.5gb"
-  gateway_name: "proxy"
+      security_groups: ["usegal", "usegal-psql"]
+  gateway_name: "galaxy"
 
 carolg:
   instances:

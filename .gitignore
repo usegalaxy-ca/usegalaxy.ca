@@ -17,4 +17,7 @@ terraform.tfstate.backup
 ansible/hosts
 .vault-password.txt
 
-*/roles/*
+roles/
+
+venv/
+.venv/

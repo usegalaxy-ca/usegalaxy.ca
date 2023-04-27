@@ -1,0 +1,11 @@
+# PostgreSQL
+postgresql_objects_users:
+  - name: "{{ galaxy_user_name }}"
+    password: "{{ galaxy_postgres_password }}"
+postgresql_objects_databases:
+  - name: "{{ galaxy_db_name }}"
+    owner: "{{ galaxy_user_name }}"
+postgresql_pg_hba_conf:
+  - host all all {{ galaxy_subnet }} md5
+postgresql_conf:
+  - listen_addresses: "'*'"
