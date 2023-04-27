@@ -42,7 +42,7 @@ doppler run --command="echo \$SECRET_VAR_NAME"
 
 Adjust your cluster using the cluster.yml file, the first level of your cluster description needs to match TF_VAR_USERNAME env variable
 
-The available parameters and their default values can be found in the instance_info variable of the [terraform/modules/openstack/variables.tf](../terraform/modules/openstack/variables.tf) file
+The available parameters and their default values can be found in the instances_info variable of the [terraform/modules/openstack/variables.tf](../terraform/modules/openstack/variables.tf) file
 
 ```
 cd terraform/
