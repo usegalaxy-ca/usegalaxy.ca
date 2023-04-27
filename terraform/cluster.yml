@@ -8,6 +8,8 @@ prod:
       flavor: "p4-7.5gb"
     tus:
       flavor: "p1-2gb"
+    influx:
+      flavor: "p2-3.75gb"
     grafana:
       flavor: "p2-3.75gb"
     sentry:
@@ -26,6 +28,8 @@ dev:
       flavor: "p4-7.5gb"
     tus:
       flavor: "p1-2gb"
+    influx:
+      flavor: "p2-3.75gb"
     grafana:
       flavor: "p2-3.75gb"
     sentry:
@@ -42,14 +46,6 @@ laperlej:
       flavor: "p4-7.5gb"
     db:
       flavor: "p4-7.5gb"
-    tus:
-      flavor: "p1-2gb"
-    grafana:
-      flavor: "p2-3.75gb"
-    sentry:
-      flavor: "p2-3.75gb"
-    htcondor:
-      flavor: "p2-3.75gb"
   gateway_name: "proxy"
 
 carolg:
@@ -60,12 +56,4 @@ carolg:
       flavor: "p4-7.5gb"
     db:
       flavor: "p4-7.5gb"
-    tus:
-      flavor: "p1-2gb"
-    grafana:
-      flavor: "p2-3.75gb"
-    sentry:
-      flavor: "p2-3.75gb"
-    htcondor:
-      flavor: "p2-3.75gb"
   gateway_name: "proxy"
