@@ -51,3 +51,14 @@ module "openstack" {
   instances_info = local.instances_info
   gateway_name = local.gateway_name
 }
+
+
+output "public_IP" {
+  description = "Public IP address of the gateway instance"
+  value       = module.openstack.public_IP
+}
+
+output "private_IPs" {
+  description = "Private IP address of each instance"
+  value       = module.openstack.private_IPs
+}
