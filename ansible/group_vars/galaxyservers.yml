@@ -34,7 +34,7 @@ galaxy_config:
     # Main Configuration
     admin_users:
       - jonathan.laperle@usherbrooke.ca
-    database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
+    database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/"
     file_path: /data/datasets
     job_working_directory: /data/jobs
     object_store_store_by: uuid
