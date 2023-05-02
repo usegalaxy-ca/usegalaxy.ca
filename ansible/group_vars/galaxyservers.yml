@@ -34,6 +34,7 @@ galaxy_config:
     # Main Configuration
     admin_users:
       - jonathan.laperle@usherbrooke.ca
+      - Carol.Gauthier@USherbrooke.ca
     database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
     file_path: /data/datasets
     job_working_directory: /data/jobs
@@ -50,7 +51,6 @@ galaxy_config:
     allow_path_paste: true
     enable_quotas: true
     allow_user_deletion: true
-    show_welcome_with_login: true
     expose_user_name: true
     expose_dataset_path: true
     expose_potentially_sensitive_job_metrics: true
@@ -62,6 +62,18 @@ galaxy_config:
     # Tool security
     outputs_to_working_directory: true
     new_user_dataset_access_role_default_private: true # Make datasets private by default
+
+    # Users login (CILogon OIDC and No login/password)
+    show_welcome_with_login: true
+    allow_user_creation: true
+    require_login: false
+    use_remote_user: false
+    auth_config_file: "{{ galaxy_config_dir }}/auth_conf.xml"
+    enable_oidc: true
+    oidc_config_file: "{{ galaxy_config_dir }}/oidc_config.xml"
+    oidc_backends_config_file: "{{ galaxy_config_dir }}/oidc_backends_config.xml"
+    oidc_auto_redirect: false
+
   gravity:
     process_manager: systemd
     galaxy_root: "{{ galaxy_root }}/server"
@@ -91,6 +103,14 @@ galaxy_config:
 
 galaxy_extra_dirs:
   - /data
+
+galaxy_config_templates:
+  - src: templates/galaxy/config/auth_conf.xml.j2
+    dest: "{{ galaxy_config.galaxy.auth_config_file }}"
+  - src: templates/galaxy/config/oidc_config.xml.j2
+    dest: "{{ galaxy_config.galaxy.oidc_config_file }}"
+  - src: templates/galaxy/config/oidc_backends_config.xml.j2
+    dest: "{{ galaxy_config.galaxy.oidc_backends_config_file }}"
 
 # Certbot
 certbot_auto_renew_hour: "{{ 23 |random(seed=inventory_hostname)  }}"

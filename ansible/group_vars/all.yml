@@ -9,3 +9,4 @@ galaxy_db_name: galaxy
 #domain
 usegalaxy_domain: "{{ lookup('env', 'GALAXY_HOSTNAME') }}"
 galaxy_subnet: "{{ lookup('env', 'GALAXY_SUBNET') }}"
+

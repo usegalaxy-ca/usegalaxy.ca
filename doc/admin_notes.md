@@ -72,13 +72,17 @@ ansible-galaxy install -r requirements.yml
 ```
 
 ### Run the playbook
-
-Note that the hosts inventory is indicated in the ansible.cfg file
-
 ```
 cd ansible
-doppler run -- ansible-playbook galaxy.yml
+doppler run -- ansible-playbook --tags $TAG galaxy.yml
 ```
+Where $TAG = setup, galaxy, postgres, proxy, etc...
+
+Or use the CLI
+```
+./usegalaxy setup
+```
+
 
 [Dopp]: https://www.doppler.com/
 [AGR]: https://github.com/galaxyproject/ansible-galaxy
