@@ -16,7 +16,7 @@ different values for each of your environment. Dev, testing, prod, etc...
 doppler login
 ```
 
-- Link your working directory (root of the project) with an "Access Service Token" generated via the doppler web site in your project and corresponding role (environment).
+- Or preferably link your working directory (root of the project) with an "Access Service Token" generated via the doppler web site in your project and corresponding role (environment).
 - ... and run the setup command to link the project
 
 ```
@@ -77,7 +77,7 @@ Note that the hosts inventory is indicated in the ansible.cfg file
 
 ```
 cd ansible
-doppler run -- ansible-playbook -i inventories/galaxyservers-XYZ.inv galaxy.yml
+doppler run -- ansible-playbook galaxy.yml
 ```
 
 [Dopp]: https://www.doppler.com/
