@@ -8,11 +8,24 @@
     - name: Install Dependencies
       package:
         name: "acl"
+      tags:
+        - always
   roles:
-    - galaxyproject.postgresql
+    - role: galaxyproject.postgresql
+      tags:
+        - setup
+        - postgres
+    - role: usegalaxy_ca.restart_postgres
+      become: true
+      tags:
+        - setup
+        - never
     - role: galaxyproject.postgresql_objects
       become: true
       become_user: postgres
+      tags:
+        - setup
+        - postgres
 
 - hosts: galaxyservers
   become: true
@@ -32,9 +45,20 @@
             "python3-venv",
             "python3-setuptools",
           ]
+      tags:
+        - always
   roles:
-    - galaxyproject.galaxy
+    - role: galaxyproject.galaxy
+      tags:
+        - setup
+        - galaxy
     - role: galaxyproject.miniconda
       become: true
       become_user: "{{ galaxy_user_name }}"
-    - galaxyproject.nginx
+      tags:
+        - setup
+        - galaxy
+    - role: galaxyproject.nginx
+      tags:
+        - setup
+        - proxy

@@ -9,3 +9,4 @@ postgresql_pg_hba_conf:
   - host all all {{ galaxy_subnet }} md5
 postgresql_conf:
   - listen_addresses: "'*'"
+  - port: 5432

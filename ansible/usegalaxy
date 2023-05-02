@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+import argparse
+import subprocess
+import shutil
+
+def verify_dependencies() -> None:
+    if not ansible_exists():
+        print("Ansible is not installed. Please install ansible before running this script")
+        exit(1)
+    if not doppler_exists():
+        print("Doppler is not installed. Please install doppler before running this script")
+        exit(1)
+
+def ansible_exists() -> bool:
+    return shutil.which("ansible-playbook") is not None
+
+def doppler_exists() -> bool:
+    return shutil.which("doppler") is not None
+
+class Ansible:
+    def __init__(self) -> None:
+        self.tags = []
+
+    def add_tags(self, *tags: str) -> None:
+        self.tags.extend(tags)
+
+    def _build_command(self) -> str:
+        command = "ANSIBLE_FORCE_COLOR=true doppler run -- ansible-playbook {0} galaxy.yml"
+        tags = "--tags " + ",".join(self.tags)
+        return command.format(tags)
+
+    def run(self) -> None:
+        command = self._build_command()
+        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        while True:
+            out = p.stdout.readline()
+            if out == b'' and p.poll() is not None:
+                break
+            if out:
+                print(out.decode("utf-8").strip())
+
+class ArgParser():
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(
+            prog="UseGalaxyCLI",
+            description="Used to run commmon ansible recipes")
+        subparsers = self.parser.add_subparsers(help='sub-command help')
+
+        setup_command = subparsers.add_parser('setup', help="setup all components")
+        setup_command.set_defaults(func=setup)
+
+    def run(self) -> None:
+        args = self.parser.parse_args()
+        if not hasattr(args, "func"):
+            self.parser.print_help()
+            exit(1)
+        args.func(args)
+
+
+
+def main():
+    verify_dependencies()
+    parser = ArgParser()
+    parser.run()
+
+def setup(args):
+    ansible = Ansible()
+    ansible.add_tags("setup")
+    ansible.run()
+
+if __name__ == "__main__":
+    main()
