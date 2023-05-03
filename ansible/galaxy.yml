@@ -4,6 +4,7 @@
   become_user: root
   vars_files:
     - group_vars/secret.yml
+    - group_vars/terraform.yml
   pre_tasks:
     - name: Install Dependencies
       package:
@@ -11,12 +12,15 @@
       tags:
         - always
   roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - setup
+        - volume
     - role: galaxyproject.postgresql
       tags:
         - setup
         - postgres
     - role: usegalaxy_ca.restart_postgres
-      become: true
       tags:
         - setup
         - never
@@ -62,3 +66,20 @@
       tags:
         - setup
         - proxy
+
+- hosts: nfsservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/terraform.yml
+  roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - volume
+        - setup
+    # - role: usegalaxy_ca.nfs_server
+    #   become: true
+    #   become_user: root
+    #   tags:
+    #     - nfs
+    #     - setup

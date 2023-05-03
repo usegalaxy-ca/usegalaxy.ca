@@ -1,0 +1,26 @@
+---
+- name: Install NFS utils
+  apt:
+    name:
+      - nfs-common
+      - nfs-kernel-server
+    state: present
+
+- name: Check every exported folder exists
+  file:
+    path: "{{ item.strip().split()[0] }}"
+    state: directory
+  with_items: "{{ nfs_exports }}"
+
+- name: Template exports file
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload nfs
+
+- name: Ensure nfs is running.
+  service: "name=nfs_kernel_server state=started enabled=yes"
+  when: nfs_exports|length

@@ -1,0 +1,14 @@
+---
+- name: Format Volume
+  community.general.filesystem:
+    fstype: ext4
+    dev: "{{ volumes[inventory_hostname].device }}"
+  when: volumes[inventory_hostname] is defined
+
+- name: Mount Volume
+  ansible.posix.mount:
+    path: /mnt/volume
+    src: "{{ volumes[inventory_hostname].device}}"
+    fstype: ext4
+    state: mounted
+  when: volumes[inventory_hostname] is defined

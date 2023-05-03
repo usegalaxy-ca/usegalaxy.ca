@@ -9,20 +9,19 @@ variable "instances_info" {
     }))
 }
 
-variable "INSTANCE_NAME_PREFIX" {
-  type    = string
+variable "floating_ips" {
+    type = list(object({
+        ip = string
+        attach_to = string
+    }))
 }
 
-variable "PUBLIC_IP" {
-  type    = string
-}
-
-variable "USERNAME" {
-  type    = string
-}
-
-variable "PUBLIC_KEY" {
-  type    = string
+variable "volumes" {
+    type = map(object({
+        type = string
+        size = number
+        attach_to = string
+    }))
 }
 
 variable "openstack" {
@@ -36,10 +35,18 @@ variable "openstack" {
     }
 }
 
-variable "project_name" {
+variable "INSTANCE_NAME_PREFIX" {
   type    = string
 }
 
-variable "gateway_name" {
+variable "USERNAME" {
+  type    = string
+}
+
+variable "PUBLIC_KEY" {
+  type    = string
+}
+
+variable "project_name" {
   type    = string
 }

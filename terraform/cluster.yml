@@ -41,12 +41,26 @@ test:
 laperlej:
   instances:
     galaxy:
-      flavor: "p4-7.5gb"
-      security_groups: ["usegal", "web"]
+      flavor: p4-7.5gb
+      security_groups: [usegal, web]
     db:
-      flavor: "p4-7.5gb"
-      security_groups: ["usegal", "usegal-psql"]
-  gateway_name: "galaxy"
+      flavor: p4-7.5gb
+      security_groups: [usegal, usegal-psql]
+    nfs:
+      flavor: p2-3.75gb
+      security_groups: [usegal, usegal-nfs]
+  volumes:
+    nfs-volume:
+      type: volumes-ssd
+      size: 100
+      attach_to: nfs
+    db-volume:
+      type: volumes-ec
+      size: 1000
+      attach_to: db
+  floating_ips:
+    - ip: 198.168.184.189
+      attach_to: galaxy
 
 carolg:
   instances:
@@ -56,4 +70,6 @@ carolg:
     db:
       flavor: "p4-7.5gb"
       security_groups: ["usegal", "usegal-psql"]
-  gateway_name: "galaxy"
+  floating_ips:
+    - ip: 198.168.186.192
+      attach_to: "galaxy"

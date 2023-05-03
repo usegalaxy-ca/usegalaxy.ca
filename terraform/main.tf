@@ -6,7 +6,8 @@ locals {
     global_config = yamldecode(file(format("%s/cluster.yml", path.module)))
     user_config = local.global_config[var.USERNAME]
     instances_info = local.user_config.instances
-    gateway_name = local.user_config.gateway_name
+    floating_ips = local.user_config.floating_ips
+    volumes = local.user_config.volumes
 }
 
 resource "local_file" "inventory" {
@@ -18,6 +19,14 @@ resource "local_file" "inventory" {
   file_permission = "0644"
 }
 
+resource "local_file" "group_vars" {
+  content = templatefile("templates/group_vars.yml", {
+      volumes = module.openstack.volumes_info
+  })
+  filename = format("%s/../ansible/group_vars/terraform.yml", path.module)
+  file_permission = "0644"
+}
+
 module "openstack" {
   source             = "./modules/openstack"
   openstack = {
@@ -26,10 +35,10 @@ module "openstack" {
   }
   project_name       = local.project_name
   instances_info = local.instances_info
-  gateway_name = local.gateway_name
+  floating_ips = local.floating_ips
+  volumes = local.volumes
 
   INSTANCE_NAME_PREFIX = var.INSTANCE_NAME_PREFIX
-  PUBLIC_IP = var.PUBLIC_IP
   USERNAME = var.USERNAME
   PUBLIC_KEY = var.PUBLIC_KEY
 }
@@ -45,10 +54,6 @@ output "private_IPs" {
 }
 
 variable "INSTANCE_NAME_PREFIX" {
-  type    = string
-}
-
-variable "PUBLIC_IP" {
   type    = string
 }
 
