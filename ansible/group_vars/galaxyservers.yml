@@ -163,3 +163,8 @@ nginx_conf_http:
 nginx_ssl_role: usegalaxy_eu.certbot
 nginx_conf_ssl_certificate: /etc/ssl/certs/fullchain.pem
 nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
+
+#NFS
+nfs_host: "{{ groups['nfsservers'][0] }}"
+nfs_host_folder: /mnt/volume
+nfs_mnt_folder: /mnt/nfs

@@ -1,4 +1,20 @@
 ---
+- hosts: nfsservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/terraform.yml
+  roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - volume
+        - nfs
+        - setup
+    - role: usegalaxy_ca.nfs_server
+      tags:
+        - nfs
+        - setup
+
 - hosts: dbservers
   become: true
   become_user: root
@@ -52,6 +68,10 @@
       tags:
         - always
   roles:
+    - role: usegalaxy_ca.nfs_client
+      tags:
+        - nfs
+        - setup
     - role: galaxyproject.galaxy
       tags:
         - setup
@@ -66,20 +86,3 @@
       tags:
         - setup
         - proxy
-
-- hosts: nfsservers
-  become: true
-  become_user: root
-  vars_files:
-    - group_vars/terraform.yml
-  roles:
-    - role: usegalaxy_ca.volume
-      tags:
-        - volume
-        - setup
-    # - role: usegalaxy_ca.nfs_server
-    #   become: true
-    #   become_user: root
-    #   tags:
-    #     - nfs
-    #     - setup

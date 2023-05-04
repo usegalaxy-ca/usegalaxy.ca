@@ -53,11 +53,11 @@ laperlej:
     nfs-volume:
       type: volumes-ssd
       size: 100
-      attach_to: nfs
+      attach_to: db
     db-volume:
       type: volumes-ec
       size: 1000
-      attach_to: db
+      attach_to: nfs
   floating_ips:
     - ip: 198.168.184.189
       attach_to: galaxy

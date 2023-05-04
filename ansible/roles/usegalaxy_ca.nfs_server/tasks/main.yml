@@ -22,5 +22,5 @@
   notify: reload nfs
 
 - name: Ensure nfs is running.
-  service: "name=nfs_kernel_server state=started enabled=yes"
+  service: "name=nfs-kernel-server state=started enabled=yes"
   when: nfs_exports|length

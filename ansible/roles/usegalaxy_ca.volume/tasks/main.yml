@@ -8,7 +8,7 @@
 - name: Mount Volume
   ansible.posix.mount:
     path: /mnt/volume
-    src: "{{ volumes[inventory_hostname].device}}"
+    src: "{{ volumes[inventory_hostname].device }}"
     fstype: ext4
     state: mounted
   when: volumes[inventory_hostname] is defined
