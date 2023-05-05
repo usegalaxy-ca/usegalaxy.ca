@@ -1,15 +1,24 @@
 # Galaxy
-galaxy_create_user: true # False by default, as e.g. you might have a 'galaxy' user provided by LDAP or AD.
+galaxy_create_user: false # False by default, as e.g. you might have a 'galaxy' user provided by LDAP or AD.
 galaxy_separate_privileges: true # Best practices for security, configuration is owned by 'root' (or a different user) than the processes
-galaxy_manage_paths: true # False by default as your administrator might e.g. have root_squash enabled on NFS. Here we can create the directories so it's fine.
+galaxy_manage_paths: false # False by default as your administrator might e.g. have root_squash enabled on NFS. Here we can create the directories so it's fine.
+
+galaxy_privsep_user: pgalaxy
+galaxy_config_perms: 0664
 galaxy_layout: root-dir
-galaxy_root: /srv/galaxy
+# galaxy_root: /srv/galaxy
+galaxy_root: /mnt/nfs/galaxy
+nginx_srv: /srv/nginx
+
 galaxy_user: { name: "{{ galaxy_user_name }}", shell: /bin/bash }
 galaxy_commit_id: release_23.0
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
 miniconda_version: 4.12.0
 miniconda_channels: ["conda-forge", "defaults"]
+
+# disable running tusd from the galaxyproject.tusd role
+tusd_systemd: false
 
 # Galaxy Job Configuration
 galaxy_job_config:
@@ -31,13 +40,14 @@ galaxy_job_config:
 
 galaxy_config:
   galaxy:
-    # Main Configuration
     admin_users:
       - jonathan.laperle@usherbrooke.ca
       - Carol.Gauthier@USherbrooke.ca
     database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
-    file_path: /data/datasets
-    job_working_directory: /data/jobs
+    file_path: /mnt/nfs/data/datasets
+    job_working_directory: /mnt/nfs/data/jobs
+    # file_path: /data/datasets
+    # job_working_directory: /data/jobs
     object_store_store_by: uuid
     id_secret: "{{ vault_id_secret }}"
     job_config: "{{ galaxy_job_config }}" # Use the variable we defined above
@@ -73,6 +83,8 @@ galaxy_config:
     oidc_config_file: "{{ galaxy_config_dir }}/oidc_config.xml"
     oidc_backends_config_file: "{{ galaxy_config_dir }}/oidc_backends_config.xml"
     oidc_auto_redirect: false
+    # CVMFS
+    tool_data_table_config_path: /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml
 
   gravity:
     process_manager: systemd
@@ -81,7 +93,8 @@ galaxy_config:
     virtualenv: "{{ galaxy_venv_dir }}"
     gunicorn:
       # listening options
-      bind: "unix:{{ galaxy_mutable_config_dir }}/gunicorn.sock"
+      # bind: "unix:{{ galaxy_mutable_config_dir }}/gunicorn.sock"
+      bind: "unix:{{ galaxy_root }}/gunicorn.sock"
       # performance options
       workers: 2
       # Other options that will be passed to gunicorn
@@ -101,8 +114,8 @@ galaxy_config:
           - job-handlers
           - workflow-schedulers
 
-galaxy_extra_dirs:
-  - /data
+# galaxy_extra_dirs:
+#   - /data
 
 galaxy_config_templates:
   - src: templates/galaxy/config/auth_conf.xml.j2
@@ -168,3 +181,20 @@ nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
 nfs_host: "{{ groups['nfsservers'][0] }}"
 nfs_host_folder: /mnt/volume
 nfs_mnt_folder: /mnt/nfs
+
+#Users
+galaxy_user:
+  name: galaxy
+  uid: 2001
+galaxy_group:
+  name: galaxy
+  gid: 2001
+pgalaxy_user:
+  name: priv
+  gid: 2002
+nginx_user:
+  name: www-data
+  uid: 33
+nginx_group:
+  name: www-data
+  gid: 33

@@ -4,6 +4,7 @@
   become_user: root
   vars_files:
     - group_vars/terraform.yml
+    - group_vars/galaxyservers.yml
   roles:
     - role: usegalaxy_ca.volume
       tags:
@@ -86,3 +87,14 @@
       tags:
         - setup
         - proxy
+    - role: galaxyproject.cvmfs
+      tags:
+        - setup
+        - cvmfs
+  post_tasks:
+    - name: galaxy systemd restart
+      systemd:
+        name: galaxy.target
+        state: restarted
+      tags:
+        - setup

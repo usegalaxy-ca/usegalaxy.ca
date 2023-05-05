@@ -50,11 +50,11 @@ laperlej:
       flavor: p2-3.75gb
       security_groups: [usegal, usegal-nfs]
   volumes:
-    nfs-volume:
+    db-volume:
       type: volumes-ssd
       size: 100
       attach_to: db
-    db-volume:
+    nfs-volume:
       type: volumes-ec
       size: 1000
       attach_to: nfs
