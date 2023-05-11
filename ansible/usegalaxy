@@ -29,8 +29,11 @@ class Ansible:
         tags = "--tags " + ",".join(self.tags)
         return command.format(tags)
 
-    def run(self) -> None:
-        command = self._build_command()
+    def requirements(self) -> None:
+        command = "ANSIBLE_FORCE_COLOR=true doppler run -- ansible-galaxy install -p roles -r requirements.yml"
+        self._cmd_run(command)
+
+    def _cmd_run(self, command: str) -> None:
         p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while True:
             out = p.stdout.readline()
@@ -38,6 +41,10 @@ class Ansible:
                 break
             if out:
                 print(out.decode("utf-8").strip())
+
+    def run(self) -> None:
+        command = self._build_command()
+        self._cmd_run(command)
 
 class ArgParser():
     def __init__(self):
@@ -48,6 +55,9 @@ class ArgParser():
 
         setup_command = subparsers.add_parser('setup', help="setup all components")
         setup_command.set_defaults(func=setup)
+
+        setup_command = subparsers.add_parser('requirements', help="download all requirements")
+        setup_command.set_defaults(func=requirements)
 
     def run(self) -> None:
         args = self.parser.parse_args()
@@ -62,6 +72,10 @@ def main():
     verify_dependencies()
     parser = ArgParser()
     parser.run()
+
+def requirements(args):
+    ansible = Ansible()
+    ansible.requirements()
 
 def setup(args):
     ansible = Ansible()
