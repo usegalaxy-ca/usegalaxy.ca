@@ -73,6 +73,10 @@
       tags:
         - nfs
         - setup
+    - role: usegalaxy_eu.apptainer
+      tags:
+        - cvmfs
+        - setup
     - role: galaxyproject.galaxy
       tags:
         - setup
