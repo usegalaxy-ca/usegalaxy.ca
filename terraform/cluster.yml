@@ -42,7 +42,7 @@ laperlej:
   instances:
     galaxy:
       flavor: p4-7.5gb
-      security_groups: [usegal, web]
+      security_groups: [usegal, web, usegal-tusd]
     db:
       flavor: p4-7.5gb
       security_groups: [usegal, usegal-psql]

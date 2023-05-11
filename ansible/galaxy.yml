@@ -77,6 +77,10 @@
       tags:
         - cvmfs
         - setup
+    - role: galaxyproject.tusd
+      tags:
+        - tusd
+        - setup
     - role: galaxyproject.galaxy
       tags:
         - setup

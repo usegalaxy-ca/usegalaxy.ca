@@ -16,6 +16,9 @@
 #CVMFS
 - src: galaxyproject.cvmfs
   version: 0.2.21
+# TUS (uploads)
+- name: galaxyproject.tusd
+  version: 0.0.1
 # Singularity/Apptainer
 - src: usegalaxy_eu.apptainer
   version: 0.0.1
