@@ -14,3 +14,29 @@ galaxy_subnet: "{{ lookup('env', 'GALAXY_SUBNET') }}"
 cvmfs_role: client
 galaxy_cvmfs_repos_enabled: config-repo
 cvmfs_quota_limit: 10000 #cache size in MB
+
+## Slurm
+slurm_config:
+  SlurmctldHost: "{{ groups['slurmcontrolservers'][0] }}"
+  SelectType: select/cons_res
+  SelectTypeParameters: CR_CPU_Memory # Allocate individual cores/memory instead of entire node
+slurm_nodes:
+  - name: "{{ groups['galaxyservers'][0] }}"
+    CPUs: 4
+  - name: "{{ groups['slurmexecservers'][0] }}"
+    CPUs: 4
+slurm_partitions:
+  - name: main
+    Default: YES
+    MaxTime: UNLIMITED
+    #Nodes: "{{ groups['slurmexecservers'][0] }}"
+    Nodes: ALL
+  - name: submit
+    Hidden: YES
+    State: INACTIVE
+    Default: NO
+    MaxTime: UNLIMITED
+    Nodes: "{{ groups['galaxyservers'][0] }}"
+slurm_user:
+  group: slurm
+  name: slurm

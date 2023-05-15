@@ -1,0 +1,50 @@
+- name: Create munge group
+  group:
+    name: munge
+    gid: 887
+
+- name: Create munge user
+  user:
+    home: /var/lib/munge
+    name: munge
+    shell: /usr/sbin/nologin
+    uid: 887
+    group: munge
+
+- name: Create slurm group
+  group:
+    name: slurm
+    gid: 888
+
+- name: Create slurm user
+  user:
+    comment: Slurm Workload Manager
+    home: /var/lib/slurm
+    name: slurm
+    shell: /usr/sbin/nologin
+    uid: 888
+    group: slurm
+
+- name: Make slurm dir readable to galaxy
+  file:
+    path: /var/lib/slurm
+    owner: slurm
+    group: slurm
+    state: directory
+    mode: 0755
+
+- name: Create munge dir
+  file:
+    path: /etc/munge
+    owner: munge
+    group: munge
+    state: directory
+    mode: 0700
+
+- name: Copy munge key
+  copy:
+    src: files/munge.key
+    dest: /etc/munge/munge.key
+    owner: munge
+    group: munge
+    mode: 0600

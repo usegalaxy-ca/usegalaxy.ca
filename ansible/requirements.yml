@@ -1,31 +1,35 @@
-
 roles:
-# Galaxy
-- src: galaxyproject.galaxy
-  version: 0.10.14
-- src: galaxyproject.miniconda
-  version: 0.3.1
-#Postgres
-- src: galaxyproject.postgresql
-  version: 1.1.2
-- src: galaxyproject.postgresql_objects
-  version: 1.2.0
-#NGINX
-- src: galaxyproject.nginx
-  version: 0.7.1
-- src: usegalaxy_eu.certbot
-  version: 0.1.11
-#CVMFS
-- src: galaxyproject.cvmfs
-  version: 0.2.21
-# TUS (uploads)
-- name: galaxyproject.tusd
-  version: 0.0.1
-# Singularity/Apptainer
-- src: usegalaxy_eu.apptainer
-  version: 0.0.1
+  # Galaxy
+  - src: galaxyproject.galaxy
+    version: 0.10.14
+  - src: galaxyproject.miniconda
+    version: 0.3.1
+  #Postgres
+  - src: galaxyproject.postgresql
+    version: 1.1.2
+  - src: galaxyproject.postgresql_objects
+    version: 1.2.0
+  #NGINX
+  - src: galaxyproject.nginx
+    version: 0.7.1
+  - src: usegalaxy_eu.certbot
+    version: 0.1.11
+  #CVMFS
+  - src: galaxyproject.cvmfs
+    version: 0.2.21
+  # TUS (uploads)
+  - name: galaxyproject.tusd
+    version: 0.0.1
+  # Singularity/Apptainer
+  - src: usegalaxy_eu.apptainer
+    version: 0.0.1
+  # SLURM
+  - src: galaxyproject.repos
+    version: 0.0.3
+  - src: galaxyproject.slurm
+    version: 1.0.2
 
 collections:
-# Ansible Posix
-- name: ansible.posix
-  version: 1.5.2
+  # Ansible Posix
+  - name: ansible.posix
+    version: 1.5.2

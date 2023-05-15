@@ -16,6 +16,81 @@
         - nfs
         - setup
 
+- hosts: slurmcontrolservers
+  become: true
+  become_user: root
+  vars:
+    - slurm_roles: ["controller"]
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/galaxyservers.yml
+  roles:
+    - role: usegalaxy_ca.nfs_client
+      tags:
+        - nfs
+        - setup
+    - role: usegalaxy_ca.slurm
+      tags:
+        - slurm
+        - setup
+    - role: galaxyproject.repos
+      tags:
+        - slurm
+        - setup
+    - role: galaxyproject.slurm
+      tags:
+        - slurm
+        - setup
+
+- hosts: slurmexecservers
+  become: true
+  become_user: root
+  vars:
+    - slurm_roles: ["exec"]
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/galaxyservers.yml
+  pre_tasks:
+    - name: Install Dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+  roles:
+    - role: usegalaxy_ca.nfs_client
+      tags:
+        - nfs
+        - setup
+    - role: usegalaxy_eu.apptainer
+      tags:
+        - cvmfs
+        - setup
+    - role: galaxyproject.cvmfs
+      tags:
+        - setup
+        - cvmfs
+    - role: usegalaxy_ca.slurm
+      tags:
+        - slurm
+        - setup
+    - role: galaxyproject.repos
+      tags:
+        - slurm
+        - setup
+    - role: galaxyproject.slurm
+      tags:
+        - slurm
+        - setup
+
 - hosts: dbservers
   become: true
   become_user: root
@@ -51,6 +126,8 @@
 - hosts: galaxyservers
   become: true
   become_user: root
+  vars:
+    - slurm_roles: ["exec"]
   vars_files:
     - group_vars/secret.yml
   pre_tasks:
@@ -72,6 +149,18 @@
     - role: usegalaxy_ca.nfs_client
       tags:
         - nfs
+        - setup
+    - role: usegalaxy_ca.slurm
+      tags:
+        - slurm
+        - setup
+    - role: galaxyproject.repos
+      tags:
+        - slurm
+        - setup
+    - role: galaxyproject.slurm
+      tags:
+        - slurm
         - setup
     - role: usegalaxy_eu.apptainer
       tags:
@@ -100,6 +189,11 @@
         - setup
         - cvmfs
   post_tasks:
+    - name: Install slurm-drmaa
+      package:
+        name: slurm-drmaa1
+      tags:
+        - setup
     - name: galaxy systemd restart
       systemd:
         name: galaxy.target
