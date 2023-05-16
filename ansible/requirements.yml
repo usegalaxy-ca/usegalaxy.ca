@@ -1,3 +1,5 @@
+
+roles:
 # Galaxy
 - src: galaxyproject.galaxy
   version: 0.10.14
@@ -22,3 +24,8 @@
 # Singularity/Apptainer
 - src: usegalaxy_eu.apptainer
   version: 0.0.1
+
+collections:
+# Ansible Posix
+- name: ansible.posix
+  version: 1.5.2
