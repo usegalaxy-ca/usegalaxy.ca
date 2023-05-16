@@ -2,11 +2,9 @@
 # This file is managed by Terraform. Do not edit.
 ###############################################
 
-%{ for name, host in hosts }
-[${name}servers]
-${host}
-%{ endfor }
-
-[all:vars]
-ansible_port = 22
-ansible_user = ${username}
+volumes:
+%{ for info in volumes ~}
+  ${info.instance_name}:
+    volume_name: ${info.volume_name}
+    device: ${info.device}
+%{ endfor ~}

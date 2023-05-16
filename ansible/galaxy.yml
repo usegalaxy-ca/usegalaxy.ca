@@ -1,9 +1,27 @@
 ---
+- hosts: nfsservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/terraform.yml
+    - group_vars/galaxyservers.yml
+  roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - volume
+        - nfs
+        - setup
+    - role: usegalaxy_ca.nfs_server
+      tags:
+        - nfs
+        - setup
+
 - hosts: dbservers
   become: true
   become_user: root
   vars_files:
     - group_vars/secret.yml
+    - group_vars/terraform.yml
   pre_tasks:
     - name: Install Dependencies
       package:
@@ -11,12 +29,15 @@
       tags:
         - always
   roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - setup
+        - volume
     - role: galaxyproject.postgresql
       tags:
         - setup
         - postgres
     - role: usegalaxy_ca.restart_postgres
-      become: true
       tags:
         - setup
         - never
@@ -48,6 +69,18 @@
       tags:
         - always
   roles:
+    - role: usegalaxy_ca.nfs_client
+      tags:
+        - nfs
+        - setup
+    - role: usegalaxy_eu.apptainer
+      tags:
+        - cvmfs
+        - setup
+    - role: galaxyproject.tusd
+      tags:
+        - tusd
+        - setup
     - role: galaxyproject.galaxy
       tags:
         - setup
@@ -62,3 +95,14 @@
       tags:
         - setup
         - proxy
+    - role: galaxyproject.cvmfs
+      tags:
+        - setup
+        - cvmfs
+  post_tasks:
+    - name: galaxy systemd restart
+      systemd:
+        name: galaxy.target
+        state: restarted
+      tags:
+        - setup

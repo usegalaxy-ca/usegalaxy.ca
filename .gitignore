@@ -17,8 +17,8 @@ terraform.tfstate.backup
 ansible/hosts
 .vault-password.txt
 
-**/roles/galaxyproject.*/
-**/roles/usegalaxy_eu.*/
+**/roles/*
+!**/roles/usegalaxy_ca.*
 
 venv/
 .venv/

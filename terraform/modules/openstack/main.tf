@@ -23,9 +23,23 @@ locals {
     })
 }
 
-resource "openstack_compute_floatingip_associate_v2" "fip_1" {
-  floating_ip           = "${var.PUBLIC_IP}"
-  instance_id           = openstack_compute_instance_v2.instances[var.gateway_name].id
+resource "openstack_blockstorage_volume_v2" "volumes" {
+  for_each = var.volumes
+  name        = "${var.INSTANCE_NAME_PREFIX}-${var.project_name}-${each.key}"
+  volume_type = each.value.type
+  size        = each.value.size
+}
+
+resource "openstack_compute_volume_attach_v2" "volumes" {
+  for_each = var.volumes
+  instance_id = "${openstack_compute_instance_v2.instances[each.value.attach_to].id}"
+  volume_id   = "${openstack_blockstorage_volume_v2.volumes[each.key].id}"
+}
+
+resource "openstack_compute_floatingip_associate_v2" "floating_ips" {
+  for_each = { for ip in var.floating_ips : ip.ip => ip }
+  floating_ip           = "${each.value.ip}"
+  instance_id           = openstack_compute_instance_v2.instances[each.value.attach_to].id
   wait_until_associated = true
 }
 

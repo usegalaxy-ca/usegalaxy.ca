@@ -1,0 +1,84 @@
+---
+- name: Create users
+  block:
+    - name: Create Galaxy group
+      group:
+        name: "{{ galaxy_group.name | default(galaxy_group) }}"
+        gid: "{{ galaxy_group.gid | default(omit) }}"
+        system: "{{ galaxy_group.system | default(galaxy_user.system) | default('true') }}"
+        local: "{{ galaxy_group.local | default(galaxy_user.local) | default(omit) }}"
+      when: galaxy_group is defined
+
+    - name: Create Galaxy user
+      user:
+        name: "{{ galaxy_user.name | default(galaxy_user) }}"
+        uid: "{{ galaxy_user.uid | default(omit) }}"
+        group: "{{ (galaxy_group | default({})).name | default(galaxy_group) | default(omit) }}"
+        comment: "{{ galaxy_user.comment | default('Galaxy server') }}"
+        create_home: "{{ galaxy_user.create_home | default('true') }}"
+        home: "{{ galaxy_user.home | default(omit) }}"
+        shell: "{{ galaxy_user.shell | default(omit) }}"
+        system: "{{ galaxy_user.system | default('true') }}"
+        local: "{{ galaxy_user.local | default(omit) }}"
+      when: galaxy_user
+
+    - name: Create Priviledged Galaxy User
+      user:
+        name: pgalaxy
+        uid: 2002
+        groups: galaxy,sudo
+
+    - name: Create Nginx group
+      group:
+        name: "{{ nginx_group.name }}"
+        gid: "{{ nginx_group.gid }}"
+      when: nginx_group is defined
+
+    - name: Create Nginx user
+      user:
+        name: "{{ nginx_user.name }}"
+        uid: "{{ nginx_user.uid }}"
+        group: "{{ nginx_group.name }}"
+      when: nginx_user is defined
+
+- name: Install NFS utils
+  apt:
+    name:
+      - nfs-common
+      - nfs-kernel-server
+    state: present
+
+- name: Create galaxy folder structure
+  file:
+    path: "{{ item.strip() }}"
+    owner: pgalaxy
+    group: galaxy
+    state: directory
+    mode: 0775
+  with_items:
+    - /mnt/volume/galaxy
+    - /mnt/volume/galaxy/config
+    - /mnt/volume/galaxy/local_tools
+    - /mnt/volume/galaxy/server
+    - /mnt/volume/galaxy/venv
+    - /mnt/volume/galaxy/var
+    - /mnt/volume/data
+
+- name: Check every exported folder exists
+  file:
+    path: "{{ item.strip().split()[0] }}"
+    state: directory
+  with_items: "{{ nfs_exports }}"
+
+- name: Template exports file
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload nfs
+
+- name: Ensure nfs is running.
+  service: "name=nfs-kernel-server state=started enabled=yes"
+  when: nfs_exports|length

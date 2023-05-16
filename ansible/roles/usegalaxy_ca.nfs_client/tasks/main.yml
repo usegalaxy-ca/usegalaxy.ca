@@ -1,0 +1,48 @@
+---
+- name: Create users
+  block:
+    - name: Create Galaxy group
+      group:
+        name: "{{ galaxy_group.name | default(galaxy_group) }}"
+        gid: "{{ galaxy_group.gid | default(omit) }}"
+        system: "{{ galaxy_group.system | default(galaxy_user.system) | default('true') }}"
+        local: "{{ galaxy_group.local | default(galaxy_user.local) | default(omit) }}"
+      when: galaxy_group is defined
+
+    - name: Create Galaxy user
+      user:
+        name: "{{ galaxy_user.name | default(galaxy_user) }}"
+        uid: "{{ galaxy_user.uid | default(omit) }}"
+        group: "{{ (galaxy_group | default({})).name | default(galaxy_group) | default(omit) }}"
+        comment: "{{ galaxy_user.comment | default('Galaxy server') }}"
+        create_home: "{{ galaxy_user.create_home | default('true') }}"
+        home: "{{ galaxy_user.home | default(omit) }}"
+        shell: "{{ galaxy_user.shell | default(omit) }}"
+        system: "{{ galaxy_user.system | default('true') }}"
+        local: "{{ galaxy_user.local | default(omit) }}"
+      when: galaxy_user
+
+    - name: Create Priviledged Galaxy User
+      user:
+        name: pgalaxy
+        uid: 2002
+        groups: galaxy,sudo
+
+- name: Install NFS utils
+  apt:
+    name:
+      - nfs-kernel-server
+    state: present
+
+- name: Check the mnt folder exists
+  file:
+    path: "{{ nfs_mnt_folder }}"
+    state: directory
+
+- name: Mount Volume
+  ansible.posix.mount:
+    path: "{{ nfs_mnt_folder }}"
+    src: "{{ nfs_host }}:{{ nfs_host_folder }}"
+    opts: rw,async,noatime,nodiratime
+    fstype: nfs
+    state: mounted
