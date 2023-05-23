@@ -188,6 +188,7 @@
       tags:
         - setup
         - cvmfs
+
   post_tasks:
     - name: Install slurm-drmaa
       package:
