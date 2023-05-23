@@ -43,8 +43,8 @@
 
 - name: Copy munge key
   copy:
-    src: files/munge.key
     dest: /etc/munge/munge.key
     owner: munge
     group: munge
     mode: 0600
+    content: "{{ MUNGE_KEY }}"
