@@ -46,7 +46,7 @@ server {
 		proxy_set_header Upgrade            $http_upgrade;
 		proxy_set_header Connection         "upgrade";
 		client_max_body_size        0;
-		proxy_pass http://localhost:{{ galaxy_tusd_port }}/files;
+		proxy_pass http://{{ galaxy_tusd_host }}:{{ galaxy_tusd_port }}/files;
 	}
 
 	# Static files can be more efficiently served by Nginx. Why send the
