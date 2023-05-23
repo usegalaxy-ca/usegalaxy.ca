@@ -10,7 +10,6 @@ galaxy_layout: root-dir
 galaxy_root: /mnt/nfs/galaxy
 nginx_srv: /srv/nginx
 
-galaxy_user: { name: "{{ galaxy_user_name }}", shell: /bin/bash }
 galaxy_commit_id: release_23.0
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
@@ -26,27 +25,40 @@ galaxy_job_config:
     local_runner:
       load: galaxy.jobs.runners.local:LocalJobRunner
       workers: 4
+    slurm:
+      load: galaxy.jobs.runners.slurm:SlurmJobRunner
+      drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
   handling:
     assign: ["db-skip-locked"]
   execution:
-    default: singularity
+    default: slurm
     environments:
       local_env:
         runner: local_runner
         tmp_dir: true
+      slurm:
+        runner: slurm
+        singularity_enabled: true
+        env:
+          - name: LC_ALL
+            value: C
+          - name: SINGULARITY_CACHEDIR
+            value: /tmp/singularity
+          - name: APPTAINER_TMPDIR
+            value: /tmp
       singularity:
         runner: local_runner
         singularity_enabled: true
         env:
-        # Ensuring a consistent collation environment is good for reproducibility.
-        - name: LC_ALL
-          value: C
-        # The cache directory holds the docker containers that get converted
-        - name: APPTAINER_CACHEDIR
-          value: /tmp/singularity
-        # Apptainer uses a temporary directory to build the squashfs filesystem
-        - name: APPTAINER_TMPDIR
-          value: /tmp
+          # Ensuring a consistent collation environment is good for reproducibility.
+          - name: LC_ALL
+            value: C
+          # The cache directory holds the docker containers that get converted
+          - name: APPTAINER_CACHEDIR
+            value: /tmp/singularity
+          # Apptainer uses a temporary directory to build the squashfs filesystem
+          - name: APPTAINER_TMPDIR
+            value: /tmp
   tools:
     - class: local # these special tools that aren't parameterized for remote execution - expression tools, upload, etc
       environment: local_env
@@ -206,6 +218,7 @@ nginx_conf_ssl_certificate: /etc/ssl/certs/fullchain.pem
 nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
 
 # TUS
+galaxy_tusd_host: localhost
 galaxy_tusd_port: 1080
 galaxy_tus_upload_store: /mnt/nfs/data/tus
 
@@ -216,10 +229,11 @@ nfs_mnt_folder: /mnt/nfs
 
 #Users
 galaxy_user:
-  name: galaxy
+  name: "{{ galaxy_user_name }}"
   uid: 2001
+  shell: /bin/bash
 galaxy_group:
-  name: galaxy
+  name: "{{ galaxy_user_name }}"
   gid: 2001
 pgalaxy_user:
   name: priv

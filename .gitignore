@@ -4,6 +4,7 @@
 
 .terraform/
 .terraform.lock.hcl
+group_vars/terraform.yml
 terraform.tfstate
 terraform.tfstate.backup
 
