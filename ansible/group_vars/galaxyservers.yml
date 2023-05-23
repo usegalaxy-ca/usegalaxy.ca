@@ -165,7 +165,7 @@ galaxy_config_templates:
   - src: templates/galaxy/config/dependency_resolvers_conf.xml
     dest: "{{ galaxy_config.galaxy.dependency_resolvers_config_file }}"
   # Welcome page
-  - src: templates/galaxy/static/usegalaxy_ca_welcome.html
+  - src: templates/galaxy/config/usegalaxy_ca_welcome.html
     dest: "{{ galaxy_root }}/static"
 
 # Certbot
