@@ -42,7 +42,7 @@ laperlej:
   instances:
     galaxy:
       flavor: p4-7.5gb
-      security_groups: [usegal, web, usegal-tusd, usegal-htcondor]
+      security_groups: [usegal, web, usegal-tusd, usegal-slurm]
     db:
       flavor: p4-7.5gb
       security_groups: [usegal, usegal-psql]
@@ -51,10 +51,10 @@ laperlej:
       security_groups: [usegal, usegal-nfs]
     slurmcontrol:
       flavor: p2-3.75gb
-      security_groups: [usegal, usegal-htcondor]
+      security_groups: [usegal, usegal-slurm]
     slurmexec:
       flavor: p4-7.5gb
-      security_groups: [usegal, usegal-htcondor]
+      security_groups: [usegal, usegal-slurm]
   volumes:
     db-volume:
       type: volumes-ssd
