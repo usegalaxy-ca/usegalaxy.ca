@@ -1,6 +1,6 @@
 ## Slurm
 slurm_nodes:
-%{ for group_name, node in nodes ~}
+%{ for group_name, hosts in nodes ~}
 %{ if group_name == "slurmexecservers" || group_name == "galaxyservers" ~}
 %{ for host in hosts ~}
   - name: ${host.name}
