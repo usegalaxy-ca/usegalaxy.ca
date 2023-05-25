@@ -1,27 +1,49 @@
-variable "instances_info" {
-    type = map(object({
+variable "instance_config" {
+    type = map(list(object({
+        name = string
         flavor = string
         volume_size = optional(number, 30)
         image = optional(string, "Ubuntu-22.04.2-Jammy-x64-2023-02")
         image_uuid = optional(string, "db73980e-1f9c-441e-8268-c1881f99c8ef")
         network_uuid = optional(string, "94db2a0a-14a4-4934-896d-a28bbc651b09")
         security_groups = optional(list(string), ["default"])
-    }))
+        count = optional(number, 1)
+    })))
 }
 
-variable "floating_ips" {
-    type = list(object({
+variable "ip_config" {
+    type = list(list({
         ip = string
         attach_to = string
     }))
 }
 
-variable "volumes" {
-    type = map(object({
+variable "volume_config" {
+    type = map(list({
+        name = string
         type = string
         size = number
         attach_to = string
     }))
+}
+ 
+locals {
+    flat_instance_config = flatten([
+      for group_name, instances in var.instance_config : [
+        for instance in instances : [
+          for i in range(instance.count) : {
+            name = instance.count==1 ? instance.name: "${instance.name}${i}"
+            flavor = instance.flavor
+            volume_size = instance.volume_size
+            image = instance.image
+            image_uuid = instance.image_uuid
+            network_uuid = instance.network_uuid
+            security_groups = instance.security_groups
+            group_name = group_name
+        }
+      ]
+    ]
+  ])
 }
 
 variable "openstack" {

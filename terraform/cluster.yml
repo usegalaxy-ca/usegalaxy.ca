@@ -40,27 +40,36 @@ test:
 
 laperlej:
   instances:
-    galaxy:
-      flavor: p4-7.5gb
-      security_groups: [usegal, web, usegal-tusd, usegal-slurm]
-    db:
-      flavor: p4-7.5gb
-      security_groups: [usegal, usegal-psql]
-    nfs:
-      flavor: p2-3.75gb
-      security_groups: [usegal, usegal-nfs]
-    slurmcontrol:
-      flavor: p2-3.75gb
-      security_groups: [usegal, usegal-slurm]
-    slurmexec:
-      flavor: p4-7.5gb
-      security_groups: [usegal, usegal-slurm]
+    galaxyservers:
+      - name: galaxy
+        flavor: p4-7.5gb
+        security_groups: [usegal, web, usegal-tusd, usegal-slurm]
+    dbservers:
+      - name: db
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-psql]
+    nfsservers:
+      - name: nfs
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-nfs]
+    slurmcontrolservers:
+      - name: slurmcontrol
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-slurm]
+    slurmexecservers:
+      - name: slurmexec
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-slurm]
+        count: 2
+      - name: slurmfat
+        flavor: p8-30gb
+        security_groups: [usegal, usegal-slurm]
   volumes:
-    db-volume:
+    - name: db-volume
       type: volumes-ssd
       size: 100
       attach_to: db
-    nfs-volume:
+    - name: nfs-volume
       type: volumes-ec
       size: 1000
       attach_to: nfs
