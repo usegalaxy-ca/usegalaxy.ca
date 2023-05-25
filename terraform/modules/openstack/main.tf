@@ -24,14 +24,14 @@ locals {
 }
 
 resource "openstack_blockstorage_volume_v2" "volumes" {
-  for_each = var.volume_config
+  for_each = { for volume in var.volume_config: volume.name => volume }
   name        = "${var.INSTANCE_NAME_PREFIX}-${var.project_name}-${each.key}"
   volume_type = each.value.type
   size        = each.value.size
 }
 
 resource "openstack_compute_volume_attach_v2" "volumes" {
-  for_each = var.volume_config
+  for_each = { for volume in var.volume_config: volume.name => volume }
   instance_id = "${openstack_compute_instance_v2.instances[each.value.attach_to].id}"
   volume_id   = "${openstack_blockstorage_volume_v2.volumes[each.key].id}"
 }
