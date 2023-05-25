@@ -31,8 +31,8 @@ locals {
 
 output "ansible_slurm" {
     value = [
-        for group_name, instance in var.flat_instance_config:
-            group_name == "slurmexecservers" || group_name == "galaxyservers" ? [
+        for instance in local.flat_instance_config:
+            instance.group_name == "slurmexecservers" || instance.group_name == "galaxyservers" ? [
                 for i in range(instance.count) : {
                     name = instance.count==1 ? instance.name: "${instance.name}${i}"
                     cpu = local.flavor_cpu[instance.flavor]
