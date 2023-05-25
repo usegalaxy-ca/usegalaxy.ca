@@ -64,3 +64,11 @@ resource "local_file" "group_vars" {
   filename = format("%s/../ansible/group_vars/terraform.yml", path.module)
   file_permission = "0644"
 }
+
+resource "local_file" "slurm" {
+  content = templatefile("templates/slurm.yml", {
+      nodes = module.openstack.ansible_slurm
+  })
+  filename = format("%s/../ansible/group_vars/slurm.yml", path.module)
+  file_permission = "0644"
+}

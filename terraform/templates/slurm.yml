@@ -1,0 +1,6 @@
+## Slurm
+slurm_nodes:
+%{ for node in nodes ~}
+  - name: ${node.name}
+    CPUs: ${node.cpu}
+%{ endfor ~}
