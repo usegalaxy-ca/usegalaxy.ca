@@ -1,6 +1,6 @@
 ## Slurm
 slurm_nodes:
-%{ for node in nodes ~}
+%{ for group_name, node in nodes ~}
 %{ if node.group_name == "slurmexecservers" || node.group_name == "galaxyservers" ~}
   - name: ${node.name}
     CPUs: ${node.cpu}
