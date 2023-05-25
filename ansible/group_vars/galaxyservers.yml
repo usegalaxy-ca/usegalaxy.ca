@@ -164,8 +164,14 @@ galaxy_config_templates:
     dest: "{{ galaxy_config.galaxy.containers_resolvers_config_file }}"
   - src: templates/galaxy/config/dependency_resolvers_conf.xml
     dest: "{{ galaxy_config.galaxy.dependency_resolvers_config_file }}"
+
+galaxy_config_files_public:
   # Welcome page
-  - src: templates/galaxy/config/usegalaxy_ca_welcome.html
+  - src: templates/galaxy/static/usegalaxy_ca_welcome.html
+    dest: "{{ galaxy_root }}/server/static/"
+  - src: templates/galaxy/static/Galaxy_Canada_Logo.png
+    dest: "{{ galaxy_root }}/server/static/images/"
+  - src: templates/galaxy/static/usegalaxy_ca_welcome_main.css
     dest: "{{ galaxy_root }}/server/static/"
 
 # Certbot
