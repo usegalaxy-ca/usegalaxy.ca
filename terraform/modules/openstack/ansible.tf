@@ -1,7 +1,12 @@
 output "ansible_hosts" {
     value =  {
         for group_name, instances in var.instance_config: 
-            group_name => [for instance in instances : openstack_compute_instance_v2.instances[instance.name].name]
+            group_name => flatten([
+                for instance in instances : [
+                    for i in range(instance.count) :
+                        openstack_compute_instance_v2.instances[instance.count==1?instance.name:"${instance.name}${i}"].name
+                ]
+            ])
     }
 }
 
