@@ -12,19 +12,19 @@ variable "instance_config" {
 }
 
 variable "ip_config" {
-    type = list((object({
+    type = list(object({
         ip = string
         attach_to = string
-    })))
+    }))
 }
 
 variable "volume_config" {
-    type = map(list(object({
+    type = list(object({
         name = string
         type = string
         size = number
         attach_to = string
-    })))
+    }))
 }
  
 locals {
