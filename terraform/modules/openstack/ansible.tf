@@ -3,8 +3,11 @@ output "ansible_hosts" {
         for group_name, instances in var.instance_config: 
             group_name => flatten([
                 for instance in instances : [
-                    for i in range(instance.count) :
-                        openstack_compute_instance_v2.instances[instance.count==1?instance.name:"${instance.name}${i}"].name
+                    for i in range(instance.count) : {
+                        name = openstack_compute_instance_v2.instances[instance.count==1?instance.name:"${instance.name}${i}"].name
+                        cpu = local.flavor_cpu[instance.flavor]
+                        group_name = group_name
+                    }
                 ]
             ])
     }
@@ -27,17 +30,6 @@ locals {
         "c16-120gb": 16	,
         "c32-240gb": 32,
     }
-}
-
-output "ansible_slurm" {
-    value = [
-        for instance in local.flat_instance_config:
-            instance.group_name == "slurmexecservers" || instance.group_name == "galaxyservers" ? [
-                for i in range(instance.count) : {
-                    name = instance.count==1 ? instance.name: "${instance.name}${i}"
-                    cpu = local.flavor_cpu[instance.flavor]
-                }] : []
-    ]
 }
 
 output "ansible_volumes" {
