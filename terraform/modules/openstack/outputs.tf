@@ -6,6 +6,6 @@ output "public_IP" {
 output "private_IPs" {
   description = "Private IP address of each instance"
   value       = {
-      for instance in local.flat_instance_config: name => openstack_compute_instance_v2.instances[instance.name].access_ip_v4
+      for instance in local.flat_instance_config: instance.name => openstack_compute_instance_v2.instances[instance.name].access_ip_v4
   }
 }

@@ -7,7 +7,7 @@ output "ansible_hosts" {
 
 output "ansible_volumes" {
     value = [
-        for volume in var.volume_info: {
+        for volume in var.volume_config: {
             instance_name = openstack_compute_instance_v2.instances[volume.attach_to].name
             volume_name = volume.name
             device = openstack_compute_volume_attach_v2.volumes[volume.name].device
