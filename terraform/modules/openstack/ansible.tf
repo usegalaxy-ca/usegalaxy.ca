@@ -6,7 +6,6 @@ output "ansible_hosts" {
                     for i in range(instance.count) : {
                         name = openstack_compute_instance_v2.instances[instance.count==1?instance.name:"${instance.name}${i}"].name
                         cpu = local.flavor_cpu[instance.flavor]
-                        group_name = group_name
                     }
                 ]
             ])
