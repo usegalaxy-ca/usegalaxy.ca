@@ -88,7 +88,7 @@ def setup(args):
 
 def slurm(args):
     ansible = Ansible()
-    ansible.add_tags("slurm", "nfs", "volume")
+    ansible.add_tags("slurm", "nfs", "volume", "cvmfs")
     ansible.run()
 
 if __name__ == "__main__":
