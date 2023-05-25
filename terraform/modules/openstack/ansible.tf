@@ -1,7 +1,7 @@
 output "ansible_hosts" {
     value =  {
-        for instance in local.flat_instance_config: 
-            instance.name => openstack_compute_instance_v2.instances[instance.name].name
+        for group_name, instances in local.instance_config: 
+            instance.group_name => [for instance in instances : openstack_compute_instance_v2.instances[instance.name].name]
     }
 }
 
