@@ -10,7 +10,7 @@ output "ansible_hosts" {
     }
 }
 
-local {
+locals {
     flavor_cpu =  {
         "p1-1gb": 1,
         "p1-2gb": 1,
