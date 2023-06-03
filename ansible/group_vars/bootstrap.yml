@@ -1,0 +1,3 @@
+galaxy_config:
+  galaxy:
+    bootstrap_admin_api_key: "{{ BOOTSTRAP_KEY }}"

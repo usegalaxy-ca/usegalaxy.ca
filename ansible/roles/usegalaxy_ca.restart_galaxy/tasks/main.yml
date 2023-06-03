@@ -1,0 +1,4 @@
+- name: galaxy systemd restart
+  systemd:
+    name: galaxy.target
+    state: restarted

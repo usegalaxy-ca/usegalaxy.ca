@@ -1,52 +1,30 @@
 #!/usr/bin/env python3
+"""
+This CLI is used to run common ansible recipes
+ 
+view the help for more information
+
+./usegalaxy.py -h
+"""
 import argparse
 import subprocess
 import shutil
 import os
 
-def verify_dependencies() -> None:
-    if not ansible_exists():
-        print("Ansible is not installed. Please install ansible before running this script")
-        exit(1)
-    if not doppler_exists():
-        print("Doppler is not installed. Please install doppler before running this script")
-        exit(1)
+"""
+Parse args and run the appropriate function
+"""
+def main():
+    verify_dependencies()
+    parser = ArgParser()
+    parser.run()
 
-def ansible_exists() -> bool:
-    return shutil.which("ansible-playbook") is not None
+"""
+ArgParser class
 
-def doppler_exists() -> bool:
-    return shutil.which("doppler") is not None
-
-class Ansible:
-    def __init__(self) -> None:
-        self.tags = []
-
-    def add_tags(self, *tags: str) -> None:
-        self.tags.extend(tags)
-
-    def _build_command(self) -> list[str]:
-        command = ["doppler", "run", "--", "ansible-playbook"] 
-        tags = ["--tags", ",".join(self.tags)]
-        command += tags + ["galaxy.yml"]
-        return command
-
-    def requirements(self) -> None:
-        command = ["doppler", "run", "--", "ansible-galaxy", "install", "-p", "roles" , "-r", "requirements.yml"]
-        env = {"ANSIBLE_FORCE_COLOR": "true"}
-        self._cmd_run(command, env=env)
-
-    def _cmd_run(self, command: list[str], env = {}) -> None:
-        env = os.environ.copy()
-        env.update(env)
-        p = subprocess.Popen(command, shell=False, env=env)
-        p.communicate()
-
-    def run(self) -> None:
-        command = self._build_command()
-        env = {"ANSIBLE_FORCE_COLOR": "true"}
-        self._cmd_run(command, env=env)
-
+Attributes:
+    parser: The argparse parser
+"""
 class ArgParser():
     def __init__(self):
         self.parser = argparse.ArgumentParser(
@@ -71,25 +49,102 @@ class ArgParser():
         args.func(args)
 
 
-
-def main():
-    verify_dependencies()
-    parser = ArgParser()
-    parser.run()
-
+"""
+run the ansible requirements
+"""
 def requirements(args):
     ansible = Ansible()
     ansible.requirements()
 
+"""
+run the galaxy setup(includes all components)
+"""
 def setup(args):
     ansible = Ansible()
     ansible.add_tags("setup")
     ansible.run()
 
+"""
+run the slurm setup(includes nfs)
+"""
 def slurm(args):
     ansible = Ansible()
     ansible.add_tags("slurm", "nfs", "volume", "cvmfs")
     ansible.run()
+
+"""
+verify that all dependencies are installed
+"""
+def verify_dependencies() -> None:
+    if not ansible_exists():
+        print("Ansible is not installed. Please install ansible before running this script")
+        exit(1)
+    if not doppler_exists():
+        print("Doppler is not installed. Please install doppler before running this script")
+        exit(1)
+
+"""
+check if ansible is installed
+"""
+def ansible_exists() -> bool:
+    return shutil.which("ansible-playbook") is not None
+
+"""
+check if doppler is installed
+"""
+def doppler_exists() -> bool:
+    return shutil.which("doppler") is not None
+
+"""
+Ansible class
+
+Attributes:
+    tags: A list of tags to run
+"""
+class Ansible:
+    def __init__(self) -> None:
+        self.tags = []
+
+    """
+    Add tags to the ansible command
+    """
+    def add_tags(self, *tags: str) -> None:
+        self.tags.extend(tags)
+
+    """
+    Build an ansible playbook command
+    """
+    def _build_command(self) -> list[str]:
+        command = ["doppler", "run", "--", "ansible-playbook"] 
+        tags = ["--tags", ",".join(self.tags)]
+        command += tags + ["galaxy.yml"]
+        return command
+
+    """
+    Build an ansible requirements command
+    """
+    def requirements(self) -> None:
+        command = ["doppler", "run", "--", "ansible-galaxy", "install", "-p", "roles" , "-r", "requirements.yml"]
+        env = {"ANSIBLE_FORCE_COLOR": "true"}
+        self._cmd_run(command, env=env)
+
+    """
+    Run a command in a subprocess
+    """
+    def _cmd_run(self, command: list[str], env = {}) -> None:
+        env = os.environ.copy()
+        env.update(env)
+        p = subprocess.Popen(command, shell=False, env=env)
+        p.communicate()
+
+    """
+    Run the ansible command
+    """
+    def run(self) -> None:
+        command = self._build_command()
+        env = {"ANSIBLE_FORCE_COLOR": "true"}
+        self._cmd_run(command, env=env)
+
 
 if __name__ == "__main__":
     main()
