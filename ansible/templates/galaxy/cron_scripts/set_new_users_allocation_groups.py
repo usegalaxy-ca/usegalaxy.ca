@@ -1,0 +1,93 @@
+
+
+import json
+import datetime,psycopg2
+from pprint import pprint
+import requests
+import bioblend.galaxy
+
+###################################################################################  
+#
+#  TODO.... Set the following using ansible variables
+#
+galaxy_url = 'https://cg-galaxy.usegalaxy.ca'
+galaxy_api_key = '03b40e05312498ab8093ff2e24b118a3'
+galaxy_db_host="cg-usegal-db"
+galaxy_db_name="galaxy"
+galaxy_db_user="galaxy"
+galaxy_db_password="uFscddf923LQAqH3e"
+group_name_canadian_users_allocation="CanadianUsersAllocationGroup"
+
+
+##################################################################################
+# Establishing the connection to the database
+conn = psycopg2.connect(
+   database=galaxy_db_name, user=galaxy_db_user, password=galaxy_db_password, host=galaxy_db_host, port= '5432'
+)
+
+##################################################################################
+# Connect to the Galaxy via the API
+gal = bioblend.galaxy.GalaxyInstance(galaxy_url, galaxy_api_key, verify=True)
+
+all_groups=gal.groups.get_groups()
+CanadanUsersAllocationGroup_API_id=None
+for group in all_groups:
+    if group['name'] == group_name_canadian_users_allocation:
+        CanadanUsersAllocationGroup_API_id = group['id']
+if CanadanUsersAllocationGroup_API_id is None:
+    new_g = gal.groups.create_group(group_name_canadian_users_allocation)
+    CanadanUsersAllocationGroup_API_id=new_g[0]['id']
+
+###################################################################################
+# Open edugain idps JSON file and store in an array
+# For details on Edugain IDPs info definition: https://technical.edugain.org/api.php
+
+f = open('edugain_idps.json')
+try:
+    idps = json.load(f)
+except:
+    exit()
+
+###################################################################################
+# Fetch the CILogon non expired session tokens in galaxy DB
+cursor = conn.cursor()
+cursor.execute("SELECT galaxy_user.email,custos_authnz_token.access_token FROM galaxy_user,custos_authnz_token WHERE custos_authnz_token.expiration_time > NOW() AND galaxy_user.id=custos_authnz_token.user_id")
+custos_authnz_tokens = cursor.fetchall()
+
+# Loop over the tokens and Fetch detailed info at CILogon for each
+
+for token in custos_authnz_tokens:
+
+    # Extract user session information and galaxy user id
+    galaxy_user_email=token[0]
+    headers={'Authorization': 'Bearer {}'.format(token[1]), 'Accept' : 'application/json' }  
+    r = requests.get('https://cilogon.org/oauth2/userinfo', headers=headers)
+    user_session_infos=r.json()
+
+    # Get galaxy user info from email in the Session 
+    API_galaxy_user_infos=gal.users.get_users(f_email=galaxy_user_email)
+
+    # Get infos of IDP used to authenticate
+    session_idp=None
+    for idp in idps:
+        if idp[0]['entityid'] == user_session_infos['idp']:
+            user_session_idp=idp[0]
+    
+    if user_session_idp is None:
+        print("IDP not in Edugain list. User not in Edugain network of insitutions.")
+        # Terminate the user account ?      
+
+    else:
+        if user_session_idp['code'] == 'CAF':
+            # Add user to the CanadianUsers Group
+            gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+            print("User is added to the Canadian Users allocation group")
+            print()
+        else:
+            print("User NOT Canadian but is part of Edugain Network")
+            print()
+
+#Closing db connection
+conn.close()
+
+

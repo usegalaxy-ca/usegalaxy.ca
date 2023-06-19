@@ -156,6 +156,13 @@ galaxy_config_templates:
     dest: "{{ galaxy_config.galaxy.containers_resolvers_config_file }}"
   - src: templates/galaxy/config/dependency_resolvers_conf.xml
     dest: "{{ galaxy_config.galaxy.dependency_resolvers_config_file }}"
+  # cron scripts
+  - src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.py.j2
+    dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.py"
+  - src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.sh
+    dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.sh"
+  - src: templates/galaxy/cron_scripts/fetch-edugain-idps.sh
+    dest: "{{ galaxy_root }}/server/cron/fetch-edugain-idps.sh"
 
 galaxy_config_files:
   - src: files/galaxy/config/tpv_rules_local.yml
