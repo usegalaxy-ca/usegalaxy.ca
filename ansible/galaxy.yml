@@ -204,3 +204,9 @@
         state: restarted
       tags:
         - setup
+    - name: Fetch edugain IDPs the first time
+      command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
+      become: true
+      become_user: pgalaxy
+      tags:
+        - setup
