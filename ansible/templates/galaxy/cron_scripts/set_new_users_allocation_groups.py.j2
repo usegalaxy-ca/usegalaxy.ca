@@ -7,9 +7,9 @@ import requests
 import bioblend.galaxy
 
 ###################################################################################  
-#
-#  TODO.... Set the following using ansible variables
-#
+
+edugain_idps_file = "{{ galaxy_root }}/var/usegalaxy.ca/edugain_idps.json"
+
 galaxy_url = "https://{{ usegalaxy_domain }}"
 
 galaxy_admin_api_key = "{{ GALAXY_ADMIN_API_KEY }}"
@@ -45,7 +45,7 @@ if CanadanUsersAllocationGroup_API_id is None:
 # Open edugain idps JSON file and store in an array
 # For details on Edugain IDPs info definition: https://technical.edugain.org/api.php
 
-f = open('edugain_idps.json')
+f = open(edugain_idps_file)
 try:
     idps = json.load(f)
 except:
