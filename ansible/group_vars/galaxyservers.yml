@@ -161,7 +161,7 @@ galaxy_config_templates:
     dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.py"
   - src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.sh
     dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.sh"
-  - src: templates/galaxy/cron_scripts/fetch-edugain-idps.sh
+  - src: templates/galaxy/cron_scripts/fetch-edugain-idps.sh.j2
     dest: "{{ galaxy_root }}/server/cron/fetch-edugain-idps.sh"
 
 galaxy_config_files:
