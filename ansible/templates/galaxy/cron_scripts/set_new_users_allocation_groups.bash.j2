@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source {{ galaxy_root }}/venv/bin/activate
+
+python3 {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.py >> {{ galaxy_root }}/var/usegalaxy.ca/set_new_users_allocation_groups.log 2>&1

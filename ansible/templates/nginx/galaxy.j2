@@ -61,7 +61,7 @@ server {
 	# Point to the UseGalaxy.ca Welcome page
 	#
 	location /static/welcome.html {
-		alias {{ galaxy_server_dir }}/static/usegalaxy_ca_welcome.html;
+	    proxy_pass https://usegalaxy-ca.github.io/;
 		expires 24h;
 	}
 

@@ -204,3 +204,18 @@
         state: restarted
       tags:
         - setup
+    - name: Fetch edugain IDPs the first time
+      command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
+      become: true
+      become_user: pgalaxy
+      tags:
+        - setup
+
+    - name: Set cron jobs
+      ansible.builtin.cron:
+        name: "Cron jobs to adjust allocations group for Canadian Users"
+        minute: "*/5"
+        user: pgalaxy
+        job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
+      tags:
+        - setup

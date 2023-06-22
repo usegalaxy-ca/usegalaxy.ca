@@ -1,0 +1,10 @@
+#!/bin/bash
+
+USEGALAXYCA_VAR_DIR="{{ galaxy_root }}/var/usegalaxy.ca/"
+
+if [ ! -d "$USEGALAXYCA_VAR_DIR" ]; then
+  # Create dir
+  mkdir $USEGALAXYCA_VAR_DIR
+fi
+
+curl --fail --silent https://technical.edugain.org/api.php?action=list_entities -H "Accept: application/json" --output "$USEGALAXYCA_VAR_DIR/edugain_idps.json"
