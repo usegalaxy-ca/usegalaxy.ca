@@ -5,6 +5,7 @@ import datetime,psycopg2
 from pprint import pprint
 import requests
 import bioblend.galaxy
+from datetime import datetime
 
 ###################################################################################  
 
@@ -41,6 +42,8 @@ if CanadanUsersAllocationGroup_API_id is None:
     new_g = gal.groups.create_group(group_name_canadian_users_allocation)
     CanadanUsersAllocationGroup_API_id=new_g[0]['id']
 
+CUAG_initial_users=gal.groups.get_group_users(CanadanUsersAllocationGroup_API_id)
+
 ###################################################################################
 # Open edugain idps JSON file and store in an array
 # For details on Edugain IDPs info definition: https://technical.edugain.org/api.php
@@ -75,20 +78,21 @@ for token in custos_authnz_tokens:
     for idp in idps:
         if idp[0]['entityid'] == user_session_infos['idp']:
             user_session_idp=idp[0]
-    
-    if user_session_idp is None:
-        print("IDP not in Edugain list. User not in Edugain network of insitutions.")
-        # Terminate the user account ?      
 
+    if user_session_idp is None:
+        # print("IDP not in Edugain list. User not in Edugain network of insitutions.")
+        # Terminate the user account ?
+        pass
     else:
         if user_session_idp['code'] == 'CAF':
             # Add user to the CanadianUsers Group
-            gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
-            print("User is added to the Canadian Users allocation group")
-            print()
+            added_user=gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+            if added_user not in CUAG_initial_users:
+                print(str(datetime.now())+" | User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
         else:
-            print("User NOT Canadian but is part of Edugain Network")
-            print()
+            #print("User NOT Canadian but is part of Edugain Network")
+            pass
+
 
 #Closing db connection
 conn.close()

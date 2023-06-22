@@ -210,3 +210,12 @@
       become_user: pgalaxy
       tags:
         - setup
+
+    - name: Set cron jobs
+      ansible.builtin.cron:
+        name: "Cron jobs to adjust allocations group for Canadian Users"
+        minute: "*/5"
+        user: pgalaxy
+        job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
+      tags:
+        - setup
