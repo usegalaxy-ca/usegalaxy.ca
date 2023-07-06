@@ -191,26 +191,26 @@
       tags:
         - setup
         - cvmfs
+    - role: usegalaxy_ca.drmaa
+      tags:
+        - setup
+    - role: usegalaxy_ca.restart_galaxy
+      tags:
+        - setup
+        - galaxy
+    - role: usegalaxy_ca.service_account
+      become: false
+      tags:
+        - setup
+        - galaxy
 
   post_tasks:
-    - name: Install slurm-drmaa
-      package:
-        name: slurm-drmaa1
-      tags:
-        - setup
-    - name: galaxy systemd restart
-      systemd:
-        name: galaxy.target
-        state: restarted
-      tags:
-        - setup
     - name: Fetch edugain IDPs the first time
       command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
       become: true
       become_user: pgalaxy
       tags:
         - setup
-
     - name: Set cron jobs
       ansible.builtin.cron:
         name: "Cron jobs to adjust allocations group for Canadian Users"

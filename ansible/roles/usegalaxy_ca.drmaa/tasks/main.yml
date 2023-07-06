@@ -1,0 +1,3 @@
+- name: Install slurm-drmaa
+  package:
+    name: slurm-drmaa1

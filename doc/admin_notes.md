@@ -18,6 +18,7 @@ doppler login
 
 - Or preferably link your working directory (root of the project) with an "Access Service Token" generated via the doppler web site in your project and corresponding role (environment).
 - ... and run the setup command to link the project
+- note: requires read/write token
 
 ```
 cd /your-project-directory/
@@ -55,14 +56,12 @@ doppler run -- terraform apply
 
 ### Install ansible-roles
 
-This fix below is needed first in your account prior to install the ansible roles and collections.
-
-This issue should be resolved eventually by ansible
+Create a python virtual environment and install the python dependencies
 
 ```
-- sudo apt install -y pip
-- pip install ansible-core
-- pip install -Iv 'resolvelib<0.6.0'
+- python -m venv .venv
+- source .venv/bin/activate
+- pip install -r requirements.txt
 ```
 
 Then install the ansible roles and collections. They will be installed in ~/.ansible/ by default
@@ -72,17 +71,19 @@ ansible-galaxy install -r requirements.yml
 ```
 
 ### Run the playbook
+
 ```
 cd ansible
 doppler run -- ansible-playbook --tags $TAG galaxy.yml
 ```
+
 Where $TAG = setup, galaxy, postgres, proxy, etc...
 
 Or use the CLI
+
 ```
 ./usegalaxy setup
 ```
-
 
 [Dopp]: https://www.doppler.com/
 [AGR]: https://github.com/galaxyproject/ansible-galaxy
