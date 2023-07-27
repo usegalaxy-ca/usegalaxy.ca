@@ -15,6 +15,10 @@
       tags:
         - nfs
         - setup
+    - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor
 
 - hosts: slurmcontrolservers
   become: true
@@ -42,6 +46,10 @@
       tags:
         - slurm
         - setup
+    - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor
 
 - hosts: slurmexecservers
   become: true
@@ -92,6 +100,10 @@
       tags:
         - slurm
         - setup
+    - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor
 
 - hosts: dbservers
   become: true
@@ -124,6 +136,18 @@
       tags:
         - setup
         - postgres
+    - role: usegalaxy_ca.gxadmin
+      tags:
+        - setup
+        - monitor
+    - role: galaxyproject.gxadmin
+      tags:
+        - setup
+        - monitor
+    - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor
 
 - hosts: galaxyservers
   become: true
@@ -195,6 +219,8 @@
       tags:
         - setup
     - role: usegalaxy_ca.restart_galaxy
+      become: true
+      become_user: root
       tags:
         - setup
         - galaxy
@@ -203,6 +229,10 @@
       tags:
         - setup
         - galaxy
+    - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor
 
   post_tasks:
     - name: Fetch edugain IDPs the first time
@@ -219,3 +249,31 @@
         job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
       tags:
         - setup
+
+- hosts: monitorservers
+  become: true
+  vars_files:
+    - group_vars/secret.yml
+  roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - volume
+        - monitor
+        - nfs
+        - setup
+    - role: usegalaxy_ca.influxdb_key
+      tags:
+        - monitor
+        - setup
+    - role: usegalaxy_eu.influxdb
+      tags:
+        - monitor
+        - setup
+    - role: cloudalchemy.grafana
+      tags:
+        - monitor
+        - setup
+    - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor

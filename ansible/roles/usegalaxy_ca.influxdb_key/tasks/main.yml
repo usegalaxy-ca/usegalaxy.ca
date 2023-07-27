@@ -1,0 +1,5 @@
+- name: Import InfluxData GPG signing key
+  apt_key:
+    url: https://repos.influxdata.com/influxdata-archive_compat.key
+    state: present
+    id: "0x7DF8B07E"

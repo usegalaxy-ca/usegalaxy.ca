@@ -1,0 +1,15 @@
+# - name: Install psql
+#   package:
+#     name: postgresql-client
+#
+- name: Install make
+  package:
+    name: build-essential
+
+- name: pgpass
+  copy:
+    content: "{{ groups['dbservers'][0] }}:5432:{{ galaxy_db_name }}:{{ galaxy_user_name }}:{{ galaxy_postgres_password }}"
+    dest: /home/laperlej/.pgpass
+    owner: laperlej
+    group: laperlej
+    mode: "0600"
