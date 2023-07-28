@@ -3,9 +3,10 @@
     path: /mnt/nfs/galaxy/gunicorn.sock
 
 - name: Register service user
-  script: "register.py -g {{ galaxy_url }} -u {{ service_account.username }} -e {{ service_account.email }} -p {{ service_account.password }}"
+  script: "register.py -u {{ service_account.username }} -e {{ service_account.email }} -p {{ service_account.password }} -c {{ galaxy_config.galaxy.database_connection }}"
   args:
-    executable: python3
+    executable: .venv/bin/python3
+  delegate_to: "localhost"
 
 - name: Get service user API key and register to Doppler
   script: "get_api_key.py -g {{ galaxy_url }} -e {{ service_account.email }} -p {{ service_account.password }}"

@@ -9,3 +9,4 @@ pycparser==2.21
 PyYAML==6.0
 resolvelib==0.8.1
 bioblend==1.1.1
+psycopg2-binary==2.9.6
