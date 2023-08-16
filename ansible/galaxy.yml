@@ -252,6 +252,9 @@
 
 - hosts: monitorservers
   become: true
+  pre_tasks:
+    - pip:
+        name: docker-compose
   vars_files:
     - group_vars/secret.yml
   roles:
@@ -274,6 +277,10 @@
         - monitor
         - setup
     - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor
+    - role: mvdbeek.sentry_selfhosted
       tags:
         - setup
         - monitor

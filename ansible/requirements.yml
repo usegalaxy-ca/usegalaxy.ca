@@ -41,6 +41,9 @@ roles:
   # Grafana
   - src: cloudalchemy.grafana
     version: 0.14.2
+  # Sentry
+  - name: mvdbeek.sentry_selfhosted
+    src: https://github.com/mvdbeek/ansible-role-sentry/archive/main.tar.gz
 
 collections:
   # Ansible Posix
