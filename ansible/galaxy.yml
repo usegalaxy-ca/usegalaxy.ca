@@ -252,6 +252,26 @@
 
 - hosts: monitorservers
   become: true
+  become_user: root
+  pre_tasks:
+    - name: Install Dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+    - pip:
+        name: [docker, docker-compose]
+        tags:
+          - always
   vars_files:
     - group_vars/secret.yml
   roles:
@@ -260,6 +280,10 @@
         - volume
         - monitor
         - nfs
+        - setup
+    - role: usegalaxy_ca.docker
+      tags:
+        - monitor
         - setup
     - role: usegalaxy_ca.influxdb_key
       tags:
@@ -274,6 +298,10 @@
         - monitor
         - setup
     - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor
+    - role: mvdbeek.sentry_selfhosted
       tags:
         - setup
         - monitor

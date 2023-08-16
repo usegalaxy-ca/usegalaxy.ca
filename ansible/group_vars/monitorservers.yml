@@ -2,8 +2,8 @@ grafana_url: "https://{{ inventory_hostname }}/grafana/"
 
 grafana_security:
   # Please change at least the password to something more suitable
-  admin_user: "{{ GRAFANA_USERNAME }}"
-  admin_password: "{{ GRAFANA_PASSWORD }}"
+  admin_user: "{{ MONITOR_USERNAME }}"
+  admin_password: "{{ MONITOR_PASSWORD }}"
 
 # These datasources will be automatically included into Grafana
 grafana_datasources:
@@ -15,3 +15,10 @@ grafana_datasources:
     version: 1
     editable: false
     database: telegraf
+
+sentry_version: 23.3.1
+sentry_url: "https://{{ sentry_domain }}"
+sentry_docker_compose_project_folder: /srv/sentry
+sentry_superusers:
+  - email: "{{ MONITOR_EMAIL }}"
+    password: "{{ MONITOR_PASSWORD }}"

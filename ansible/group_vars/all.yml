@@ -69,3 +69,6 @@ telegraf_plugins_default:
   - plugin: swap
   - plugin: net
   - plugin: netstat
+
+# Sentry
+sentry_domain: "sentry.{{ inventory_hostname }}"

@@ -33,6 +33,9 @@ class ArgParser():
         setup_command = subparsers.add_parser('setup', help="setup all components")
         setup_command.set_defaults(func=setup)
 
+        setup_command = subparsers.add_parser('sentry', help="setup sentry")
+        setup_command.set_defaults(func=sentry)
+
         setup_command = subparsers.add_parser('slurm', help="setup slurm")
         setup_command.set_defaults(func=slurm)
 
@@ -68,6 +71,20 @@ def setup(args):
 
     depManager.verify_all()
 
+    ansible.set_yaml("galaxy.yml")
+    ansible.add_tags("setup")
+    ansible.run()
+
+"""
+run the sentry setup
+"""
+def sentry(args):
+    ansible = Ansible()
+    depManager = DependencyManager()
+
+    depManager.verify_all()
+
+    ansible.set_yaml("sentry.yml")
     ansible.add_tags("setup")
     ansible.run()
 
@@ -80,6 +97,7 @@ def slurm(args):
 
     depManager.verify_all()
 
+    ansible.set_yaml("galaxy.yml")
     ansible.add_tags("slurm", "nfs", "volume", "cvmfs")
     ansible.run()
 
