@@ -255,6 +255,7 @@
   become_user: root
   pre_tasks:
     - pip:
+        name: docker
         name: docker-compose
   vars_files:
     - group_vars/secret.yml
