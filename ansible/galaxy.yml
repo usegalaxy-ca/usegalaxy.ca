@@ -252,6 +252,7 @@
 
 - hosts: monitorservers
   become: true
+  become_user: root
   pre_tasks:
     - pip:
         name: docker-compose
@@ -263,6 +264,10 @@
         - volume
         - monitor
         - nfs
+        - setup
+    - role: usegalaxy_ca.docker
+      tags:
+        - monitor
         - setup
     - role: usegalaxy_ca.influxdb_key
       tags:
