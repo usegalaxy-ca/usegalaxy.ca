@@ -269,8 +269,9 @@
       tags:
         - always
     - pip:
-        name: docker
-        name: docker-compose
+        name: [docker, docker-compose]
+        tags:
+          - always
   vars_files:
     - group_vars/secret.yml
   roles:
