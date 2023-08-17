@@ -1,25 +1,6 @@
 - hosts: monitorservers
   become: true
   become_user: root
-  pre_tasks:
-    - name: Install Dependencies
-      package:
-        name:
-          [
-            "acl",
-            "bzip2",
-            "git",
-            "make",
-            "tar",
-            "python3-venv",
-            "python3-setuptools",
-          ]
-      tags:
-        - always
-    - pip:
-        name: [docker, docker-compose]
-        tags:
-          - always
   vars_files:
     - group_vars/secret.yml
   roles:

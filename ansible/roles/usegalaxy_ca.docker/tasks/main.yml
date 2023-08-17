@@ -26,3 +26,9 @@
 
 - name: Update apt and install docker-ce
   apt: update_cache=yes name=docker-ce state=latest
+
+- name: Install docker python SDK
+  pip:
+    name:
+      - docker
+      - docker-compose
