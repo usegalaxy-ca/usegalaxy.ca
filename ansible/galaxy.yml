@@ -254,6 +254,20 @@
   become: true
   become_user: root
   pre_tasks:
+    - name: Install Dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
     - pip:
         name: docker
         name: docker-compose
