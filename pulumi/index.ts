@@ -22,7 +22,7 @@ function main() {
     for (const serverGroupName in instanceConfigs) {
         const serverGroup = instanceConfigs[serverGroupName] || [];
         for (const instanceConfig of serverGroup) {
-            const instance = new Instance(instanceConfig);
+            const instance = new Instance(instanceConfig, provider);
             instances.push(instance);
         }
     }
