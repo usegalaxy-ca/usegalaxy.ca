@@ -1,0 +1,10 @@
+###############################################
+# This file is managed by Terraform. Do not edit.
+###############################################
+
+volumes:
+%{ for info in volumes ~}
+  ${info.instance_name}:
+    volume_name: ${info.volume_name}
+    device: ${info.device}
+%{ endfor ~}

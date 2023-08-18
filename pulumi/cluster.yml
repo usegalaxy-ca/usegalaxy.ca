@@ -1,0 +1,122 @@
+prod:
+  instances:
+    proxy:
+      flavor: "p2-3.75gb"
+    galaxy:
+      flavor: "p4-7.5gb"
+    db:
+      flavor: "p4-7.5gb"
+    tus:
+      flavor: "p1-2gb"
+    influx:
+      flavor: "p2-3.75gb"
+    grafana:
+      flavor: "p2-3.75gb"
+    sentry:
+      flavor: "p2-3.75gb"
+    htcondor:
+      flavor: "p2-3.75gb"
+  gateway_name: "proxy"
+
+test:
+  instances:
+    proxy:
+      flavor: "p2-3.75gb"
+    galaxy:
+      flavor: "p4-7.5gb"
+    db:
+      flavor: "p4-7.5gb"
+    tus:
+      flavor: "p1-2gb"
+    influx:
+      flavor: "p2-3.75gb"
+    grafana:
+      flavor: "p2-3.75gb"
+    sentry:
+      flavor: "p2-3.75gb"
+    htcondor:
+      flavor: "p2-3.75gb"
+  gateway_name: "proxy"
+
+laperlej:
+  instances:
+    galaxyservers:
+      - name: galaxy
+        flavor: p4-7.5gb
+        security_groups: [usegal, web, usegal-tusd, usegal-slurm]
+    dbservers:
+      - name: db
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-psql]
+    monitorservers:
+      - name: monitor
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-influxdb, usegal-grafana]
+    nfsservers:
+      - name: nfs
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-nfs]
+    slurmcontrolservers:
+      - name: slurmcontrol
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-slurm]
+    slurmexecservers:
+      - name: slurmexec
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-slurm]
+        count: 2
+      - name: slurmfat
+        flavor: p8-30gb
+        security_groups: [usegal, usegal-slurm]
+  volumes:
+    - name: db-volume
+      type: volumes-ssd
+      size: 50
+      attach_to: db
+    - name: monitor-volume
+      type: volumes-ssd
+      size: 50
+      attach_to: monitor
+    - name: nfs-volume
+      type: volumes-ec
+      size: 1000
+      attach_to: nfs
+  floating_ips:
+    - ip: 198.168.184.189
+      attach_to: galaxy
+
+carolg:
+  instances:
+    galaxyservers:
+      - name: galaxy
+        flavor: p4-7.5gb
+        security_groups: [usegal, web, usegal-tusd, usegal-slurm]
+    dbservers:
+      - name: db
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-psql]
+    nfsservers:
+      - name: nfs
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-nfs]
+    slurmcontrolservers:
+      - name: slurmcontrol
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-slurm]
+    slurmexecservers:
+      - name: slurmexec
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-slurm]
+        count: 1
+  volumes:
+    - name: db-volume
+      type: volumes-ssd
+      size: 100
+      attach_to: db
+    - name: nfs-volume
+      type: volumes-ec
+      size: 1000
+      attach_to: nfs
+  floating_ips:
+    - ip: 198.168.186.192
+      attach_to: galaxy
