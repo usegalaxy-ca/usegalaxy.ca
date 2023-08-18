@@ -14,59 +14,59 @@ const FLAVORS: [Flavor, ...Flavor[]] = [flavors[0] as Flavor, ...flavors];
 const flavor = z.enum(FLAVORS);
 
 //create zod enum from a const object
-const volumeTypes = Object.keys(FLAVOR_CPU) as VolumeType[];
+const volumeTypes = Object.keys(VOLUME_TYPE) as VolumeType[];
 const VOLUME_TYPES: [VolumeType, ...VolumeType[]] = [
-    volumeTypes[0] as VolumeType,
-    ...volumeTypes,
+  volumeTypes[0] as VolumeType,
+  ...volumeTypes,
 ];
 const volumeType = z.enum(VOLUME_TYPES);
 
 const instanceSchema = z
-    .object({
-        name: identifier,
-        flavor: flavor,
-        volume_size: size.optional(),
-        image: identifier.optional(),
-        image_uuid: uuid.optional(),
-        networks_uuid: uuid.optional(),
-        security_groups: identifier.array().optional(),
-        count: count.optional(),
-    })
-    .strict();
+  .object({
+    name: identifier,
+    flavor: flavor,
+    volume_size: size.optional(),
+    image: identifier.optional(),
+    image_uuid: uuid.optional(),
+    networks_uuid: uuid.optional(),
+    security_groups: identifier.array().optional(),
+    count: count.optional(),
+  })
+  .strict();
 
 export type InstanceConfig = z.infer<typeof instanceSchema>;
 
 const volumeSchema = z
-    .object({
-        name: identifier,
-        type: volumeType,
-        size: size,
-        attach_to: identifier,
-    })
-    .strict();
+  .object({
+    name: identifier,
+    type: volumeType,
+    size: size,
+    attach_to: identifier,
+  })
+  .strict();
 
 export type VolumeConfig = z.infer<typeof volumeSchema>;
 
 const floatingIpSchema = z
-    .object({
-        ip: ip,
-        attach_to: identifier,
-    })
-    .strict();
+  .object({
+    ip: ip,
+    attach_to: identifier,
+  })
+  .strict();
 
 export type FloatingIpConfig = z.infer<typeof floatingIpSchema>;
 
 const clusterSchema = z.record(
-    identifier,
-    z.object({
-        instances: z.record(identifier, instanceSchema.array()),
-        volumes: z.array(volumeSchema),
-        floating_ips: z.array(floatingIpSchema),
-    })
+  identifier,
+  z.object({
+    instances: z.record(identifier, instanceSchema.array()),
+    volumes: z.array(volumeSchema),
+    floating_ips: z.array(floatingIpSchema),
+  })
 );
 
 export type ClusterConfig = z.infer<typeof clusterSchema>;
 
 export function validate(yaml: string): ClusterConfig {
-    return clusterSchema.parse(yaml);
+  return clusterSchema.parse(yaml);
 }
