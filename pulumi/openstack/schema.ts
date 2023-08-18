@@ -12,21 +12,18 @@ const flavors = Object.keys(FLAVOR_CPU) as Flavor[];
 const FLAVORS: [Flavor, ...Flavor[]] = [flavors[0] as Flavor, ...flavors];
 const flavor = z.enum(FLAVORS);
 
-const instanceSchema = z.record(
-  identifier,
-  z
-    .object({
-      name: identifier,
-      flavor: flavor,
-      volume_size: size.optional(),
-      image: identifier.optional(),
-      image_uuid: uuid.optional(),
-      networks_uuid: uuid.optional(),
-      security_groups: identifier.array().optional(),
-      count: count.optional(),
-    })
-    .strict()
-);
+const instanceSchema = z
+  .object({
+    name: identifier,
+    flavor: flavor,
+    volume_size: size.optional(),
+    image: identifier.optional(),
+    image_uuid: uuid.optional(),
+    networks_uuid: uuid.optional(),
+    security_groups: identifier.array().optional(),
+    count: count.optional(),
+  })
+  .strict();
 
 export type InstanceConfig = z.infer<typeof instanceSchema>;
 
@@ -49,7 +46,7 @@ const floatingIpSchema = z
 const clusterSchema = z.record(
   identifier,
   z.object({
-    instances: z.array(instanceSchema),
+    instances: z.record(identifier, instanceSchema),
     volumes: z.array(volumeSchema),
     floating_ips: z.array(floatingIpSchema),
   })
