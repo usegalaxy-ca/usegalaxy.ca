@@ -14,12 +14,7 @@ const FLAVORS: [Flavor, ...Flavor[]] = [flavors[0] as Flavor, ...flavors];
 const flavor = z.enum(FLAVORS);
 
 //create zod enum from a const object
-const volumeTypes = Object.keys(VOLUME_TYPE) as VolumeType[];
-const VOLUME_TYPES: [VolumeType, ...VolumeType[]] = [
-  volumeTypes[0] as VolumeType,
-  ...volumeTypes,
-];
-const volumeType = z.enum(VOLUME_TYPES);
+const volumeType = z.nativeEnum(VOLUME_TYPE);
 
 const instanceSchema = z
   .object({
