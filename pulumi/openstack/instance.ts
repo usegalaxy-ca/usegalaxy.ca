@@ -1,7 +1,7 @@
 import { compute } from '@pulumi/openstack';
 import { CloudInit } from './cloudinit';
 import { InstanceConfig } from './schema';
-import { OpenStackProvider } from './provider';
+import { Provider } from './provider';
 
 export class Instance extends compute.Instance {
     constructor(instanceConfig: InstanceConfig, provider: OpenStackProvider) {

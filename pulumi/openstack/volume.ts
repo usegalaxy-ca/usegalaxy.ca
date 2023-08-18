@@ -1,30 +1,42 @@
-import { compute, blockstorage } from "@pulumi/openstack";
+import { compute, blockstorage } from '@pulumi/openstack';
+import { VolumeConfig } from './schema';
+import { Provider } from './provider';
 
 export class Volume extends blockstorage.Volume {
-  constructor(name: string, size: number, volumeType: VolumeType) {
-    super(name, {
-      volumeType: volumeType,
-      size: size,
-    });
-  }
+    attachment: VolumeAttach;
+    constructor(
+        config: VolumeConfig,
+        instance: compute.Instance,
+        provider: Provider
+    ) {
+        super(
+            config.name,
+            {
+                volumeType: config.type,
+                size: config.size,
+            },
+            { provider: provider }
+        );
+        this.attachment = new VolumeAttach(config.name, this, instance);
+    }
 }
 
 export class VolumeAttach extends compute.VolumeAttach {
-  constructor(
-    name: string,
-    volume: blockstorage.Volume,
-    instance: compute.Instance
-  ) {
-    super(name, {
-      volumeId: volume.id,
-      instanceId: instance.id,
-    });
-  }
+    constructor(
+        name: string,
+        volume: blockstorage.Volume,
+        instance: compute.Instance
+    ) {
+        super(name, {
+            volumeId: volume.id,
+            instanceId: instance.id,
+        });
+    }
 }
 
 export const VOLUME_TYPE = {
-  SSD: "volumes-ssd",
-  HDD: "volumes-ec",
+    SSD: 'volumes-ssd',
+    HDD: 'volumes-ec',
 } as const;
 
 export type VolumeType = keyof typeof VOLUME_TYPE;

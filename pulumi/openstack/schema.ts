@@ -1,5 +1,6 @@
-import { z } from "zod";
-import { Flavor, FLAVOR_CPU } from "./instance";
+import { z } from 'zod';
+import { Flavor, FLAVOR_CPU } from './instance';
+import { VolumeType, VOLUME_TYPE } from './volume';
 
 const count = z.number().int().positive().finite();
 const size = z.number().int().positive().finite();
@@ -11,6 +12,14 @@ const identifier = z.string().min(1).trim();
 const flavors = Object.keys(FLAVOR_CPU) as Flavor[];
 const FLAVORS: [Flavor, ...Flavor[]] = [flavors[0] as Flavor, ...flavors];
 const flavor = z.enum(FLAVORS);
+
+//create zod enum from a const object
+const volumeTypes = Object.keys(FLAVOR_CPU) as VolumeType[];
+const VOLUME_TYPES: [VolumeType, ...VolumeType[]] = [
+    volumeTypes[0] as VolumeType,
+    ...volumeTypes,
+];
+const volumeType = z.enum(VOLUME_TYPES);
 
 const instanceSchema = z
     .object({
@@ -30,11 +39,13 @@ export type InstanceConfig = z.infer<typeof instanceSchema>;
 const volumeSchema = z
     .object({
         name: identifier,
-        type: identifier,
+        type: volumeType,
         size: size,
         attach_to: identifier,
     })
     .strict();
+
+export type VolumeConfig = z.infer<typeof volumeSchema>;
 
 const floatingIpSchema = z
     .object({
@@ -42,6 +53,8 @@ const floatingIpSchema = z
         attach_to: identifier,
     })
     .strict();
+
+export type FloatingIpConfig = z.infer<typeof floatingIpSchema>;
 
 const clusterSchema = z.record(
     identifier,
