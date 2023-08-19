@@ -6,10 +6,16 @@ import { Instance } from './openstack/instance';
 import { Volume } from './openstack/volume';
 import { FloatingIp } from './openstack/floatingip';
 import { Env } from './openstack/env';
+import { Output } from '@pulumi/pulumi';
 
 const CLUSTER_FILE_PATH = './cluster.yml';
 const PROVIDER_NAME = 'Beluga Cloud';
 
+//////////////////////////////////////////////////////////////////////////////
+// Main
+//////////////////////////////////////////////////////////////////////////////
+
+//read cluster file
 const clusterFile = readClusterFile(CLUSTER_FILE_PATH);
 const clusterConfig = parseClusterFile(clusterFile);
 const userClusterConfig = clusterConfig[Env.USERNAME];
@@ -17,8 +23,10 @@ if (userClusterConfig === undefined) {
   throw new Error(`Cluster not found for user ${Env.USERNAME}`);
 }
 
+//create provider
 const provider = new Provider(PROVIDER_NAME);
 
+//create instances
 const instances: Map<string, Instance> = new Map();
 const instanceConfigs = userClusterConfig.instances;
 for (const serverGroupName in instanceConfigs) {
@@ -29,6 +37,7 @@ for (const serverGroupName in instanceConfigs) {
   }
 }
 
+//create and attach volumes
 const volumes: Map<string, Volume> = new Map();
 const volumeConfigs = userClusterConfig.volumes;
 for (const volumeConfig of volumeConfigs) {
@@ -40,6 +49,7 @@ for (const volumeConfig of volumeConfigs) {
   volumes.set(volumeConfig.name, volume);
 }
 
+//attach floating ips
 const floatingIps: FloatingIp[] = [];
 const floatingIpConfigs = userClusterConfig.floating_ips;
 for (const floatingIpConfig of floatingIpConfigs) {
@@ -51,6 +61,10 @@ for (const floatingIpConfig of floatingIpConfigs) {
   floatingIps.push(floatingIp);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// Helper functions
+//////////////////////////////////////////////////////////////////////////////
+
 function readClusterFile(clusterFilePath: string): string {
   return fs.readFileSync(clusterFilePath, 'utf8');
 }
@@ -60,4 +74,14 @@ function parseClusterFile(clusterFile: string): ClusterConfig {
   return clusterConfig;
 }
 
-export const publicIps = floatingIps.map((ip) => ip.fixedIp);
+//////////////////////////////////////////////////////////////////////////////
+// Outputs
+//////////////////////////////////////////////////////////////////////////////
+
+const publicIps: Map<string, Output<string | undefined>> = new Map();
+for (const floatingIp of floatingIps) {
+  const name = floatingIp.config.attach_to;
+  const ip = floatingIp.fixedIp;
+  publicIps.set(name, ip);
+}
+export { publicIps };
