@@ -80,12 +80,12 @@ function parseClusterFile(clusterFile: string): ClusterConfig {
 
 function getPublicIps(
   floatingIps: FloatingIp[]
-): Map<string, Output<string | undefined>> {
-  const publicIps: Map<string, Output<string | undefined>> = new Map();
+): Record<string, Output<string | undefined>> {
+  const publicIps: Record<string, Output<string | undefined>> = {};
   for (const floatingIp of floatingIps) {
     const name = floatingIp.config.attach_to;
     const ip = floatingIp.fixedIp;
-    publicIps.set(name, ip);
+    publicIps[name] = ip;
   }
   return publicIps;
 }
