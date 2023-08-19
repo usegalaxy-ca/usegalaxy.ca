@@ -78,10 +78,16 @@ function parseClusterFile(clusterFile: string): ClusterConfig {
 // Outputs
 //////////////////////////////////////////////////////////////////////////////
 
-const publicIps: Map<string, Output<string | undefined>> = new Map();
-for (const floatingIp of floatingIps) {
-  const name = floatingIp.config.attach_to;
-  const ip = floatingIp.fixedIp;
-  publicIps.set(name, ip);
+function getPublicIps(
+  floatingIps: FloatingIp[]
+): Map<string, Output<string | undefined>> {
+  const publicIps: Map<string, Output<string | undefined>> = new Map();
+  for (const floatingIp of floatingIps) {
+    const name = floatingIp.config.attach_to;
+    const ip = floatingIp.fixedIp;
+    publicIps.set(name, ip);
+  }
+  return publicIps;
 }
-export { publicIps };
+
+export const publicIps = getPublicIps(floatingIps);
