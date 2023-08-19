@@ -3,7 +3,9 @@ import { VolumeConfig } from './schema';
 import { Provider } from './provider';
 
 export class Volume extends blockstorage.Volume {
-  attachment: VolumeAttach;
+  public attachment: VolumeAttach;
+  public config: VolumeConfig;
+
   constructor(
     config: VolumeConfig,
     instance: compute.Instance,
@@ -18,6 +20,7 @@ export class Volume extends blockstorage.Volume {
       { provider: provider }
     );
     this.attachment = new VolumeAttach(config.name, this, instance, provider);
+    this.config = config;
   }
 }
 

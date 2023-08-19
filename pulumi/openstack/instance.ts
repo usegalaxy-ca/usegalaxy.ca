@@ -4,6 +4,8 @@ import { InstanceConfig } from './schema';
 import { Provider } from './provider';
 
 export class Instance extends compute.Instance {
+  public config: InstanceConfig;
+
   constructor(instanceConfig: InstanceConfig, provider: Provider) {
     const config = { ...instanceConfig, ...defaultInstanceConfig };
 
@@ -33,38 +35,9 @@ export class Instance extends compute.Instance {
       },
       { provider: provider }
     );
+    this.config = config;
   }
 }
-
-export const FLAVOR_CPU = {
-  'p1-1gb': 1,
-  'p1-2gb': 1,
-  'p2-3.75gb': 2,
-  'p4-7.5gb': 4,
-  'p8-15gb': 8,
-  'p4-15gb': 4,
-  'c8-30gb': 8,
-  'p8-30gb': 8,
-  'p16-60gb': 16,
-  'c16-60gb': 16,
-  'c8-90gb': 8,
-  'c16-90gb': 16,
-  'c16-120gb': 16,
-  'c32-240gb': 32,
-} as const;
-
-export type Flavor = keyof typeof FLAVOR_CPU;
-
-// type InstanceConfig = {
-//     name: string;
-//     flavor: Flavor;
-//     volume_size?: number;
-//     image?: string;
-//     image_uuid?: string;
-//     network_uuid?: string;
-//     security_groups?: string[];
-//     count?: number;
-// };
 
 const defaultInstanceConfig = {
   volume_size: 30,
@@ -74,3 +47,41 @@ const defaultInstanceConfig = {
   security_groups: ['default'],
   count: 1,
 };
+
+export const flavors = [
+  'p1-1gb',
+  'p1-2gb',
+  'p2-3.75gb',
+  'p4-7.5gb',
+  'p8-15gb',
+  'p4-15gb',
+  'c8-30gb',
+  'p8-30gb',
+  'p16-60gb',
+  'c16-60gb',
+  'c8-90gb',
+  'c16-90gb',
+  'c16-120gb',
+  'c32-240gb',
+] as const;
+
+export type Flavor = (typeof flavors)[number];
+
+type Resources = {
+  cpu: number; // in vCPUs
+  ram: number; // in GB
+};
+
+export function resources(flavor: Flavor): Resources {
+  const info = flavor.split('-');
+  let cpu = 0;
+  let ram = 0;
+  for (const entry of info) {
+    if (entry.startsWith('c')) {
+      cpu = parseInt(entry.slice(1));
+    } else if (entry.endsWith('gb')) {
+      ram = parseInt(entry.slice(0, -2));
+    }
+  }
+  return { cpu, ram };
+}
