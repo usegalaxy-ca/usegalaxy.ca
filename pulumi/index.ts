@@ -78,10 +78,10 @@ function parseClusterFile(clusterFile: string): ClusterConfig {
 // Outputs
 //////////////////////////////////////////////////////////////////////////////
 
-function getPublicIps(
-  floatingIps: FloatingIp[]
-): Record<string, Output<string | undefined>> {
-  const publicIps: Record<string, Output<string | undefined>> = {};
+type IpAddresses = Record<string, Output<string | undefined>>;
+
+function getPublicIps(floatingIps: FloatingIp[]): IpAddresses {
+  const publicIps: IpAddresses = {};
   for (const floatingIp of floatingIps) {
     const name = floatingIp.config.attach_to;
     const ip = floatingIp.fixedIp;
@@ -90,4 +90,16 @@ function getPublicIps(
   return publicIps;
 }
 
+function getPrivateIps(instances: Instance[]): IpAddresses {
+  const privateIps: IpAddresses = {};
+  for (const instance of instances) {
+    const name = instance.config.name;
+    const ip = instance.accessIpV4;
+    privateIps[name] = ip;
+  }
+  return privateIps;
+}
+
 export const publicIps = getPublicIps(floatingIps);
+
+export const privateIps = getPrivateIps(Array.from(instances.values()));
