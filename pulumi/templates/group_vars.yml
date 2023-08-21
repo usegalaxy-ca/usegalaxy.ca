@@ -3,8 +3,8 @@
 ###############################################
 
 volumes:
-%{ for info in volumes ~}
-  ${info.instance_name}:
-    volume_name: ${info.volume_name}
-    device: ${info.device}
-%{ endfor ~}
+{{#each volumes}}
+  {{this.instanceName}}:
+    volume_name: {{this.volumeName}}
+    device: {{this.device}}
+{{/each}}

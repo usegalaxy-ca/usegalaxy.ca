@@ -2,6 +2,7 @@ import { compute } from '@pulumi/openstack';
 import { CloudInit } from './cloudinit';
 import { InstanceConfig } from './schema';
 import { Provider } from './provider';
+import { getResourceName } from './utils';
 
 export class Instance extends compute.Instance {
   public config: InstanceConfig;
@@ -24,7 +25,7 @@ export class Instance extends compute.Instance {
     const cloudInit = new CloudInit('node').template();
 
     super(
-      config.name,
+      getResourceName(config.name),
       {
         imageName: config.image,
         flavorName: config.flavor,

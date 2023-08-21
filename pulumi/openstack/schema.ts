@@ -28,6 +28,8 @@ cluster_name:
 import { z } from 'zod';
 import { flavors } from './instance';
 import { VOLUME_TYPE } from './volume';
+import { parse } from 'yaml';
+import { Env } from './env';
 
 const count = z.number().int().positive().finite();
 const size = z.number().int().positive().finite();
@@ -69,7 +71,13 @@ const floatingIpSchema = z
   .strict();
 export type FloatingIpConfig = z.infer<typeof floatingIpSchema>;
 
-const clusterSchema = z.record(
+const stackSchema = z.object({
+  instances: z.record(identifier, instanceSchema.array()),
+  volumes: z.array(volumeSchema),
+  floating_ips: z.array(floatingIpSchema),
+});
+
+const schema = z.record(
   identifier,
   z.object({
     instances: z.record(identifier, instanceSchema.array()),
@@ -77,8 +85,16 @@ const clusterSchema = z.record(
     floating_ips: z.array(floatingIpSchema),
   })
 );
-export type ClusterConfig = z.infer<typeof clusterSchema>;
 
-export function validate(yaml: string): ClusterConfig {
-  return clusterSchema.parse(yaml);
+export type ClusterConfig = z.infer<typeof schema>;
+
+export type StackConfig = z.infer<typeof stackSchema>;
+
+export function getStackConfig(yaml: string): StackConfig {
+  const config = schema.parse(parse(yaml));
+  const stackConfig = config[Env.USERNAME];
+  if (stackConfig === undefined) {
+    throw new Error(`Cluster not found for user ${Env.USERNAME}`);
+  }
+  return stackConfig;
 }

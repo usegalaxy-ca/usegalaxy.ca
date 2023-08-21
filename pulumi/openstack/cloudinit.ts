@@ -1,32 +1,26 @@
-import handlebars from "handlebars";
-import fs from "fs";
-import { Env } from "./env";
+import { templateFile } from './utils';
+import { Env } from './env';
 
 export class CloudInit {
-  handlebarsTemplate: handlebars.TemplateDelegate;
+  templatePath: string;
   data: CloudInitData;
 
   constructor(template: CloudInitTemplate) {
-    const cloudInitTemplate = readTemplate(template);
-    this.handlebarsTemplate = handlebars.compile(cloudInitTemplate);
+    this.templatePath = CLOUD_INIT_TEMPLATE[template];
     this.data = {
-      username: Env.USER_NAME,
+      username: Env.USERNAME,
       public_key: Env.PUBLIC_KEY,
     };
   }
 
   template() {
-    return this.handlebarsTemplate(this.data);
+    return templateFile(this.templatePath, this.data);
   }
 }
 
-function readTemplate(template: CloudInitTemplate) {
-  return fs.readFileSync(CLOUD_INIT_TEMPLATE[template], "utf-8");
-}
-
 const CLOUD_INIT_TEMPLATE = {
-  node: "./cloudinit/node.yml",
-  gateway: "./cloudinit/gateway.yml",
+  node: './cloudinit/node.yml',
+  gateway: './cloudinit/gateway.yml',
 } as const;
 
 export type CloudInitTemplate = keyof typeof CLOUD_INIT_TEMPLATE;

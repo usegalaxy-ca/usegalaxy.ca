@@ -1,9 +1,10 @@
 import { compute, blockstorage } from '@pulumi/openstack';
 import { VolumeConfig } from './schema';
 import { Provider } from './provider';
+import { getResourceName } from './utils';
 
 export class Volume extends blockstorage.Volume {
-  public attachment: VolumeAttach;
+  public attachment: compute.VolumeAttach;
   public config: VolumeConfig;
 
   constructor(
@@ -12,33 +13,19 @@ export class Volume extends blockstorage.Volume {
     provider: Provider
   ) {
     super(
-      config.name,
+      getResourceName(config.name),
       {
         volumeType: config.type,
         size: config.size,
       },
       { provider: provider }
     );
-    this.attachment = new VolumeAttach(config.name, this, instance, provider);
-    this.config = config;
-  }
-}
-
-export class VolumeAttach extends compute.VolumeAttach {
-  constructor(
-    name: string,
-    volume: blockstorage.Volume,
-    instance: compute.Instance,
-    provider: Provider
-  ) {
-    super(
-      name,
-      {
-        volumeId: volume.id,
-        instanceId: instance.id,
-      },
+    this.attachment = new compute.VolumeAttach(
+      config.name,
+      { volumeId: this.id, instanceId: instance.id },
       { provider: provider }
     );
+    this.config = config;
   }
 }
 
