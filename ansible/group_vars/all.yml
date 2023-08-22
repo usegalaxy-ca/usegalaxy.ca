@@ -45,3 +45,30 @@ galaxy_job_metrics_plugins:
   - type: env
   - type: cgroup
   - type: hostname
+
+# Telegraf
+telegraf_agent_package_state: latest
+
+# Configure the output to point to an InfluxDB
+# place data in the database "telegraf" which will be created if need be.
+telegraf_agent_output:
+  - type: influxdb
+    config:
+      - urls = ["http://{{ groups['monitorservers'][0] }}:8086"]
+      - database = "telegraf"
+
+# The default plugins, applied to any telegraf-configured host
+telegraf_plugins_default:
+  - plugin: cpu
+  - plugin: disk
+  - plugin: kernel
+  - plugin: processes
+  - plugin: io
+  - plugin: mem
+  - plugin: system
+  - plugin: swap
+  - plugin: net
+  - plugin: netstat
+
+# Sentry
+sentry_domain: "sentry.{{ inventory_hostname }}"

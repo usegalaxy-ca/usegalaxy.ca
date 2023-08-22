@@ -28,6 +28,22 @@ roles:
     version: 0.0.3
   - src: galaxyproject.slurm
     version: 1.0.2
+  # GxAdmin
+  - src: galaxyproject.gxadmin
+    version: 0.0.12
+  # InfluxDB
+  - src: usegalaxy_eu.influxdb
+    version: v6.0.7
+  # Monitoring
+  - name: dj-wasabi.telegraf
+    src: https://github.com/dj-wasabi/ansible-telegraf
+    version: 6f6fdf7f5ead491560783d52528b79e9e088bd5b
+  # Grafana
+  - src: cloudalchemy.grafana
+    version: 0.14.2
+  # Sentry
+  - name: mvdbeek.sentry_selfhosted
+    src: https://github.com/mvdbeek/ansible-role-sentry/archive/main.tar.gz
 
 collections:
   # Ansible Posix

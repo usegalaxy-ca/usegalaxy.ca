@@ -48,6 +48,10 @@ laperlej:
       - name: db
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-psql]
+    monitorservers:
+      - name: monitor
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-influxdb, usegal-grafana]
     nfsservers:
       - name: nfs
         flavor: p2-3.75gb
@@ -67,8 +71,12 @@ laperlej:
   volumes:
     - name: db-volume
       type: volumes-ssd
-      size: 100
+      size: 50
       attach_to: db
+    - name: monitor-volume
+      type: volumes-ssd
+      size: 50
+      attach_to: monitor
     - name: nfs-volume
       type: volumes-ec
       size: 1000
@@ -112,4 +120,3 @@ carolg:
   floating_ips:
     - ip: 198.168.186.192
       attach_to: galaxy
-

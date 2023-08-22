@@ -10,6 +10,13 @@ class Ansible:
     def __init__(self) -> None:
         self.tags = []
         self.runner = Runner()
+        self.yaml = "galaxy.yml"
+
+    """
+    Set the yaml file to run
+    """
+    def set_yaml(self, yaml: str) -> None:
+        self.yaml = yaml
 
     """
     Add tags to the ansible command
@@ -23,7 +30,7 @@ class Ansible:
     def _build_command(self) -> list[str]:
         command = "doppler run -- .venv/bin/ansible-playbook".split()
         tags = ["--tags", ",".join(self.tags)]
-        command += tags + ["galaxy.yml"]
+        command += tags + [self.yaml]
         return command
 
     """

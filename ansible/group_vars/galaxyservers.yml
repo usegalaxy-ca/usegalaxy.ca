@@ -18,7 +18,7 @@ tpv_privsep: true
 galaxy_commit_id: release_23.0
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
-miniconda_version: 4.12.0
+miniconda_version: 23.7.1
 miniconda_channels: ["conda-forge", "defaults"]
 
 # disable running tusd from the galaxyproject.tusd role
@@ -192,6 +192,7 @@ nginx_servers:
   - redirect-ssl
 nginx_ssl_servers:
   - galaxy
+  - sentry
 nginx_enable_default_server: false
 nginx_conf_http:
   client_max_body_size: 1g

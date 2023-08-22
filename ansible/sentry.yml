@@ -1,0 +1,20 @@
+- hosts: monitorservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+  roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - volume
+        - monitor
+        - nfs
+        - setup
+    - role: usegalaxy_ca.docker
+      tags:
+        - monitor
+        - setup
+    - role: mvdbeek.sentry_selfhosted
+      tags:
+        - setup
+        - monitor
