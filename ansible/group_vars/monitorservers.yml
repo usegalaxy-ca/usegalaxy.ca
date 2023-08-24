@@ -17,7 +17,8 @@ grafana_datasources:
     database: telegraf
 
 sentry_version: 23.3.1
-sentry_url: "https://{{ sentry_domain }}"
+# sentry_url: "https://{{ sentry_domain }}"
+sentry_url: "https://sentry.jl-galaxy.usegalaxy.ca"
 sentry_docker_compose_project_folder: /srv/sentry
 sentry_superusers:
   - email: "{{ MONITOR_EMAIL }}"

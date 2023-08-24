@@ -72,4 +72,5 @@ telegraf_plugins_default:
   - plugin: netstat
 
 # Sentry
-sentry_domain: "sentry.{{ inventory_hostname }}"
+# sentry_domain: "sentry.{{ inventory_hostname }}"
+sentry_domain: "sentry.jl-galaxy.usegalaxy.ca"
