@@ -9,6 +9,7 @@ galaxy_db_name: galaxy
 #domain
 usegalaxy_domain: "{{ lookup('env', 'GALAXY_HOSTNAME') }}"
 galaxy_subnet: "{{ lookup('env', 'GALAXY_SUBNET') }}"
+galaxy_public_page_url: "{{ lookup('env', 'GALAXY_PUBLIC_PAGE_URL') }}"
 
 ## CVMFS vars
 cvmfs_role: client

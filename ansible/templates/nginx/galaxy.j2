@@ -66,7 +66,7 @@ server {
 	# Point to the UseGalaxy.ca Welcome page
 	#
 	location /static/welcome.html {
-	    proxy_pass https://usegalaxy.ca/;
+	    proxy_pass {{ galaxy_public_page_url }};
 		expires 24h;
 	}
 
