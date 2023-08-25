@@ -23,3 +23,8 @@ ansible/hosts
 
 venv/
 .venv/
+
+ansible/group_vars/slurm.yml
+ansible/group_vars/terraform.yml
+munge.key
+

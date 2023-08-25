@@ -136,6 +136,10 @@
       tags:
         - setup
         - postgres
+    - role: usegalaxy_ca.tools
+      tags:
+        - setup
+        - tools
     - role: usegalaxy_ca.gxadmin
       tags:
         - setup
