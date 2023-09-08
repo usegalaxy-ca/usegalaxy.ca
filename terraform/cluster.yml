@@ -51,7 +51,8 @@ laperlej:
     monitorservers:
       - name: monitor
         flavor: p4-7.5gb
-        security_groups: [usegal, usegal-influxdb, usegal-grafana]
+        security_groups:
+          [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
     nfsservers:
       - name: nfs
         flavor: p2-3.75gb
