@@ -1,0 +1,28 @@
+- hosts: galaxyservers
+  become: true
+  become_user: root
+  vars:
+    - slurm_roles: ["exec"]
+  vars_files:
+    - group_vars/slurm.yml
+    - group_vars/secret.yml
+  pre_tasks:
+    - name: Install Dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+  roles:
+    - role: usegalaxy_ca.tools
+      tags:
+        - setup
+        - tools
