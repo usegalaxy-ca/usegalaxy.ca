@@ -122,6 +122,10 @@
       tags:
         - setup
         - volume
+    - role: usegalaxy_ca.postgresql
+      tags:
+        - setup
+        - postgres
     - role: galaxyproject.postgresql
       tags:
         - setup
