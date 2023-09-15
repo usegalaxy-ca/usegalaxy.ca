@@ -1,0 +1,35 @@
+---
+####### SQUID #######
+
+- name: Create proxy Group
+  group:
+    name: proxy
+
+- name: Create proxy User
+  user:
+    name: proxy
+    group: proxy
+
+- name: Create Folder
+  file:
+    path: /mnt/volume/squid
+    owner: proxy
+    group: proxy
+    state: directory
+    mode: 0755
+
+- name: Create Folder
+  file:
+    path: /var/spool/squid
+    owner: proxy
+    group: proxy
+    state: directory
+    mode: 0755
+
+- name: Create mount
+  file:
+    path: /var/spool/squid
+    src: /mnt/volume/squid
+    fstype: ext4
+    state: mounted
+  when: volumes[inventory_hostname] is defined

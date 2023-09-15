@@ -4,7 +4,7 @@
 
 slurm_nodes:
 %{ for group_name, hosts in nodes ~}
-%{ if group_name == "slurmexecservers" || group_name == "galaxyservers" ~}
+%{ if group_name == "slurmexecservers" ~}
 %{ for host in hosts ~}
   - name: ${host.name}
     CPUs: ${host.cpu}

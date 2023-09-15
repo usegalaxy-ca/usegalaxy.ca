@@ -39,6 +39,9 @@ class ArgParser():
         setup_command = subparsers.add_parser('slurm', help="setup slurm")
         setup_command.set_defaults(func=slurm)
 
+        setup_command = subparsers.add_parser('cvmfs', help="setup cvmfs")
+        setup_command.set_defaults(func=cvmfs)
+
         setup_command = subparsers.add_parser('tools', help="install tools")
         setup_command.set_defaults(func=tools)
 
@@ -88,6 +91,19 @@ def sentry(args):
     depManager.verify_all()
 
     ansible.set_yaml("sentry.yml")
+    ansible.add_tags("setup")
+    ansible.run()
+
+"""
+run the cvmfs setup
+"""
+def cvmfs(args):
+    ansible = Ansible()
+    depManager = DependencyManager()
+
+    depManager.verify_all()
+
+    ansible.set_yaml("cvmfs.yml")
     ansible.add_tags("setup")
     ansible.run()
 

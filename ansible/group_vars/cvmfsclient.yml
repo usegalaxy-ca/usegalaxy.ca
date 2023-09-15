@@ -1,0 +1,6 @@
+cvmfs_role: "client"
+galaxy_cvmfs_repos_enabled: config-repo
+cvmfs_quota_limit: 10000 #cache size in MB
+cvmfs_http_proxies:
+  - "{{ groups['squidservers'][0] }}:3128"
+  - DIRECT
