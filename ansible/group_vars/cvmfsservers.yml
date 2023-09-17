@@ -1,4 +1,5 @@
 cvmfs_role: "localproxy"
+galaxy_cvmfs_repos_enabled: config-repo
 cvmfs_localproxy_cache_mem: 5120
 cvmfs_localproxy_cache_dir:
   dir: /var/spool/squid

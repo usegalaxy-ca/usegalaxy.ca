@@ -18,18 +18,9 @@
     state: directory
     mode: 0755
 
-- name: Create Folder
-  file:
-    path: /var/spool/squid
-    owner: proxy
-    group: proxy
-    state: directory
-    mode: 0755
-
-- name: Create mount
+- name: Create symlink
   file:
     path: /var/spool/squid
     src: /mnt/volume/squid
-    fstype: ext4
-    state: mounted
+    state: link
   when: volumes[inventory_hostname] is defined

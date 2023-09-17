@@ -16,11 +16,9 @@
     state: directory
     mode: 0755
 
-- name: Create Symlink
+- name: Create symlink
   file:
     path: /var/lib/postgresql
     src: /mnt/volume/postgresql
-    owner: postgres
-    group: postgres
     state: link
-    mode: 0755
+  when: volumes[inventory_hostname] is defined

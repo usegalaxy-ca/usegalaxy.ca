@@ -18,12 +18,11 @@
     state: directory
     mode: 0755
 
-- name: Create mount
+- name: Create symlink
   file:
     path: /var/lib/influxdb
     src: /mnt/volume/influxdb
-    fstype: ext4
-    state: mounted
+    state: link
   when: volumes[inventory_hostname] is defined
 
 ####### GRAFANA #######
@@ -49,8 +48,7 @@
   file:
     path: /var/lib/grafana
     src: /mnt/volume/grafana
-    fstype: ext4
-    state: mounted
+    state: link
   when: volumes[inventory_hostname] is defined
 
 ####### DOCKER #######
@@ -67,6 +65,5 @@
   file:
     path: /var/lib/docker
     src: /mnt/volume/docker
-    fstype: ext4
-    state: mounted
+    state: link
   when: volumes[inventory_hostname] is defined
