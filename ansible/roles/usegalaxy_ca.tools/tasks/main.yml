@@ -9,5 +9,5 @@
 
 - name: install tools
   command:
-    cmd: ./roles/usegalaxy_ca.tools/files/install_tools.sh {{ GALAXY_ADMIN_API_KEY }}
+    cmd: ./roles/usegalaxy_ca.tools/files/install_tools.sh {{ usegalaxy_domain }} {{ GALAXY_ADMIN_API_KEY }}
   delegate_to: "localhost"
