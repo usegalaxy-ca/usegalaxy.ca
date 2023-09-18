@@ -16,11 +16,30 @@ slurm_config:
   SlurmctldHost: "{{ groups['slurmcontrolservers'][0] }}"
   SelectType: select/cons_res
   SelectTypeParameters: CR_CPU_Memory # Allocate individual cores/memory instead of entire node
+  AccountingStorageHost: "{{ groups['slurmcontrolservers'][0] }}"
+  AccountingStorageType: "accounting_storage/slurmdbd"
+  AccountingStorageUser: "slurm"
+  JobAcctGatherType: "jobacct_gather/linux"
+
+slurm_cgroup_config:
+  CgroupMountpoint: "/sys/fs/cgroup"
+  CgroupAutomount: yes
+  ConstrainCores: yes
+  TaskAffinity: no
+  ConstrainRAMSpace: yes
+  ConstrainSwapSpace: no
+  ConstrainDevices: no
+  AllowedRamSpace: 100
+  AllowedSwapSpace: 0
+  MaxRAMPercent: 100
+  MaxSwapPercent: 100
+
 slurm_partitions:
   - name: main
     Default: YES
     MaxTime: UNLIMITED
     Nodes: ALL
+
 slurm_user:
   group: slurm
   name: slurm
