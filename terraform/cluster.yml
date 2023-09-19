@@ -2,27 +2,39 @@ prod:
   instances:
     galaxyservers:
       - name: galaxy
-        flavor: p4-7.5gb
+        flavor: p8-30gb
         security_groups: [usegal, web, usegal-tusd, usegal-slurm]
+        size: 30
     dbservers:
       - name: db
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-psql]
+        size: 30
     monitorservers:
       - name: monitor
         flavor: p4-7.5gb
         security_groups:
+        size: 30
+    nfsservers:
       - name: nfs
-        flavor: p2-3.75gb
+        flavor: p4-7.5gb
         security_groups: [usegal, usegal-nfs]
+        size: 30
+    squidservers:
+      - name: squid
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-squid]
+        size: 30
     slurmcontrolservers:
       - name: slurmcontrol
-        flavor: p2-3.75gb
+        flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
+        size: 30
     slurmexecservers:
       - name: slurmexec
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
+        size: 30
         count: 10
   volumes:
     - name: db-volume
@@ -35,10 +47,14 @@ prod:
       attach_to: monitor
     - name: nfs-volume
       type: volumes-ec
-      size: 50000
+      size: 75000
       attach_to: nfs
+    - name: cvmfs-volume
+      type: volumes-ec
+      size: 500
+      attach_to: squid
   floating_ips:
-    - ip: 198.168.184.189
+    - ip: 198.168.187.40
       attach_to: galaxy
 
 laperlej:
