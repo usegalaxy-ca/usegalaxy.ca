@@ -16,7 +16,7 @@ locals {
     region = "RegionOne"
 
     global_config = yamldecode(file(format("%s/cluster.yml", path.module)))
-    user_config = local.global_config[var.USERNAME]
+    user_config = local.global_config[var.CLUSTER_NAME]
     instance_config = local.user_config.instances
     ip_config = local.user_config.floating_ips
     volume_config = local.user_config.volumes
