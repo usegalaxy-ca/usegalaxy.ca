@@ -6,7 +6,7 @@
     - group_vars/terraform.yml
     - group_vars/cvmfsclient.yml
   roles:
-    - role: galaxyproject.cvmfs
+    - role: laperlej.cvmfs
       tags:
         - setup
         - cvmfs
@@ -19,7 +19,7 @@
     - group_vars/terraform.yml
     - group_vars/cvmfsclient.yml
   roles:
-    - role: galaxyproject.cvmfs
+    - role: laperlej.cvmfs
       tags:
         - setup
         - cvmfs
@@ -37,7 +37,7 @@
         - volume
         - nfs
         - setup
-    - role: galaxyproject.cvmfs
+    - role: laperlej.cvmfs
       tags:
         - setup
         - cvmfs
