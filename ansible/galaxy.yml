@@ -50,7 +50,7 @@
   become: true
   become_user: root
   vars:
-    - slurm_roles: ["controller", "dbd"]
+    - slurm_roles: ["controller"]
   vars_files:
     - group_vars/secret.yml
     - group_vars/slurm.yml

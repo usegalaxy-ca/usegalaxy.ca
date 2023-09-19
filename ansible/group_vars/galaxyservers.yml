@@ -53,6 +53,8 @@ galaxy_job_config:
     - class: local # these special tools that aren't parameterized for remote execution - expression tools, upload, etc
       environment: local_env
 
+SENTRY_DSN_URL: "http://{{ GALAXY_SENTRY_DSN }}@{{ groups['monitorservers'][0] }}:9000/2"
+
 galaxy_config:
   galaxy:
     admin_users:
@@ -108,7 +110,7 @@ galaxy_config:
     dependency_resolvers_config_file: "{{ galaxy_config_dir }}/dependency_resolvers_conf.xml"
     containers_resolvers_config_file: "{{ galaxy_config_dir }}/container_resolvers_conf.yml"
     # Monitoring
-    sentry_dsn: "http://{{ GALAXY_SENTRY_DSN }}@{{ groups['monitorservers'][0] }}:9000/2"
+    sentry_dsn: "{{ SENTRY_DSN_URL if GALAXY_SENTRY_DSN | length > 0 else '' }}"
     sentry_traces_sample_rate: 1.0
 
   gravity:

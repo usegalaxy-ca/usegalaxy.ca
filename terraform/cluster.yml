@@ -4,50 +4,44 @@ prod:
       - name: galaxy
         flavor: p8-30gb
         security_groups: [usegal, web, usegal-tusd, usegal-slurm]
-        size: 30
     dbservers:
       - name: db
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-psql]
-        size: 30
     monitorservers:
       - name: monitor
         flavor: p4-7.5gb
         security_groups:
-        size: 30
+          [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
     nfsservers:
       - name: nfs
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-nfs]
-        size: 30
     squidservers:
       - name: squid
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-squid]
-        size: 30
     slurmcontrolservers:
       - name: slurmcontrol
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
-        size: 30
     slurmexecservers:
       - name: slurmexec
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
-        size: 30
         count: 10
   volumes:
     - name: db-volume
       type: volumes-ssd
-      size: 1000
+      size: 300
       attach_to: db
     - name: monitor-volume
       type: volumes-ssd
-      size: 1000
+      size: 300
       attach_to: monitor
     - name: nfs-volume
       type: volumes-ec
-      size: 75000
+      size: 40000
       attach_to: nfs
     - name: cvmfs-volume
       type: volumes-ec
