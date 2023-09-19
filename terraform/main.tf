@@ -10,6 +10,10 @@ variable "PUBLIC_KEY" {
   type    = string
 }
 
+variable "CLUSTER_NAME" {
+  type    = string
+}
+
 locals {
     project_name = "usegal"
     auth_url = "https://beluga.cloud.computecanada.ca:5000/v3"
