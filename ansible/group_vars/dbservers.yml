@@ -2,11 +2,26 @@
 postgresql_objects_users:
   - name: "{{ galaxy_user_name }}"
     password: "{{ galaxy_postgres_password }}"
+  - name: telegraf
 postgresql_objects_databases:
   - name: "{{ galaxy_db_name }}"
     owner: "{{ galaxy_user_name }}"
+postgresql_objects_priviledges:
+  - database: galaxy
+    roles: telegraf
+    privs: SELECT
+    objs: ALL_IN_SCHEMA
 postgresql_pg_hba_conf:
   - host all all {{ galaxy_subnet }} md5
 postgresql_conf:
   - listen_addresses: "'*'"
   - port: 5432
+
+telegraf_plugins_extra:
+  monitor_galaxy_queue:
+    plugin: "exec"
+    config:
+      - commands = ["/usr/bin/env PGDATABASE=galaxy /usr/local/bin/gxadmin iquery queue-overview --short-tool-id"]
+      - timeout = "10s"
+      - data_format = "influx"
+      - interval = "15s"

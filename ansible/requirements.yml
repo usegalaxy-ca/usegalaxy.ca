@@ -15,8 +15,12 @@ roles:
   - src: usegalaxy_eu.certbot
     version: 0.1.11
   #CVMFS
-  - src: galaxyproject.cvmfs
-    version: 0.2.21
+  - name: laperlej.cvmfs
+    src: ssh://git@github.com/laperlej/ansible-cvmfs.git
+    version: main
+    scm: git
+  # - src: galaxyproject.cvmfs
+  #   version: 0.2.21
   # TUS (uploads)
   - name: galaxyproject.tusd
     version: 0.0.1

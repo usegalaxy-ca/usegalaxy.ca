@@ -1,0 +1,47 @@
+- hosts: galaxyservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+    - group_vars/cvmfsclient.yml
+  roles:
+    - role: laperlej.cvmfs
+      tags:
+        - setup
+        - cvmfs
+
+- hosts: slurmexecservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+    - group_vars/cvmfsclient.yml
+  roles:
+    - role: laperlej.cvmfs
+      tags:
+        - setup
+        - cvmfs
+
+- hosts: squidservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+    - group_vars/cvmfsservers.yml
+  roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - volume
+        - nfs
+        - setup
+    - role: laperlej.cvmfs
+      tags:
+        - setup
+        - cvmfs
+    - role: dj-wasabi.telegraf
+      tags:
+        - setup
+        - monitor

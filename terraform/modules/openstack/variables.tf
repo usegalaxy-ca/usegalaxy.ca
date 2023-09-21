@@ -65,6 +65,10 @@ variable "USERNAME" {
   type    = string
 }
 
+variable "CLUSTER_NAME" {
+  type    = string
+}
+
 variable "PUBLIC_KEY" {
   type    = string
 }

@@ -15,7 +15,7 @@ galaxy_extra_privsep_dirs:
   - "{{ tpv_mutable_dir }}"
 tpv_privsep: true
 
-galaxy_commit_id: release_23.0
+galaxy_commit_id: release_23.1
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
 miniconda_version: 23.7.1
@@ -53,10 +53,12 @@ galaxy_job_config:
     - class: local # these special tools that aren't parameterized for remote execution - expression tools, upload, etc
       environment: local_env
 
+SENTRY_DSN_URL: "http://{{ GALAXY_SENTRY_DSN }}@{{ groups['monitorservers'][0] }}:9000/2"
+
 galaxy_config:
   galaxy:
     admin_users:
-      - jonathan.laperle@usherbrooke.ca
+      - Jonathan.Laperle@USherbrooke.ca
       - Carol.Gauthier@USherbrooke.ca
       - service@admin.com
     database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
@@ -107,6 +109,11 @@ galaxy_config:
     # Tool Dependencies
     dependency_resolvers_config_file: "{{ galaxy_config_dir }}/dependency_resolvers_conf.xml"
     containers_resolvers_config_file: "{{ galaxy_config_dir }}/container_resolvers_conf.yml"
+    # Monitoring
+    statsd_host: localhost
+    statsd_includb: true
+    sentry_dsn: "{{ SENTRY_DSN_URL if GALAXY_SENTRY_DSN | length > 0 else '' }}"
+    sentry_traces_sample_rate: 1.0
 
   gravity:
     process_manager: systemd
@@ -231,6 +238,15 @@ galaxy_tus_upload_store: /mnt/nfs/data/tus
 nfs_host: "{{ groups['nfsservers'][0] }}"
 nfs_host_folder: /mnt/volume
 nfs_mnt_folder: /mnt/nfs
+
+# Telegraf
+telegraf_plugins_extra:
+  listen_galaxy_routes:
+    plugin: "statsd"
+    config:
+      - service_address = ":8125"
+      - metric_separator = "."
+      - allowed_pending_messages = 10000
 
 #Users
 galaxy_user:

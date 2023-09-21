@@ -1,0 +1,24 @@
+---
+- name: Create Postgres Group
+  group:
+    name: postgres
+
+- name: Create Postgres User
+  user:
+    name: postgres
+    group: postgres
+
+- name: Create Folder
+  file:
+    path: /mnt/volume/postgresql
+    owner: postgres
+    group: postgres
+    state: directory
+    mode: 0755
+
+- name: Create symlink
+  file:
+    path: /var/lib/postgresql
+    src: /mnt/volume/postgresql
+    state: link
+  when: volumes[inventory_hostname] is defined

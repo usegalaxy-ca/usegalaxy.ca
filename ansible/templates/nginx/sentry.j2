@@ -2,7 +2,7 @@ server {
 	# Listen on port 443
 	listen        *:443 ssl;
 	# The virtualhost is our domain name
-	server_name   "sentry.*";
+	server_name   "sentry.*"
 
 	# Our log files will go here.
 	access_log  syslog:server=unix:/dev/log;

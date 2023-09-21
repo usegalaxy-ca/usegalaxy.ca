@@ -10,13 +10,17 @@ variable "PUBLIC_KEY" {
   type    = string
 }
 
+variable "CLUSTER_NAME" {
+  type    = string
+}
+
 locals {
     project_name = "usegal"
     auth_url = "https://beluga.cloud.computecanada.ca:5000/v3"
     region = "RegionOne"
 
     global_config = yamldecode(file(format("%s/cluster.yml", path.module)))
-    user_config = local.global_config[var.USERNAME]
+    user_config = local.global_config[var.CLUSTER_NAME]
     instance_config = local.user_config.instances
     ip_config = local.user_config.floating_ips
     volume_config = local.user_config.volumes
@@ -35,6 +39,7 @@ module "openstack" {
 
   INSTANCE_NAME_PREFIX = var.INSTANCE_NAME_PREFIX
   USERNAME = var.USERNAME
+  CLUSTER_NAME = var.CLUSTER_NAME
   PUBLIC_KEY = var.PUBLIC_KEY
 }
 

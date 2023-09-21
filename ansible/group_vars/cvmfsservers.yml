@@ -1,0 +1,7 @@
+cvmfs_role: "localproxy"
+galaxy_cvmfs_repos_enabled: config-repo
+cvmfs_localproxy_cache_mem: 5120
+cvmfs_localproxy_cache_dir:
+  dir: /var/spool/squid
+  size: 450000
+cvmfs_localproxy_maximum_object_size_in_memory: 1024
