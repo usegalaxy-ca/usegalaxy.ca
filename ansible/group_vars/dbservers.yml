@@ -17,10 +17,11 @@ postgresql_conf:
   - listen_addresses: "'*'"
   - port: 5432
 
-monitor_galaxy_queue:
-  plugin: "exec"
-  config:
-    - commands = ["/usr/bin/env PGDATABASE=galaxy /usr/local/bin/gxadmin iquery queue-overview --short-tool-id"]
-    - timeout = "10s"
-    - data_format = "influx"
-    - interval = "15s"
+telegraf_plugins_extra:
+  monitor_galaxy_queue:
+    plugin: "exec"
+    config:
+      - commands = ["/usr/bin/env PGDATABASE=galaxy /usr/local/bin/gxadmin iquery queue-overview --short-tool-id"]
+      - timeout = "10s"
+      - data_format = "influx"
+      - interval = "15s"
