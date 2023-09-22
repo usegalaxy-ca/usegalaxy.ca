@@ -36,6 +36,8 @@ gal = bioblend.galaxy.GalaxyInstance(galaxy_url, galaxy_admin_api_key, verify=Tr
 
 all_groups=gal.groups.get_groups()
 CanadanUsersAllocationGroup_API_id=None
+EdugainUsersAllocationGroup_API_id=None
+
 for group in all_groups:
     if group['name'] == group_name_canadian_users_allocation:
         CanadanUsersAllocationGroup_API_id = group['id']
