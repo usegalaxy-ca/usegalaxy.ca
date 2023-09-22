@@ -10,7 +10,7 @@ prod:
         security_groups: [usegal, usegal-psql]
     monitorservers:
       - name: monitor
-        flavor: p4-7.5gb
+        flavor: p8-30gb
         security_groups:
           [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
     nfsservers:
