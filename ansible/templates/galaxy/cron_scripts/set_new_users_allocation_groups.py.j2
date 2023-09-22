@@ -21,6 +21,7 @@ galaxy_db_user="{{ galaxy_user_name }}"
 galaxy_db_password="{{ galaxy_postgres_password }}"
 
 group_name_canadian_users_allocation="CanadianUsersAllocationGroup"
+group_name_edugain_users_allocation="EdugainUsersAllocationGroup"
 
 
 ##################################################################################
@@ -38,11 +39,19 @@ CanadanUsersAllocationGroup_API_id=None
 for group in all_groups:
     if group['name'] == group_name_canadian_users_allocation:
         CanadanUsersAllocationGroup_API_id = group['id']
+    if group['name'] == group_name_edugain_users_allocation:
+        EdugainUsersAllocationGroup_API_id = group['id']
+
 if CanadanUsersAllocationGroup_API_id is None:
     new_g = gal.groups.create_group(group_name_canadian_users_allocation)
     CanadanUsersAllocationGroup_API_id=new_g[0]['id']
 
+if EdugainUsersAllocationGroup_API_id is None:
+    new_g = gal.groups.create_group(group_name_edugain_users_allocation)
+    EdugainUsersAllocationGroup_API_id=new_g[0]['id']
+
 CUAG_initial_users=gal.groups.get_group_users(CanadanUsersAllocationGroup_API_id)
+EUAG_initial_users=gal.groups.get_group_users(EdugainUsersAllocationGroup_API_id)
 
 ###################################################################################
 # Open edugain idps JSON file and store in an array
@@ -90,11 +99,13 @@ for token in custos_authnz_tokens:
             if added_user not in CUAG_initial_users:
                 print(str(datetime.now())+" | User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
         else:
-            #print("User NOT Canadian but is part of Edugain Network")
-            pass
+            # Add user to the EdugainUsers Group
+            added_user=gal.groups.add_group_user(EdugainUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+            if added_user not in EUAG_initial_users:
+                print(str(datetime.now())+" | User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
 
 
-#Closing db connection
+# Closing db connection
 conn.close()
 
 
