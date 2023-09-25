@@ -28,10 +28,11 @@ destinations:
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores}
       singularity_enabled: true
+      singularity_volumes: "/cvmfs/:ro"
     env:
       # Ensuring a consistent collation environment is good for reproducibility.
       LC_ALL: C
       # The cache directory holds the docker containers that get converted
-      APPTAINER_CACHEDIR: /tmp/singularity
+      SINGULARITY_CACHEDIR: /tmp/singularity
       # Singularity uses a temporary directory to build the squashfs filesystem
       APPTAINER_TMPDIR: /tmp
