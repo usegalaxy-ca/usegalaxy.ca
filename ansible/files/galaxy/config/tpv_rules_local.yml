@@ -32,6 +32,6 @@ destinations:
       # Ensuring a consistent collation environment is good for reproducibility.
       LC_ALL: C
       # The cache directory holds the docker containers that get converted
-      SINGULARITY_CACHEDIR: /tmp/singularity
+      APPTAINER_CACHEDIR: /tmp/singularity
       # Singularity uses a temporary directory to build the squashfs filesystem
       APPTAINER_TMPDIR: /tmp
