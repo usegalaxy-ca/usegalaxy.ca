@@ -28,7 +28,7 @@ destinations:
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores}
       singularity_enabled: true
-      singularity_volumes: "/cvmfs/:ro"
+      singularity_volumes: "$defaults,/cvmfs/:ro"
     env:
       # Ensuring a consistent collation environment is good for reproducibility.
       LC_ALL: C
