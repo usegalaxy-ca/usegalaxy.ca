@@ -82,6 +82,8 @@ galaxy_config:
     expose_user_name: true
     expose_dataset_path: true
     expose_potentially_sensitive_job_metrics: true
+    # HTML sanitation
+    sanitize_all_html: false
     # NFS workarounds
     retry_job_output_collection: 3
     # Debugging
