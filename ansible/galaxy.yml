@@ -32,11 +32,6 @@
       tags:
         - volume
         - setup
-    - role: usegalaxy_ca.squid
-      tags:
-        - volume
-        - cvmfs
-        - setup
     - role: laperlej.cvmfs
       tags:
         - setup
@@ -49,16 +44,23 @@
 - hosts: slurmcontrolservers
   become: true
   become_user: root
-  vars:
-    - slurm_roles: ["controller"]
   vars_files:
+    - group_vars/terraform.yml
     - group_vars/secret.yml
     - group_vars/slurm.yml
     - group_vars/galaxyservers.yml
   roles:
+    - role: usegalaxy_ca.volume
+      tags:
+        - volume
+        - setup
     - role: usegalaxy_ca.nfs_client
       tags:
         - nfs
+        - setup
+    - role: usegalaxy_ca.mariadb
+      tags:
+        - slurm
         - setup
     - role: usegalaxy_ca.slurm
       tags:
@@ -80,8 +82,6 @@
 - hosts: slurmexecservers
   become: true
   become_user: root
-  vars:
-    - slurm_roles: ["exec"]
   vars_files:
     - group_vars/secret.yml
     - group_vars/slurm.yml
@@ -149,10 +149,6 @@
       tags:
         - setup
         - volume
-    - role: usegalaxy_ca.postgresql
-      tags:
-        - setup
-        - postgres
     - role: galaxyproject.postgresql
       tags:
         - setup
@@ -313,10 +309,6 @@
         - volume
         - monitor
         - nfs
-        - setup
-    - role: usegalaxy_ca.monitor
-      tags:
-        - monitor
         - setup
     - role: usegalaxy_ca.docker
       tags:
