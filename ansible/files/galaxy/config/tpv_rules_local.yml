@@ -5,22 +5,10 @@ tools:
   default:
     abstract: true
     cores: 1
-    mem: cores * 3.8
-    env:
-      GALAXY_MEMORY_MB: "{int(mem * 1024)}"
-    params:
-      metadata_strategy: "extended"
-      tmp_dir: true
-      request_cpus: "{cores}"
-      request_memory: "{mem}G"
-      docker_memory: "{mem}G"
-      description: "{tool.id if not tool.id.count('/') == 5 else tool.id.split('/')[4]}"
-    scheduling:
-      reject:
-        - offline
+    mem: cores * 4
   .*testing.*:
     cores: 2
-    mem: cores * 3.8
+    mem: cores * 4
     rules:
       - id: admin_only_testing_tool
         if: |
