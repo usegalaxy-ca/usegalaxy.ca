@@ -1,12 +1,10 @@
 ---
-# Format
 - name: Format Volume
   community.general.filesystem:
     fstype: ext4
     dev: "{{ volumes[inventory_hostname].device }}"
   when: volumes[inventory_hostname] is defined
 
-# Mount
 - name: Mount Volume
   ansible.posix.mount:
     path: /mnt/volume
@@ -14,28 +12,3 @@
     fstype: ext4
     state: mounted
   when: volumes[inventory_hostname] is defined
-
-# Service specific symlinks
-- name: Include Influx
-  include_tasks: influx.yml
-  when: "'monitorservers' in group_names"
-
-- name: Include Grafana
-  include_tasks: grafana.yml
-  when: "'monitorservers' in group_names"
-
-- name: Include Docker
-  include_tasks: docker.yml
-  when: "'monitorservers' in group_names"
-
-- name: Include Postgresql
-  include_tasks: postgresql.yml
-  when: "'dbservers' in group_names"
-
-- name: Include Mysql
-  include_tasks: mysql.yml
-  when: "'slurmcontrolservers' in group_names"
-
-- name: Include Squid
-  include_tasks: squid.yml
-  when: "'squidservers' in group_names"

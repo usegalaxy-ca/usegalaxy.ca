@@ -47,10 +47,6 @@ prod:
       type: volumes-ec
       size: 500
       attach_to: squid
-    - name: slurm-volume
-      type: volumes-ec
-      size: 500
-      attach_to: slurmcontrol
   floating_ips:
     - ip: 198.168.187.40
       attach_to: galaxy
@@ -107,10 +103,6 @@ laperlej:
       type: volumes-ec
       size: 50
       attach_to: squid
-    - name: slurm-volume
-      type: volumes-ec
-      size: 50
-      attach_to: slurmcontrol
   floating_ips:
     - ip: 198.168.184.189
       attach_to: galaxy
