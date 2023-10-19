@@ -5,10 +5,10 @@ tools:
   default:
     abstract: true
     cores: 1
-    mem: cores * 4
+    mem: cores * 3.8
   .*testing.*:
     cores: 2
-    mem: cores * 4
+    mem: cores * 3.8
     rules:
       - id: admin_only_testing_tool
         if: |
@@ -21,10 +21,10 @@ tools:
 destinations:
   slurm:
     runner: slurm
-    max_accepted_cores: 24
-    max_accepted_mem: 256
-    max_cores: 2
-    max_mem: 8
+    max_accepted_cores: 32
+    max_accepted_mem: 240
+    # max_cores: 2
+    # max_mem: 8
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores}
       singularity_enabled: true
