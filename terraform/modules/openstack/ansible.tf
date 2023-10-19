@@ -6,6 +6,7 @@ output "ansible_hosts" {
                     for i in range(instance.count) : {
                         name = openstack_compute_instance_v2.instances[instance.count==1?instance.name:"${instance.name}${i}"].name
                         cpu = local.flavor_cpu[instance.flavor]
+                        mem = local.flavor_mem[instance.flavor]
                     }
                 ]
             ])
@@ -28,6 +29,25 @@ locals {
         "c16-90gb": 16,
         "c16-120gb": 16	,
         "c32-240gb": 32,
+    }
+}
+
+locals {
+    flavor_mem =  {
+        "p1-1gb": 1000,
+        "p1-2gb": 2000,
+        "p2-3.75gb": 3750,
+        "p4-7.5gb": 7500,
+        "p8-15gb": 15000,
+        "p4-15gb": 15000,
+        "c8-30gb": 30000,
+        "p8-30gb": 30000,
+        "p16-60gb": 60000,
+        "c16-60gb": 60000,
+        "c8-90gb": 90000,
+        "c16-90gb": 90000,
+        "c16-120gb": 120000,
+        "c32-240gb": 240000,
     }
 }
 
