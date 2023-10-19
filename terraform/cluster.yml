@@ -30,7 +30,6 @@ prod:
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
         count: 8
-    slurmexecservers:
       - name: slurmfat
         flavor: c32-240gb
         security_groups: [usegal, usegal-slurm]
