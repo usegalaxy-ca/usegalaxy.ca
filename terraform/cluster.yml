@@ -29,7 +29,11 @@ prod:
       - name: slurmexec
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
-        count: 10
+        count: 8
+      - name: slurmfat
+        flavor: c32-240gb
+        security_groups: [usegal, usegal-slurm]
+        count: 2
   volumes:
     - name: db-volume
       type: volumes-ssd

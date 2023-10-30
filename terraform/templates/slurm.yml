@@ -8,6 +8,7 @@ slurm_nodes:
 %{ for host in hosts ~}
   - name: ${host.name}
     CPUs: ${host.cpu}
+    RealMemory: ${host.mem}
 %{ endfor ~}
 %{ endif ~}
 %{ endfor ~}
