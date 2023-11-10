@@ -17,8 +17,6 @@ postgresql_conf:
   - listen_addresses: "'*'"
   - port: 5432
 
-#custom_telegraf_env: "/usr/bin/env GDPR_MODE=1 PGUSER={{ galaxy_user_name }} PGHOST={{ groups['dbservers'][0] }} GALAXY_ROOT={{ galaxy_server_dir }} GALAXY_CONFIG_FILE={{ galaxy_config_file }} GXADMIN_PYTHON={{ galaxy_venv_dir }}/bin/python"
-
 telegraf_plugins_extra:
   monitor_galaxy_queue:
     plugin: "exec"
