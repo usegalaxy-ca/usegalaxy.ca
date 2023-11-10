@@ -129,6 +129,10 @@ carolg:
       - name: nfs
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-nfs]
+    squidservers:
+      - name: squid
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-squid]
     slurmcontrolservers:
       - name: slurmcontrol
         flavor: p2-3.75gb
@@ -143,10 +147,18 @@ carolg:
       type: volumes-ssd
       size: 100
       attach_to: db
+    - name: monitor-volume
+      type: volumes-ssd
+      size: 25
+      attach_to: monitor
     - name: nfs-volume
       type: volumes-ec
       size: 1000
       attach_to: nfs
+    - name: cvmfs-volume
+      type: volumes-ec
+      size: 50
+      attach_to: squid
   floating_ips:
     - ip: 198.168.186.192
       attach_to: galaxy

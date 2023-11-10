@@ -17,6 +17,8 @@ postgresql_conf:
   - listen_addresses: "'*'"
   - port: 5432
 
+#custom_telegraf_env: "/usr/bin/env GDPR_MODE=1 PGUSER={{ galaxy_user_name }} PGHOST={{ groups['dbservers'][0] }} GALAXY_ROOT={{ galaxy_server_dir }} GALAXY_CONFIG_FILE={{ galaxy_config_file }} GXADMIN_PYTHON={{ galaxy_venv_dir }}/bin/python"
+
 telegraf_plugins_extra:
   monitor_galaxy_queue:
     plugin: "exec"
@@ -25,3 +27,92 @@ telegraf_plugins_extra:
       - timeout = "10s"
       - data_format = "influx"
       - interval = "15s"
+  galaxy_uploaded:
+    plugin: "exec"
+    config:
+      - commands = ["/usr/bin/env PGDATABASE=galaxy /usr/local/bin/gxadmin iquery upload-gb-in-past-hour"]
+      - timeout = "10s"
+      - data_format = "influx"
+      - interval = "1h"
+
+#  galaxy_jobs_queued:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/gxadmin iquery jobs-queued"]
+#      - timeout = "15s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_jobs_queued_internal:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/gxadmin iquery jobs-queued-internal-by-handler"]
+#      - timeout = "15s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_jobs_queue_overview:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/gxadmin iquery queue-overview --short-tool-id"]
+#      - timeout = "30s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_jobs_destination_overview:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/gxadmin iquery queue --by destination"]
+#      - timeout = "30s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_oidc:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/gxadmin iquery users-with-oidc"]
+#      - timeout = "15s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_workflow:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/gxadmin iquery workflow-invocation-status"]
+#      - timeout = "15s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_workflow_totals:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/gxadmin iquery workflow-invocation-totals"]
+#      - timeout = "15s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_job_queue_states_stats:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/galaxy_job_queue_states_stats"]
+#      - timeout = "15s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  galaxy_jobs_per_handler_stats:
+#    plugin: "exec"
+#    config:
+#      - commands = ["{{ custom_telegraf_env }} /usr/bin/galaxy_jobs_per_handler_stats"]
+#      - timeout = "15s"
+#      - data_format = "influx"
+#      - interval = "1m"
+#  postgres_extra:
+#    plugin: "exec"
+#    config:
+#      - commands = [
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-cache-hit",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-index-size",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-index-usage",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-table-bloat",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-table-size",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-unused-indexes",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-vacuum-stats",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-stat-bgwriter",
+#        "{{ custom_telegraf_env }} /usr/bin/gxadmin iquery pg-stat-user-tables",
+#        ]
+#      - timeout = "60s"
+#      - data_format = "influx"
+#      - interval = "2m"
+
