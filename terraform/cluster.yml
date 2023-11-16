@@ -84,10 +84,12 @@ laperlej:
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
       - name: slurmexec
+        volume_type: volumes-ec
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
         count: 2
       - name: slurmfat
+        volume_type: volumes-ec
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
   volumes:
