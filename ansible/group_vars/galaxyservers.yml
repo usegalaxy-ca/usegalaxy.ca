@@ -29,7 +29,7 @@ galaxy_job_config:
   runners:
     local_runner:
       load: galaxy.jobs.runners.local:LocalJobRunner
-      workers: 4
+      workers: 16
     slurm:
       load: galaxy.jobs.runners.slurm:SlurmJobRunner
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
