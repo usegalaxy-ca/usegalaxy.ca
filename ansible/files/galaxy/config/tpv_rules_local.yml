@@ -32,7 +32,7 @@ destinations:
     # max_cores: 2
     # max_mem: 8
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores}
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)}
       singularity_enabled: true
       singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
     env:
