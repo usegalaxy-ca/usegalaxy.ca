@@ -2,6 +2,8 @@ prod:
   instances:
     galaxyservers:
       - name: galaxy
+        volume_size: 1000
+        volume_type: volumes-ec
         flavor: p8-30gb
         security_groups: [usegal, web, usegal-tusd, usegal-slurm]
     dbservers:
@@ -28,9 +30,13 @@ prod:
     slurmexecservers:
       - name: slurmexec
         flavor: p8-30gb
+        volume_size: 1000
+        volume_type: volumes-ec
         security_groups: [usegal, usegal-slurm]
         count: 8
       - name: slurmfat
+        volume_size: 1000
+        volume_type: volumes-ec
         flavor: c32-240gb
         security_groups: [usegal, usegal-slurm]
         count: 2
@@ -84,10 +90,12 @@ laperlej:
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
       - name: slurmexec
+        volume_type: volumes-ec
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
         count: 2
       - name: slurmfat
+        volume_type: volumes-ec
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
   volumes:

@@ -3,6 +3,7 @@ variable "instance_config" {
         name = string
         flavor = string
         volume_size = optional(number, 30)
+        volume_type = optional(string, null)
         image = optional(string, "Ubuntu-22.04.2-Jammy-x64-2023-02")
         image_uuid = optional(string, "db73980e-1f9c-441e-8268-c1881f99c8ef")
         network_uuid = optional(string, "94db2a0a-14a4-4934-896d-a28bbc651b09")
@@ -35,6 +36,7 @@ locals {
             name = instance.count==1 ? instance.name: "${instance.name}${i}"
             flavor = instance.flavor
             volume_size = instance.volume_size
+            volume_type = instance.volume_type
             image = instance.image
             image_uuid = instance.image_uuid
             network_uuid = instance.network_uuid

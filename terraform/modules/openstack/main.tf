@@ -55,6 +55,7 @@ resource "openstack_compute_instance_v2" "instances" {
     source_type           = "image"
     uuid                  = each.value.image_uuid
     volume_size           = each.value.volume_size
+    volume_type           = each.value.volume_type
   }
   security_groups = each.value.security_groups
   network {
