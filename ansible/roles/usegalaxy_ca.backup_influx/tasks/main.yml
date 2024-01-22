@@ -1,0 +1,15 @@
+- name: Create Folder
+  file:
+    path: /mnt/backup
+    owner: influxdb
+    group: influxdb
+    state: directory
+    mode: 0700
+
+- name: Cron job for influxdb backup
+  ansible.builtin.cron:
+    name: "Backup influxdb"
+    hour: "3"
+    minute: "0"
+    user: "influxdb"
+    job: "influxd backup -portable /mnt/backup/influx_`date +%Y-%m-%d_%H-%M-%S`"

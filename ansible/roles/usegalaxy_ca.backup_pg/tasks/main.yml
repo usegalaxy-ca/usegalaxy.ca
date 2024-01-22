@@ -1,0 +1,23 @@
+- name: Create Folder
+  file:
+    path: /mnt/backup
+    owner: postgres
+    group: postgres
+    state: directory
+    mode: 0700
+
+- name: pgpass
+  copy:
+    content: "{{ groups['dbservers'][0] }}:5432:{{ galaxy_db_name }}:{{ galaxy_user_name }}:{{ galaxy_postgres_password }}"
+    dest: /home/postgres/.pgpass
+    owner: "postgres"
+    group: "postgres"
+    mode: "0600"
+
+- name: Cron job for psql backup
+  ansible.builtin.cron:
+    name: "Backup psql"
+    hour: "3"
+    minute: "0"
+    user: "postgres"
+    job: "pg_dump -d {{ galaxy_db_name }} -Fc > /mnt/backup/pg_`date +%Y-%m-%d_%H-%M-%S`.tar"
