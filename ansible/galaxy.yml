@@ -179,6 +179,10 @@
       tags:
         - setup
         - monitor
+    - role: usegalaxy_ca.backup_pg
+      tags:
+        - setup
+        - postgres
 
 - hosts: galaxyservers
   become: true
@@ -339,6 +343,10 @@
         - setup
         - monitor
     - role: mvdbeek.sentry_selfhosted
+      tags:
+        - setup
+        - monitor
+    - role: usegalaxy_ca.backup_influx
       tags:
         - setup
         - monitor
