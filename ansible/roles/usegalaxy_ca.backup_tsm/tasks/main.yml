@@ -68,13 +68,14 @@
 - name: start ssh tunnel service
   systemd:
     name: tsm-tunnel
-    state: restarted
+    daemon-reload: true
+    state: started
 
 # démarrer le service dsmcad :   systemctl start dsmcad
 - name: start dsmcad service
   systemd:
     name: dsmcad
-    state: restarted
+    state: started
 
 # Entrer une fois le mot de passe pour le client tsm:  dsmc
 # Based on https://blog.sigterm.se/posts/the-joys-of-bootstrapping-ibm-backup-client/
