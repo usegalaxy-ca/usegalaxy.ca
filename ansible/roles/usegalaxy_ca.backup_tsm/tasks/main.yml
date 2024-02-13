@@ -82,3 +82,4 @@
 - name: install
   command:
     cmd: "dsmc set password {{ TSM_PASSWORD }} {{ TSM_PASSWORD }}"
+  when: CLUSTER_NAME == 'prod'
