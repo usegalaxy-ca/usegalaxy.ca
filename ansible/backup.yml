@@ -1,0 +1,62 @@
+---
+- hosts: nfsservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+    - group_vars/galaxyservers.yml
+  roles:
+    - role: usegalaxy_ca.backup_tsm
+      tags:
+        - setup
+        - backup
+
+- hosts: dbservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name: "acl"
+      tags:
+        - always
+  roles:
+    - role: usegalaxy_ca.backup_tsm
+      tags:
+        - setup
+        - backup
+
+- hosts: monitorservers
+  become: true
+  become_user: root
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+    - pip:
+        name: [docker, docker-compose]
+        tags:
+          - always
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+  roles:
+    - role: usegalaxy_ca.backup_tsm
+      tags:
+        - setup
+        - backup

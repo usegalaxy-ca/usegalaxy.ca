@@ -81,3 +81,6 @@ telegraf_plugins_default:
 
 # Sentry
 sentry_domain: "sentry.{{ inventory_hostname }}"
+
+# IBM TSM
+tsm_deb: /home/{{ OS_USERNAME }}/SP_CLIENT_8.1.20.tgz

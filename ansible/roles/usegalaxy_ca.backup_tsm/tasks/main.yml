@@ -1,0 +1,84 @@
+---
+- name: extract deb packages
+  unarchive:
+    src: "{{ tsm_deb }}"
+    dest: /home/{{ OS_USERNAME }}/
+    owner: "{{ OS_USERNAME }}"
+    group: "{{ OS_USERNAME }}"
+    mode: 0700
+
+# apt install
+# ./tivsm-api64.amd64.deb
+# ./tivsm-ba.amd64.deb
+# ./gskssl64_8.0-55.31.linux.x86_64.deb
+# ./gskcrypt64_8.0-55.31.linux.x86_64.deb
+
+- name: install gskcrypt64_8.0-55.31.linux.x86_64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/gskcrypt64_8.0-55.31.linux.x86_64.deb
+
+- name: install gskssl64_8.0-55.31.linux.x86_64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/gskssl64_8.0-55.31.linux.x86_64.deb
+
+- name: install tivsm-api64.amd64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/tivsm-api64.amd64.deb
+
+- name: install tivsm-ba.amd64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/tivsm-ba.amd64.deb
+
+# créér et modifier les fichiers  /opt/tivoli/tsm/client/ba/bin/{dsm.sys.dsm.opt}  :  SErvername, NODEName,Path de backup
+- name: template dsm.sys
+  template:
+    src: dsm.sys.j2
+    dest: "/opt/tivoli/tsm/client/ba/bin/dsm.sys"
+    owner: root
+    group: bin
+    mode:
+      0644
+      #notify: reload dsmcad
+
+- name: template dsm.opt
+  template:
+    src: dsm.opt.j2
+    dest: "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
+    owner: root
+    group: bin
+    mode:
+      0644
+      #notify: reload dsmcad
+
+# Copier les clés publique et privé sur le host
+- name: copy ssh keys
+  copy:
+    src: "/home/{{ OS_USERNAME }}/.ssh/id_ed25519"
+    dest: "/home/{{ OS_USERNAME }}/.ssh/id_ed25519"
+    owner: "{{ OS_USERNAME }}"
+    group: "{{ OS_USERNAME }}"
+    mode: 0600
+
+# créér un tunnel SSH:  ssh -NT -L 1500:10.100.130.22:1500 usegalaxy@132.219.136.90
+- name: setup ssh tunnel service
+  template:
+    src: ssh-tunnel.service.j2
+    dest: /etc/systemd/system/tsm-tunnel.service
+
+- name: start ssh tunnel service
+  systemd:
+    name: tsm-tunnel
+    state: started
+
+# démarrer le service dsmcad :   systemctl start dsmcad
+- name: start dsmcad service
+  systemd:
+    name: dsmcad
+    state: started
+
+# Entrer une fois le mot de passe pour le client tsm:  dsmc
+# Based on https://blog.sigterm.se/posts/the-joys-of-bootstrapping-ibm-backup-client/
+# It is itself based on https://adsm.org/forum/index.php?threads/initial-login-automate.23774/
+- name: install
+  command:
+    cmd: "dsmc set password {{ TSM_PASSWORD }} {{ TSM_PASSWORD }}"

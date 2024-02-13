@@ -3,6 +3,7 @@
   become: true
   become_user: root
   vars_files:
+    - group_vars/secret.yml
     - group_vars/terraform.yml
     - group_vars/galaxyservers.yml
   roles:
@@ -19,6 +20,10 @@
       tags:
         - setup
         - monitor
+    - role: usegalaxy_ca.backup_tsm
+      tags:
+        - setup
+        - backup
 
 - hosts: squidservers
   become: true
@@ -88,7 +93,7 @@
     - group_vars/galaxyservers.yml
     - group_vars/cvmfsclient.yml
   pre_tasks:
-    - name: Install Dependencies
+    - name: install dependencies
       package:
         name:
           [
@@ -139,7 +144,7 @@
     - group_vars/secret.yml
     - group_vars/terraform.yml
   pre_tasks:
-    - name: Install Dependencies
+    - name: install dependencies
       package:
         name: "acl"
       tags:
@@ -183,6 +188,10 @@
       tags:
         - setup
         - postgres
+    - role: usegalaxy_ca.backup_tsm
+      tags:
+        - setup
+        - backup
 
 - hosts: galaxyservers
   become: true
@@ -194,7 +203,7 @@
     - group_vars/slurm.yml
     - group_vars/cvmfsclient.yml
   pre_tasks:
-    - name: Install Dependencies
+    - name: install dependencies
       package:
         name:
           [
@@ -271,15 +280,15 @@
         - monitor
 
   post_tasks:
-    - name: Fetch edugain IDPs the first time
+    - name: fetch edugain idps the first time
       command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
       become: true
       become_user: pgalaxy
       tags:
         - setup
-    - name: Set cron jobs
+    - name: set cron jobs
       ansible.builtin.cron:
-        name: "Cron jobs to adjust allocations group for Canadian Users"
+        name: "cron jobs to adjust allocations group for canadian users"
         minute: "*/5"
         user: pgalaxy
         job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
@@ -290,7 +299,7 @@
   become: true
   become_user: root
   pre_tasks:
-    - name: Install Dependencies
+    - name: install dependencies
       package:
         name:
           [
@@ -350,3 +359,7 @@
       tags:
         - setup
         - monitor
+    - role: usegalaxy_ca.backup_tsm
+      tags:
+        - setup
+        - backup

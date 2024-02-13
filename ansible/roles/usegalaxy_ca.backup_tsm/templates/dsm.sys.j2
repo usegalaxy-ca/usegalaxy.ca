@@ -1,0 +1,22 @@
+SErvername      {{ ansible_hostname }}
+        COMMMethod      TCPip
+        TCPServeraddress        localhost
+        passwordaccess  generate
+        SCHEDMODE       POlling
+        MANAGEDSERVICES SCHEDULE
+        NODEName        {{ ansible_hostname }}
+        TCPWindowsize   0
+        TCPNodelay      yes
+        TXNBYTELIMIT    10G
+        COMPRESSIon     yes
+        CHAngingretries 1
+        MEMORYEFFICIENTBACKUP   YES
+        ERRORLOGName    /opt/tivoli/tsm/client/ba/bin/dsmerror-tsm-client.log
+        SCHEDLOGName    /opt/tivoli/tsm/client/ba/bin/dsmsched-tsm-client.log
+        SCHEDLOGRetention       30 D
+        RESOURCEUTILIZATION     3
+        DIRMC   EXTUDEM
+        PASSWORDACCESS GENERATE
+        PASSWORDDIR "/opt/tivoli/tsm/client/ba/"
+        INCLUDE     {{ backup_dir }}/.../*
+

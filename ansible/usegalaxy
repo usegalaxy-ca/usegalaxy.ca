@@ -45,6 +45,9 @@ class ArgParser():
         setup_command = subparsers.add_parser('tools', help="install tools")
         setup_command.set_defaults(func=tools)
 
+        setup_command = subparsers.add_parser('backup', help="install backup")
+        setup_command.set_defaults(func=backup)
+
         setup_command = subparsers.add_parser('requirements', help="download all requirements")
         setup_command.set_defaults(func=requirements)
 
@@ -67,6 +70,20 @@ def requirements(args):
     depManager.verify_all()
 
     ansible.requirements()
+
+"""
+run the backup setup
+"""
+def backup(args):
+    ansible = Ansible()
+    depManager = DependencyManager()
+
+    depManager.verify_all()
+
+    ansible.set_yaml("backup.yml")
+    ansible.add_tags("setup")
+    ansible.run()
+
 
 """
 run the galaxy setup(includes all components)

@@ -1,3 +1,5 @@
 ---
 nfs_exports:
   - /mnt/volume *(rw,root_squash,async)
+
+backup_dir: /mnt/volume
