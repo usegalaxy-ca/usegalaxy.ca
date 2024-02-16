@@ -2,4 +2,6 @@
 nfs_exports:
   - /mnt/volume *(rw,root_squash,async)
 
+#TSM
+tsm_user: usegalaxy-nfs
 backup_dir: /mnt/volume

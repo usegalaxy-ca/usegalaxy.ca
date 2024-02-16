@@ -1,10 +1,10 @@
-SErvername      {{ ansible_hostname }}
+SErvername      {{ tsm_user }}
         COMMMethod      TCPip
-        TCPServeraddress        localhost
+        TCPServeraddress        127.0.0.1
         passwordaccess  generate
         SCHEDMODE       POlling
         MANAGEDSERVICES SCHEDULE
-        NODEName        {{ ansible_hostname }}
+        NODEName        {{ tsm_user }}
         TCPWindowsize   0
         TCPNodelay      yes
         TXNBYTELIMIT    10G

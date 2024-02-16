@@ -23,3 +23,6 @@ sentry_docker_compose_project_folder: /srv/sentry
 sentry_superusers:
   - email: "{{ MONITOR_EMAIL }}"
     password: "{{ MONITOR_PASSWORD }}"
+
+#TSM
+tsm_user: usegalaxy-monitor

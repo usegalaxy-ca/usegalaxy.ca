@@ -79,3 +79,5 @@ telegraf_plugins_extra:
       - data_format = "influx"
       - interval = "2m"
 
+#TSM
+tsm_user: usegalaxy-db
