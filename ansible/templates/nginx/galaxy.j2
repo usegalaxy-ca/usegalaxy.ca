@@ -16,12 +16,13 @@ server {
 	access_log  syslog:server=unix:/dev/log;
 	error_log   syslog:server=unix:/dev/log;
 
-    {% if MAINTENANCE_MODE -%}
+    {% if MAINTENANCE_MODE %}
     location / {
-        root   html
-        index  /var/www/html/maintance.html
+        root   /var/www/html/;
+        index  /var/www/html/maintenance.html;
+        rewrite ^ /maintenance.html break;
     }
-    {%- else -%}
+    {% else %}
 	# The most important location block, by default all requests are sent to gunicorn
 	# If you serve galaxy at a path like /galaxy, change that below (and all other locations!)
 	location / {
@@ -38,7 +39,7 @@ server {
         proxy_read_timeout          600;
         send_timeout                600;
 	}
-    {%- endif %}
+    {% endif %}
 
 	location /grafana/ {
 		proxy_pass http://{{ groups['monitorservers'][0] }}:3000/;
