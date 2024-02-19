@@ -90,7 +90,7 @@ def backup(args):
 """
 run the nginx setup
 """
-def backup(args):
+def nginx(args):
     ansible = Ansible()
     depManager = DependencyManager()
 
