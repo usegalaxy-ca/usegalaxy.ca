@@ -252,7 +252,7 @@
       tags:
         - setup
         - galaxy
-    - role: galaxyproject.maintenance
+    - role: usegalaxy_ca.maintenance
       tags:
         - setup
         - proxy
