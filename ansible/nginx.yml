@@ -1,0 +1,17 @@
+---
+- hosts: galaxyservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/slurm.yml
+    - group_vars/cvmfsclient.yml
+  roles:
+    - role: galaxyproject.maintenance
+      tags:
+        - setup
+        - proxy
+    - role: galaxyproject.nginx
+      tags:
+        - setup
+        - proxy

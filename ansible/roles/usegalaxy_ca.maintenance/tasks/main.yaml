@@ -1,0 +1,4 @@
+- name: Copy maintenance.html
+  copy:
+    src: maintenance.html
+    dest: /var/www/html/

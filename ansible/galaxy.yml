@@ -252,6 +252,10 @@
       tags:
         - setup
         - galaxy
+    - role: galaxyproject.maintenance
+      tags:
+        - setup
+        - proxy
     - role: galaxyproject.nginx
       tags:
         - setup
