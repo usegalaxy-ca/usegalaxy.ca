@@ -7,18 +7,6 @@
     - group_vars/slurm.yml
     - group_vars/cvmfsclient.yml
   roles:
-    - role: galaxyproject.repos
-      tags:
-        - slurm
-        - setup
-    - role: galaxyproject.galaxy
-      tags:
-        - setup
-        - galaxy
-    - role: usegalaxy_ca.maintenance
-      tags:
-        - setup
-        - proxy
     - role: galaxyproject.nginx
       tags:
         - setup
