@@ -20,12 +20,12 @@ variable "ip_config" {
 }
 
 variable "volume_config" {
-    type = list(object({
+    type = map(list(object({
         name = string
         type = string
+        fstype = optional(string, "ext4")
         size = number
-        attach_to = string
-    }))
+    })))
 }
  
 locals {

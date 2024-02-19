@@ -41,22 +41,22 @@ prod:
         security_groups: [usegal, usegal-slurm]
         count: 2
   volumes:
-    - name: db-volume
-      type: volumes-ssd
-      size: 300
-      attach_to: db
-    - name: monitor-volume
-      type: volumes-ssd
-      size: 300
-      attach_to: monitor
-    - name: nfs-volume
-      type: volumes-ec
-      size: 40000
-      attach_to: nfs
-    - name: cvmfs-volume
-      type: volumes-ec
-      size: 500
-      attach_to: squid
+    db:
+      - name: db-volume
+        type: volumes-ssd
+        size: 300
+    monitor:
+      - name: monitor-volume
+        type: volumes-ssd
+        size: 300
+    nfs:
+      - name: nfs-volume
+        type: volumes-ec
+        size: 40000
+    squid:
+      - name: cvmfs-volume
+        type: volumes-ec
+        size: 500
   floating_ips:
     - ip: 198.168.187.40
       attach_to: galaxy
@@ -99,22 +99,26 @@ laperlej:
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
   volumes:
-    - name: db-volume
-      type: volumes-ssd
-      size: 50
-      attach_to: db
-    - name: monitor-volume
-      type: volumes-ssd
-      size: 50
-      attach_to: monitor
-    - name: nfs-volume
-      type: volumes-ec
-      size: 1000
-      attach_to: nfs
-    - name: cvmfs-volume
-      type: volumes-ec
-      size: 50
-      attach_to: squid
+    db:
+      - name: db-volume
+        type: volumes-ssd
+        size: 50
+      - name: db-volume-zfs
+        type: volumes-ssd
+        fstype: zfs
+        size: 50
+    monitor:
+      - name: monitor-volume
+        type: volumes-ssd
+        size: 50
+    nfs:
+      - name: nfs-volume
+        type: volumes-ec
+        size: 1000
+    squid:
+      - name: cvmfs-volume
+        type: volumes-ec
+        size: 50
   floating_ips:
     - ip: 198.168.184.189
       attach_to: galaxy
@@ -151,22 +155,22 @@ carolg:
         security_groups: [usegal, usegal-slurm]
         count: 1
   volumes:
-    - name: db-volume
-      type: volumes-ssd
-      size: 100
-      attach_to: db
-    - name: monitor-volume
-      type: volumes-ssd
-      size: 25
-      attach_to: monitor
-    - name: nfs-volume
-      type: volumes-ec
-      size: 1000
-      attach_to: nfs
-    - name: cvmfs-volume
-      type: volumes-ec
-      size: 50
-      attach_to: squid
+    db:
+      - name: db-volume
+        type: volumes-ssd
+        size: 100
+    monitor:
+      - name: monitor-volume
+        type: volumes-ssd
+        size: 25
+    nfs:
+      - name: nfs-volume
+        type: volumes-ec
+        size: 1000
+    cvmfs:
+      - name: cvmfs-volume
+        type: volumes-ec
+        size: 50
   floating_ips:
     - ip: 198.168.186.192
       attach_to: galaxy
