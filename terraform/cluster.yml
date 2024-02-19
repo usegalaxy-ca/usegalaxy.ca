@@ -45,13 +45,25 @@ prod:
       - name: db-volume
         type: volumes-ssd
         size: 300
+      - name: db-volume-zfs
+        type: volumes-ssd
+        fstype: zfs
+        size: 500
     monitor:
       - name: monitor-volume
         type: volumes-ssd
         size: 300
+      - name: monitor-volume-zfs
+        type: volumes-ssd
+        fstype: zfs
+        size: 500
     nfs:
       - name: nfs-volume
         type: volumes-ec
+        size: 40000
+      - name: nfs-volume-zfs
+        type: volumes-ec
+        fstype: zfs
         size: 40000
     squid:
       - name: cvmfs-volume
@@ -100,9 +112,6 @@ laperlej:
         security_groups: [usegal, usegal-slurm]
   volumes:
     db:
-      - name: db-volume
-        type: volumes-ssd
-        size: 50
       - name: db-volume-zfs
         type: volumes-ssd
         fstype: zfs
@@ -111,9 +120,17 @@ laperlej:
       - name: monitor-volume
         type: volumes-ssd
         size: 50
+      - name: monitor-volume-zfs
+        type: volumes-ssd
+        fstype: zfs
+        size: 50
     nfs:
       - name: nfs-volume
         type: volumes-ec
+        size: 1000
+      - name: nfs-volume-zfs
+        type: volumes-ec
+        fstype: zfs
         size: 1000
     squid:
       - name: cvmfs-volume
