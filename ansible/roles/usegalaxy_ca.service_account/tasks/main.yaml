@@ -7,9 +7,11 @@
   args:
     executable: .venv/bin/python3
   delegate_to: "localhost"
+  when: MAINTENANCE_MODE == false
 
 - name: Get service user API key and register to Doppler
   script: "get_api_key.py -g {{ galaxy_url }} -e {{ service_account.email }} -p {{ service_account.password }}"
   args:
     executable: .venv/bin/python3
   delegate_to: "localhost"
+  when: MAINTENANCE_MODE == false
