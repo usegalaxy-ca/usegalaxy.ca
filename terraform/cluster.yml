@@ -125,12 +125,12 @@ laperlej:
         fstype: zfs
         size: 50
     nfs:
-      - name: nfs-volume
-        type: volumes-ec
-        size: 1000
       - name: nfs-volume-zfs
         type: volumes-ec
         fstype: zfs
+        size: 1000
+      - name: nfs-volume
+        type: volumes-ec
         size: 1000
     squid:
       - name: cvmfs-volume
