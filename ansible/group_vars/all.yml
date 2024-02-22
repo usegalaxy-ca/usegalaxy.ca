@@ -1,5 +1,5 @@
 ---
-MAINTENANCE_MODE: true
+MAINTENANCE_MODE: false
 
 # Python 3 support
 pip_virtualenv_command: /usr/bin/python3 -m venv # usegalaxy_eu.certbot, usegalaxy_eu.tiaas2, galaxyproject.galaxy
