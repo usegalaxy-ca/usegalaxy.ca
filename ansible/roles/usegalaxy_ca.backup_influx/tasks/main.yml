@@ -12,4 +12,4 @@
     hour: "3"
     minute: "0"
     user: "influxdb"
-    job: "influxd backup -portable /mnt/backup/influx_`date +%Y-%m-%d_%H-%M-%S`"
+    job: "influxd backup -portable /mnt/backup/influx_$(date +\\%Y-\\%m-\\%d_\\%H-\\%M-\\%S)"
