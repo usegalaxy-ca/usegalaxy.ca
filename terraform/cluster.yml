@@ -42,13 +42,13 @@ prod:
         count: 2
   volumes:
     db:
-      - name: db-volume
-        type: volumes-ssd
-        size: 300
       - name: db-volume-zfs
         type: volumes-ssd
         fstype: zfs
         size: 500
+      - name: db-volume
+        type: volumes-ssd
+        size: 300
     monitor:
       - name: monitor-volume
         type: volumes-ssd
@@ -58,12 +58,12 @@ prod:
         fstype: zfs
         size: 500
     nfs:
-      - name: nfs-volume
-        type: volumes-ec
-        size: 40000
       - name: nfs-volume-zfs
         type: volumes-ec
         fstype: zfs
+        size: 40000
+      - name: nfs-volume
+        type: volumes-ec
         size: 40000
     squid:
       - name: cvmfs-volume
