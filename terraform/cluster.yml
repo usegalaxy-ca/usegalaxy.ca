@@ -28,6 +28,12 @@ prod:
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
+      - name: slurmexec-xs
+        volume_size: 1000
+        volume_type: volumes-ec
+        flavor: p4-15gb
+        security_groups: [usegal, usegal-slurm]
+        count: 10
       - name: slurmexec-sm
         volume_size: 1000
         volume_type: volumes-ec
