@@ -28,13 +28,31 @@ prod:
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
-      - name: slurmexec
-        flavor: p8-30gb
+      - name: slurmexec-xs
+        flavor: c2-7.5gb
         volume_size: 1000
         volume_type: volumes-ec
         security_groups: [usegal, usegal-slurm]
-        count: 8
-      - name: slurmfat
+        count: 10
+      - name: slurmexec-sm
+        volume_size: 1000
+        volume_type: volumes-ec
+        flavor: c4-15gb
+        security_groups: [usegal, usegal-slurm]
+        count: 10
+      - name: slurmexec-md
+        volume_size: 1000
+        volume_type: volumes-ec
+        flavor: c8-60gb
+        security_groups: [usegal, usegal-slurm]
+        count: 40
+      - name: slurmexec-lg
+        volume_size: 1000
+        volume_type: volumes-ec
+        flavor: c16-120gb
+        security_groups: [usegal, usegal-slurm]
+        count: 4
+      - name: slurmexec-xl
         volume_size: 1000
         volume_type: volumes-ec
         flavor: c32-240gb
@@ -61,9 +79,6 @@ prod:
       - name: nfs-volume-zfs
         type: volumes-ec
         fstype: zfs
-        size: 40000
-      - name: nfs-volume
-        type: volumes-ec
         size: 40000
     squid:
       - name: cvmfs-volume
