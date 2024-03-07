@@ -64,9 +64,6 @@ prod:
         type: volumes-ssd
         fstype: zfs
         size: 500
-      - name: db-volume
-        type: volumes-ssd
-        size: 300
     monitor:
       - name: monitor-volume
         type: volumes-ssd
