@@ -85,7 +85,7 @@ prod:
     - ip: 198.168.187.40
       attach_to: galaxy
 
-laperlej:
+staging:
   instances:
     galaxyservers:
       - name: galaxy
