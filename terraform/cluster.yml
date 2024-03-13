@@ -129,9 +129,6 @@ staging:
         fstype: zfs
         size: 50
     monitor:
-      - name: monitor-volume
-        type: volumes-ssd
-        size: 50
       - name: monitor-volume-zfs
         type: volumes-ssd
         fstype: zfs
@@ -140,9 +137,6 @@ staging:
       - name: nfs-volume-zfs
         type: volumes-ec
         fstype: zfs
-        size: 1000
-      - name: nfs-volume
-        type: volumes-ec
         size: 1000
     squid:
       - name: cvmfs-volume
