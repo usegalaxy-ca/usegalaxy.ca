@@ -15,11 +15,15 @@
   git:
     repo: https://github.com/laperlej/backup-rotation.git
     dest: ~/backup-rotation
+  become: true
+  become_user: postgres
 
 - name: install backup-rotation cli
   command:
     cmd: cargo install --path .
     chdir: ~/backup-rotation
+  become_user: postgres
+  become: true
 
 - name: Cron job for influxdb backup
   ansible.builtin.cron:
