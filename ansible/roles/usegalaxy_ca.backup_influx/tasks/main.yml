@@ -13,7 +13,7 @@
 
 - name: git clone backup-rotation
   git:
-    repo: git@github.com:laperlej/backup-rotation.git
+    repo: https://github.com/laperlej/backup-rotation.git
     dest: ~/backup-rotation
 
 - name: install backup-rotation cli
