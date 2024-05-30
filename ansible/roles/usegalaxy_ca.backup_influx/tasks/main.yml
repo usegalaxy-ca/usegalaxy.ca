@@ -16,13 +16,13 @@
     repo: https://github.com/laperlej/backup-rotation.git
     dest: ~/backup-rotation
   become: true
-  become_user: postgres
+  become_user: influxdb
 
 - name: install backup-rotation cli
   command:
     cmd: cargo install --path .
     chdir: ~/backup-rotation
-  become_user: postgres
+  become_user: influxdb
   become: true
 
 - name: Cron job for influxdb backup
@@ -39,4 +39,4 @@
     hour: "3"
     minute: "30"
     user: "influxdb"
-    job: "backup-rotation --format influx_%Y-%m-%d_%H-%M-%S /mnt/backup/influx_*"
+    job: "~/.cargo/bin/backup-rotation --format influx_%Y-%m-%d_%H-%M-%S /mnt/backup/influx_*"
