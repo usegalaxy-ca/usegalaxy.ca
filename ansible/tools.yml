@@ -2,7 +2,7 @@
   become: true
   become_user: root
   vars:
-    - slurm_roles: ["exec"]
+    slurm_roles: ["exec"]
   vars_files:
     - group_vars/slurm.yml
     - group_vars/secret.yml

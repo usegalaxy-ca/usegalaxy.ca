@@ -55,7 +55,7 @@
   become: true
   become_user: root
   vars:
-    - slurm_roles: ["controller"]
+    slurm_roles: ["controller"]
   vars_files:
     - group_vars/secret.yml
     - group_vars/slurm.yml
@@ -86,7 +86,7 @@
   become: true
   become_user: root
   vars:
-    - slurm_roles: ["exec"]
+    slurm_roles: ["exec"]
   vars_files:
     - group_vars/secret.yml
     - group_vars/slurm.yml
@@ -197,7 +197,7 @@
   become: true
   become_user: root
   vars:
-    - slurm_roles: ["exec"]
+    slurm_roles: ["exec"]
   vars_files:
     - group_vars/secret.yml
     - group_vars/slurm.yml
