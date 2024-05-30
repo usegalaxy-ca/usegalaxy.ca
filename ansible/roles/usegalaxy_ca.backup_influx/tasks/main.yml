@@ -6,6 +6,21 @@
     state: directory
     mode: 0700
 
+- name: install cargo
+  package:
+    name: "cargo"
+    state: present
+
+- name: git clone backup-rotation
+  git:
+    repo: git@github.com:laperlej/backup-rotation.git
+    dest: ~/backup-rotation
+
+- name: install backup-rotation cli
+  command:
+    cmd: cargo install --path .
+    chdir: ~/backup-rotation
+
 - name: Cron job for influxdb backup
   ansible.builtin.cron:
     name: "Backup influxdb"
@@ -13,3 +28,11 @@
     minute: "0"
     user: "influxdb"
     job: "influxd backup -portable /mnt/backup/influx_$(date +\\%Y-\\%m-\\%d_\\%H-\\%M-\\%S)"
+
+- name: Cron job for influxdb backup rotation
+  ansible.builtin.cron:
+    name: "Rotate influxdb backups"
+    hour: "3"
+    minute: "30"
+    user: "influxdb"
+    job: "backup-rotation --format influx_%Y-%m-%d_%H-%M-%S /mnt/backup/influx_*"
