@@ -40,7 +40,7 @@ class ArgParser():
             if playbook == "requirements":
                 continue
             setup_command = subparsers.add_parser(playbook, help="setup %s" % playbook)
-            setup_command.set_defaults(func=run)
+            setup_command.set_defaults(func=run, playbook=playbook)
 
 
 
@@ -57,7 +57,7 @@ class ArgParser():
 Run an ansible playbook
 """
 def run(args):
-    playbook_path = args.__dict__["func"].__name__ + ".yml"
+    playbook_path = args.playbook + ".yml"
 
     ansible = Ansible()
     depManager = DependencyManager()
