@@ -7,6 +7,7 @@ view the help for more information
 ./usegalaxy.py -h
 """
 import argparse
+import glob
 from cli.ansible import Ansible
 from cli.dependencies import DependencyManager
 
@@ -30,12 +31,17 @@ class ArgParser():
             description="Used to run commmon ansible recipes")
         subparsers = self.parser.add_subparsers(help='sub-command help')
 
-        for playbook in ["all", "slurm", "cvmfs", "sentry", "nginx", "backup", "tools"]:
+        setup_command = subparsers.add_parser('requirements', help="download all requirements")
+        setup_command.set_defaults(func=requirements)
+
+        playbooks = map(lambda x: x.split(".")[0], glob.glob("*.yml"))
+
+        for playbook in playbooks:
+            if playbook == "requirements":
+                continue
             setup_command = subparsers.add_parser(playbook, help="setup %s" % playbook)
             setup_command.set_defaults(func=lambda: run("%s.yml" % playbook))
 
-        setup_command = subparsers.add_parser('requirements', help="download all requirements")
-        setup_command.set_defaults(func=requirements)
 
 
 
