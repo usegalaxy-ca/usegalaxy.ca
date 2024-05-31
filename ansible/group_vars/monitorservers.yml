@@ -6,6 +6,7 @@ grafana_security:
   admin_password: "{{ MONITOR_PASSWORD }}"
 
 # These datasources will be automatically included into Grafana
+grafana_version: 10.4.3
 grafana_datasources:
   - name: Galaxy
     type: influxdb
