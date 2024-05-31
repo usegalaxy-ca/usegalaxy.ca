@@ -7,10 +7,7 @@
     - group_vars/terraform.yml
     - group_vars/galaxyservers.yml
   roles:
-    - role: usegalaxy_ca.backup_tsm
-      tags:
-        - setup
-        - backup
+    - usegalaxy_ca.backup_tsm
 
 - hosts: dbservers
   become: true
@@ -25,10 +22,7 @@
       tags:
         - always
   roles:
-    - role: usegalaxy_ca.backup_tsm
-      tags:
-        - setup
-        - backup
+    - usegalaxy_ca.backup_tsm
 
 - hosts: monitorservers
   become: true
@@ -56,7 +50,4 @@
     - group_vars/secret.yml
     - group_vars/terraform.yml
   roles:
-    - role: usegalaxy_ca.backup_tsm
-      tags:
-        - setup
-        - backup
+    - usegalaxy_ca.backup_tsm

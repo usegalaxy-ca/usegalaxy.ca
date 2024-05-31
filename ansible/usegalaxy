@@ -62,6 +62,15 @@ class ArgParser():
         args.func(args)
 
 
+def run(args):
+    ansible = Ansible()
+    depManager = DependencyManager()
+
+    depManager.verify_all()
+    ansible.set_yaml("backup.yml")
+
+    ansible.run()
+
 """
 run the ansible requirements
 """
@@ -84,7 +93,6 @@ def backup(args):
     depManager.verify_all()
 
     ansible.set_yaml("backup.yml")
-    ansible.add_tags("setup")
     ansible.run()
 
 """
@@ -97,7 +105,6 @@ def nginx(args):
     depManager.verify_all()
 
     ansible.set_yaml("nginx.yml")
-    ansible.add_tags("setup")
     ansible.run()
 
 """
@@ -110,7 +117,6 @@ def setup(args):
     depManager.verify_all()
 
     ansible.set_yaml("galaxy.yml")
-    ansible.add_tags("setup")
     ansible.run()
 
 """
@@ -123,7 +129,6 @@ def sentry(args):
     depManager.verify_all()
 
     ansible.set_yaml("sentry.yml")
-    ansible.add_tags("setup")
     ansible.run()
 
 """
@@ -136,7 +141,6 @@ def cvmfs(args):
     depManager.verify_all()
 
     ansible.set_yaml("cvmfs.yml")
-    ansible.add_tags("setup")
     ansible.run()
 
 """
@@ -149,7 +153,6 @@ def tools(args):
     depManager.verify_all()
 
     ansible.set_yaml("tools.yml")
-    ansible.add_tags("setup")
     ansible.run()
 
 """

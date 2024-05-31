@@ -22,7 +22,4 @@
       tags:
         - always
   roles:
-    - role: usegalaxy_ca.tools
-      tags:
-        - setup
-        - tools
+    - usegalaxy_ca.tools

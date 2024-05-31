@@ -6,10 +6,7 @@
     - group_vars/terraform.yml
     - group_vars/cvmfsclient.yml
   roles:
-    - role: laperlej.cvmfs
-      tags:
-        - setup
-        - cvmfs
+    - laperlej.cvmfs
 
 - hosts: slurmexecservers
   become: true
@@ -19,10 +16,7 @@
     - group_vars/terraform.yml
     - group_vars/cvmfsclient.yml
   roles:
-    - role: laperlej.cvmfs
-      tags:
-        - setup
-        - cvmfs
+    - laperlej.cvmfs
 
 - hosts: squidservers
   become: true
@@ -32,16 +26,6 @@
     - group_vars/terraform.yml
     - group_vars/cvmfsservers.yml
   roles:
-    - role: usegalaxy_ca.volume
-      tags:
-        - volume
-        - nfs
-        - setup
-    - role: laperlej.cvmfs
-      tags:
-        - setup
-        - cvmfs
-    - role: dj-wasabi.telegraf
-      tags:
-        - setup
-        - monitor
+    - usegalaxy_ca.volume
+    - laperlej.cvmfs
+    - dj-wasabi.telegraf
