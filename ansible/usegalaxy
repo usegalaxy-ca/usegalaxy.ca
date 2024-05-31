@@ -30,29 +30,14 @@ class ArgParser():
             description="Used to run commmon ansible recipes")
         subparsers = self.parser.add_subparsers(help='sub-command help')
 
-        setup_command = subparsers.add_parser('setup', help="setup all components")
-        setup_command.set_defaults(func=setup)
-
-        setup_command = subparsers.add_parser('sentry', help="setup sentry")
-        setup_command.set_defaults(func=sentry)
-
-        setup_command = subparsers.add_parser('slurm', help="setup slurm")
-        setup_command.set_defaults(func=slurm)
-
-        setup_command = subparsers.add_parser('cvmfs', help="setup cvmfs")
-        setup_command.set_defaults(func=cvmfs)
-
-        setup_command = subparsers.add_parser('tools', help="install tools")
-        setup_command.set_defaults(func=tools)
-
-        setup_command = subparsers.add_parser('backup', help="install backup")
-        setup_command.set_defaults(func=backup)
-
-        setup_command = subparsers.add_parser('nginx', help="setup nginx")
-        setup_command.set_defaults(func=nginx)
+        for playbook in ["all", "slurm", "cvmfs", "sentry", "nginx", "backup", "tools"]:
+            setup_command = subparsers.add_parser(playbook, help="setup %s" % playbook)
+            setup_command.set_defaults(func=lambda: run("%s.yml" % playbook))
 
         setup_command = subparsers.add_parser('requirements', help="download all requirements")
         setup_command.set_defaults(func=requirements)
+
+
 
     def run(self) -> None:
         args = self.parser.parse_args()
@@ -62,12 +47,15 @@ class ArgParser():
         args.func(args)
 
 
-def run(args):
+"""
+Run an ansible playbook
+"""
+def run(playbook_path: str):
     ansible = Ansible()
     depManager = DependencyManager()
 
     depManager.verify_all()
-    ansible.set_yaml("backup.yml")
+    ansible.set_yaml(playbook_path)
 
     ansible.run()
 
@@ -82,92 +70,6 @@ def requirements(args):
     depManager.verify_all()
 
     ansible.requirements()
-
-"""
-run the backup setup
-"""
-def backup(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("backup.yml")
-    ansible.run()
-
-"""
-run the nginx setup
-"""
-def nginx(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("nginx.yml")
-    ansible.run()
-
-"""
-run the galaxy setup(includes all components)
-"""
-def setup(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("galaxy.yml")
-    ansible.run()
-
-"""
-run the sentry setup
-"""
-def sentry(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("sentry.yml")
-    ansible.run()
-
-"""
-run the cvmfs setup
-"""
-def cvmfs(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("cvmfs.yml")
-    ansible.run()
-
-"""
-install tools
-"""
-def tools(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("tools.yml")
-    ansible.run()
-
-"""
-run the slurm setup(includes nfs)
-"""
-def slurm(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("galaxy.yml")
-    ansible.add_tags("slurm", "nfs", "volume", "cvmfs")
-    ansible.run()
-
 
 
 if __name__ == "__main__":
