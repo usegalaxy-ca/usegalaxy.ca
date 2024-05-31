@@ -7,19 +7,10 @@
     - group_vars/terraform.yml
     - group_vars/galaxyservers.yml
   roles:
-    - role: usegalaxy_ca.volume
-      tags:
-        - volume
-        - nfs
-    - role: usegalaxy_ca.nfs_server
-      tags:
-        - nfs
-    - role: dj-wasabi.telegraf
-      tags:
-        - monitor
-    - role: usegalaxy_ca.backup_tsm
-      tags:
-        - backup
+    - usegalaxy_ca.volume
+    - usegalaxy_ca.nfs_server
+    - dj-wasabi.telegraf
+    - usegalaxy_ca.backup_tsm
 
 - hosts: squidservers
   become: true
@@ -29,19 +20,10 @@
     - group_vars/galaxyservers.yml
     - group_vars/cvmfsservers.yml
   roles:
-    - role: usegalaxy_ca.volume
-      tags:
-        - volume
-    - role: usegalaxy_ca.squid
-      tags:
-        - volume
-        - cvmfs
-    - role: laperlej.cvmfs
-      tags:
-        - cvmfs
-    - role: dj-wasabi.telegraf
-      tags:
-        - monitor
+    - usegalaxy_ca.volume
+    - usegalaxy_ca.squid
+    - laperlej.cvmfs
+    - dj-wasabi.telegraf
 
 - hosts: slurmcontrolservers
   become: true
@@ -53,21 +35,11 @@
     - group_vars/slurm.yml
     - group_vars/galaxyservers.yml
   roles:
-    - role: usegalaxy_ca.nfs_client
-      tags:
-        - nfs
-    - role: usegalaxy_ca.slurm
-      tags:
-        - slurm
-    - role: galaxyproject.repos
-      tags:
-        - slurm
-    - role: galaxyproject.slurm
-      tags:
-        - slurm
-    - role: dj-wasabi.telegraf
-      tags:
-        - monitor
+    - usegalaxy_ca.nfs_client
+    - usegalaxy_ca.slurm
+    - galaxyproject.repos
+    - galaxyproject.slurm
+    - dj-wasabi.telegraf
 
 - hosts: slurmexecservers
   become: true
@@ -95,27 +67,13 @@
       tags:
         - always
   roles:
-    - role: usegalaxy_ca.nfs_client
-      tags:
-        - nfs
-    - role: usegalaxy_eu.apptainer
-      tags:
-        - cvmfs
-    - role: laperlej.cvmfs
-      tags:
-        - cvmfs
-    - role: usegalaxy_ca.slurm
-      tags:
-        - slurm
-    - role: galaxyproject.repos
-      tags:
-        - slurm
-    - role: galaxyproject.slurm
-      tags:
-        - slurm
-    - role: dj-wasabi.telegraf
-      tags:
-        - monitor
+    - usegalaxy_ca.nfs_client
+    - usegalaxy_eu.apptainer
+    - laperlej.cvmfs
+    - usegalaxy_ca.slurm
+    - galaxyproject.repos
+    - galaxyproject.slurm
+    - dj-wasabi.telegraf
 
 - hosts: dbservers
   become: true
@@ -130,38 +88,20 @@
       tags:
         - always
   roles:
-    - role: usegalaxy_ca.volume
-      tags:
-        - volume
-    - role: usegalaxy_ca.postgresql
-      tags:
-        - postgres
-    - role: galaxyproject.postgresql
-      tags:
-        - postgres
+    - usegalaxy_ca.volume
+    - usegalaxy_ca.postgresql
+    - galaxyproject.postgresql
     - role: usegalaxy_ca.restart_postgres
       tags:
         - never
     - role: galaxyproject.postgresql_objects
       become: true
       become_user: postgres
-      tags:
-        - postgres
-    - role: usegalaxy_ca.gxadmin
-      tags:
-        - monitor
-    - role: galaxyproject.gxadmin
-      tags:
-        - monitor
-    - role: dj-wasabi.telegraf
-      tags:
-        - monitor
-    - role: usegalaxy_ca.backup_pg
-      tags:
-        - postgres
-    - role: usegalaxy_ca.backup_tsm
-      tags:
-        - backup
+    - usegalaxy_ca.gxadmin
+    - galaxyproject.gxadmin
+    - dj-wasabi.telegraf
+    - usegalaxy_ca.backup_pg
+    - usegalaxy_ca.backup_tsm
 
 - hosts: galaxyservers
   become: true
@@ -188,54 +128,26 @@
       tags:
         - always
   roles:
-    - role: usegalaxy_ca.nfs_client
-      tags:
-        - nfs
-    - role: usegalaxy_ca.slurm
-      tags:
-        - slurm
-    - role: galaxyproject.repos
-      tags:
-        - slurm
-    - role: galaxyproject.slurm
-      tags:
-        - slurm
-    - role: usegalaxy_eu.apptainer
-      tags:
-        - cvmfs
-    - role: galaxyproject.tusd
-      tags:
-        - tusd
-    - role: galaxyproject.galaxy
-      tags:
-        - galaxy
+    - usegalaxy_ca.nfs_client
+    - usegalaxy_ca.slurm
+    - galaxyproject.repos
+    - galaxyproject.slurm
+    - usegalaxy_eu.apptainer
+    - galaxyproject.tusd
+    - galaxyproject.galaxy
     - role: galaxyproject.miniconda
       become: true
       become_user: "{{ galaxy_user_name }}"
-      tags:
-        - galaxy
-    - role: usegalaxy_ca.maintenance
-      tags:
-        - proxy
-    - role: galaxyproject.nginx
-      tags:
-        - proxy
-    - role: laperlej.cvmfs
-      tags:
-        - cvmfs
-    - role: usegalaxy_ca.drmaa
+    - usegalaxy_ca.maintenance
+    - galaxyproject.nginx
+    - laperlej.cvmfs
+    - usegalaxy_ca.drmaa
     - role: usegalaxy_ca.restart_galaxy
       become: true
       become_user: root
-      tags:
-        - galaxy
     - role: usegalaxy_ca.service_account
       become: false
-      tags:
-        - galaxy
-    - role: dj-wasabi.telegraf
-      tags:
-        - monitor
+    - dj-wasabi.telegraf
 
   post_tasks:
     - name: fetch edugain idps the first time
@@ -280,30 +192,12 @@
         - volume
         - monitor
         - nfs
-    - role: usegalaxy_ca.monitor
-      tags:
-        - monitor
-    - role: usegalaxy_ca.docker
-      tags:
-        - monitor
-    - role: usegalaxy_ca.influxdb_key
-      tags:
-        - monitor
-    - role: usegalaxy_eu.influxdb
-      tags:
-        - monitor
-    - role: cloudalchemy.grafana
-      tags:
-        - monitor
-    - role: dj-wasabi.telegraf
-      tags:
-        - monitor
-    - role: mvdbeek.sentry_selfhosted
-      tags:
-        - monitor
-    - role: usegalaxy_ca.backup_influx
-      tags:
-        - monitor
-    - role: usegalaxy_ca.backup_tsm
-      tags:
-        - backup
+    - usegalaxy_ca.monitor
+    - usegalaxy_ca.docker
+    - usegalaxy_ca.influxdb_key
+    - usegalaxy_eu.influxdb
+    - cloudalchemy.grafana
+    - dj-wasabi.telegraf
+    - mvdbeek.sentry_selfhosted
+    - usegalaxy_ca.backup_influx
+    - usegalaxy_ca.backup_tsm
