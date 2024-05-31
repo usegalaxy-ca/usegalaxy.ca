@@ -55,7 +55,7 @@
 
 - name: Create Folder
   file:
-    path: /mnt/volume/docker
+    path: /mnt/volume1/docker
     owner: root
     group: root
     state: directory
@@ -64,6 +64,6 @@
 - name: Create mount
   file:
     path: /var/lib/docker
-    src: /mnt/volume/docker
+    src: /mnt/volume1/docker
     state: link
   when: volumes[inventory_hostname] is defined

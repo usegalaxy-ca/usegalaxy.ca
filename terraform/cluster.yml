@@ -65,13 +65,13 @@ prod:
         fstype: zfs
         size: 500
     monitor:
-      - name: monitor-volume
-        type: volumes-ssd
-        size: 300
       - name: monitor-volume-zfs
         type: volumes-ssd
         fstype: zfs
         size: 500
+      - name: monitor-volume
+        type: volumes-ssd
+        size: 300
     nfs:
       - name: nfs-volume-zfs
         type: volumes-ec
@@ -133,6 +133,9 @@ staging:
         type: volumes-ssd
         fstype: zfs
         size: 50
+      - name: monitor-volume
+        type: volumes-ssd
+        size: 30
     nfs:
       - name: nfs-volume-zfs
         type: volumes-ec
@@ -186,6 +189,9 @@ carolg:
       - name: monitor-volume
         type: volumes-ssd
         size: 25
+      - name: monitor-volume-docker
+        type: volumes-ssd
+        size: 30
     nfs:
       - name: nfs-volume
         type: volumes-ec

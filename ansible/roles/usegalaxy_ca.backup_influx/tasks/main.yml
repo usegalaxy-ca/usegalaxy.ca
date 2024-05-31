@@ -1,10 +1,17 @@
 - name: Create Folder
   file:
-    path: /mnt/backup
+    path: /mnt/volume/backup
     owner: influxdb
     group: influxdb
     state: directory
     mode: 0700
+
+- name: Create mount
+  file:
+    path: /mnt/backup
+    src: /mnt/volume/backup
+    state: link
+  when: volumes[inventory_hostname] is defined
 
 - name: install cargo
   package:
