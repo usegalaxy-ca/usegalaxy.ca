@@ -12,7 +12,6 @@ prod:
         security_groups: [usegal, usegal-psql]
     monitorservers:
       - name: monitor
-        volume_size: 100
         flavor: p8-30gb
         security_groups:
           [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
