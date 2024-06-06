@@ -200,6 +200,7 @@ certbot_post_renewal: |
   systemctl restart nginx || true
 certbot_domains:
   - "{{ usegalaxy_domain }}"
+  - "sentry.{{ usegalaxy_domain }}"
 certbot_agree_tos: --agree-tos
 
 # NGINX
