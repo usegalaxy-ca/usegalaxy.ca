@@ -19,10 +19,6 @@ roles:
     src: ssh://git@github.com/laperlej/ansible-cvmfs.git
     version: main
     scm: git
-  - name: galaxyproject.cvmfs
-    src: ssh://git@github.com/galaxyproject/ansible-cvmfs.git
-    version: main
-    scm: git
   # - src: galaxyproject.cvmfs
   #   version: 0.2.21
   # TUS (uploads)

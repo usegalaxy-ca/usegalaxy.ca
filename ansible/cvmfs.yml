@@ -7,7 +7,7 @@
     - group_vars/cvmfsservers.yml
   roles:
     - usegalaxy_ca.volume
-    - galaxyproject.cvmfs
+    - laperlej.cvmfs
     - dj-wasabi.telegraf
 
 - hosts: slurmexecservers
@@ -18,7 +18,7 @@
     - group_vars/terraform.yml
     - group_vars/cvmfsclient.yml
   roles:
-    - galaxyproject.cvmfs
+    - laperlej.cvmfs
 
 - hosts: galaxyservers
   become: true
@@ -28,4 +28,4 @@
     - group_vars/terraform.yml
     - group_vars/cvmfsclient.yml
   roles:
-    - galaxyproject.cvmfs
+    - laperlej.cvmfs
