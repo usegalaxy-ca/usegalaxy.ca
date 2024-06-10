@@ -1,6 +1,6 @@
 - name: get tool list
   command:
-    cmd: python tool_list.py
+    cmd: ./roles/usegalaxy_ca.tools/files/get_list.sh
   delegate_to: "localhost"
 
 - name: install tools
