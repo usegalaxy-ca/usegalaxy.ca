@@ -1,3 +1,5 @@
+# This file is used to define tools and revisions that are not in the .eu tool list but are in the .ca tool list
+# The list will be merged with the .eu tool list
 tools:
   - name: compose_text_param
     owner: iuc

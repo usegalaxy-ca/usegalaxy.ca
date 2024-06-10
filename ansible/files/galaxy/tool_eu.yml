@@ -1,10 +1,4 @@
 tools:
-- name: compose_text_param
-  owner: iuc
-  revisions:
-  - e188c9826e0f
-  tool_panel_section_label: Expression Tools
-  tool_shed_url: toolshed.g2.bx.psu.edu
 - name: sdmpredictors_list_layers
   owner: ecology
   revisions:
@@ -12728,6 +12722,12 @@ tools:
   owner: recetox
   revisions:
   - af8839475b43
+  tool_panel_section_label: ChemicalToolBox
+  tool_shed_url: toolshed.g2.bx.psu.edu
+- name: alphafold2
+  owner: galaxy-australia
+  revisions:
+  - 2f7702fd0a4c
   tool_panel_section_label: ChemicalToolBox
   tool_shed_url: toolshed.g2.bx.psu.edu
 - name: openduck_chunk
