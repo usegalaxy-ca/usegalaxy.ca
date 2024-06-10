@@ -70,7 +70,7 @@ def run(args):
 """
 run the ansible requirements
 """
-def requirements():
+def requirements(args):
     ansible = Ansible()
     depManager = DependencyManager()
 
