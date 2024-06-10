@@ -1,0 +1,7 @@
+tools:
+  - name: compose_text_param
+    owner: iuc
+    revisions:
+      - e188c9826e0f
+    tool_panel_section_label: Expression Tools
+    tool_shed_url: toolshed.g2.bx.psu.edu
