@@ -22,3 +22,18 @@
     src: /mnt/volume/postgresql
     state: link
   when: volumes[inventory_hostname] is defined
+
+- name: Create config Folder
+  file:
+    path: /mnt/volume/config
+    owner: postgres
+    group: postgres
+    state: directory
+    mode: 0755
+
+- name: Create symlink
+  file:
+    path: /etc/postgresql
+    src: /mnt/volume/config
+    state: link
+  when: volumes[inventory_hostname] is defined
