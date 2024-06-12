@@ -21,7 +21,7 @@
   when: item.fstype != 'zfs'
 
 - name: Import ZFS zpool
-  command: "zpool import"
+  command: "zpool import -f pool{{ idx }}"
   loop: "{{ volumes[inventory_hostname] | list }}"
   loop_control:
     index_var: idx
