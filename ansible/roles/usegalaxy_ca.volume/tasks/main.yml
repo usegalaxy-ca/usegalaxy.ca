@@ -20,6 +20,13 @@
   loop: "{{ volumes[inventory_hostname] | list }}"
   when: item.fstype != 'zfs'
 
+- name: Import ZFS zpool
+  command: "zpool import"
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'
+
 - name: Setup ZFS zpool
   command: "zpool create -m {{ item.mount_point }} pool{{ idx }} {{ item.device }}"
   args:
