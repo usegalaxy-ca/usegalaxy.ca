@@ -28,6 +28,7 @@
   loop_control:
     index_var: idx
   when: item.fstype == 'zfs'
+  ignore_errors: yes
 
 - name: Setup ZFS zpool
   command: "zpool create -m {{ item.mount_point }} pool{{ idx }} {{ item.device }}"
