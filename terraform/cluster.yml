@@ -137,9 +137,6 @@ staging:
         type: volumes-ssd
         size: 30
     nfs:
-      - name: nfs-volume
-        type: volumes-ec
-        size: 1000
       - name: nfs-volume-zfs
         type: volumes-ec
         fstype: zfs
