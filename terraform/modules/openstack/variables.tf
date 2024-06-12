@@ -4,7 +4,7 @@ variable "instance_config" {
         flavor = string
         volume_size = optional(number, 30)
         volume_type = optional(string, null)
-        image = optional(string, "Ubuntu22")
+        image = optional(string, "ubuntu22")
         network_uuid = optional(string, "94db2a0a-14a4-4934-896d-a28bbc651b09")
         security_groups = optional(list(string), ["default"])
         count = optional(number, 1)
@@ -29,12 +29,12 @@ variable "volume_config" {
  
 locals {
     images = {
-        "Ubuntu22" = "Ubuntu-22.04.2-Jammy-x64-2023-02"
-        "Ubuntu24" = "Ubuntu-24.04-Noble-x64-2024-06"
+        "ubuntu22" = "Ubuntu-22.04.2-Jammy-x64-2023-02"
+        "ubuntu24" = "Ubuntu-24.04-Noble-x64-2024-06"
     }
     uuids = {
-        "Ubuntu22" = "db73980e-1f9c-441e-8268-c1881f99c8ef"
-        "Ubuntu24" = "4bbcc0b8-a3b5-4d14-8809-402fd88c547a"
+        "ubuntu22" = "db73980e-1f9c-441e-8268-c1881f99c8ef"
+        "ubuntu24" = "4bbcc0b8-a3b5-4d14-8809-402fd88c547a"
     }
     flat_instance_config = flatten([
       for group_name, instances in var.instance_config : [
