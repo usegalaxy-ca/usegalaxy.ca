@@ -4,12 +4,7 @@ variable "instance_config" {
         flavor = string
         volume_size = optional(number, 30)
         volume_type = optional(string, null)
-        # Ubuntu-22
-        image = optional(string, "Ubuntu-22.04.2-Jammy-x64-2023-02")
-        image_uuid = optional(string, "db73980e-1f9c-441e-8268-c1881f99c8ef")
-        # Ubuntu-24
-        # image = optional(string, "Ubuntu-24.04-Noble-x64-2024-06")
-        # image_uuid = optional(string, "4bbcc0b8-a3b5-4d14-8809-402fd88c547a")
+        image = optional(string, "Ubuntu22")
         network_uuid = optional(string, "94db2a0a-14a4-4934-896d-a28bbc651b09")
         security_groups = optional(list(string), ["default"])
         count = optional(number, 1)
@@ -33,6 +28,14 @@ variable "volume_config" {
 }
  
 locals {
+    images = {
+        "Ubuntu22" = "Ubuntu-22.04.2-Jammy-x64-2023-02"
+        "Ubuntu24" = "Ubuntu-24.04-Noble-x64-2024-06"
+    }
+    uuids = {
+        "Ubuntu22" = "db73980e-1f9c-441e-8268-c1881f99c8ef"
+        "Ubuntu24" = "4bbcc0b8-a3b5-4d14-8809-402fd88c547a"
+    }
     flat_instance_config = flatten([
       for group_name, instances in var.instance_config : [
         for instance in instances : [
@@ -41,8 +44,8 @@ locals {
             flavor = instance.flavor
             volume_size = instance.volume_size
             volume_type = instance.volume_type
-            image = instance.image
-            image_uuid = instance.image_uuid
+            image = local.images[instance.image]
+            image_uuid = local.uuids[instance.image]
             network_uuid = instance.network_uuid
             security_groups = instance.security_groups
             group_name = group_name
