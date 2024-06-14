@@ -181,7 +181,7 @@
       tags:
         - always
     - pip:
-        name: [docker<2.32.0, docker-compose]
+        name: [docker, docker-compose, requests<2.32.0]
       tags:
         - always
   vars_files:
