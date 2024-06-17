@@ -178,21 +178,20 @@
             "python3-venv",
             "python3-setuptools",
           ]
-      tags:
-        - always
+    - copy:
+        src: "files/monitor/requirements.txt"
+        dest: "~/requirements.txt"
     - pip:
-        name: [docker, docker-compose]
-      tags:
-        - always
+        requirements: "~/requirements.txt"
+    # - pip:
+    #     name: [docker, docker-compose]
+    #   tags:
+    #     - always
   vars_files:
     - group_vars/secret.yml
     - group_vars/terraform.yml
   roles:
-    - role: usegalaxy_ca.volume
-      tags:
-        - volume
-        - monitor
-        - nfs
+    - usegalaxy_ca.volume
     - usegalaxy_ca.monitor
     - usegalaxy_ca.docker
     - usegalaxy_ca.influxdb_key
