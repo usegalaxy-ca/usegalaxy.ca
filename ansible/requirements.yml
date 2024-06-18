@@ -16,9 +16,8 @@ roles:
     version: 0.1.11
   #CVMFS
   - name: laperlej.cvmfs
-    src: ssh://git@github.com/laperlej/ansible-cvmfs.git
+    src: https://github.com/laperlej/ansible-cvmfs
     version: main
-    scm: git
   # - src: galaxyproject.cvmfs
   #   version: 0.2.21
   # TUS (uploads)
@@ -46,10 +45,14 @@ roles:
   - src: cloudalchemy.grafana
     version: 0.14.2
   # Sentry
-  - name: mvdbeek.sentry_selfhosted
-    src: https://github.com/mvdbeek/ansible-role-sentry/archive/main.tar.gz
+  - name: laperlej.sentry_selfhosted
+    src: https://github.com/laperlej/ansible-role-sentry
+    version: main
 
 collections:
   # Ansible Posix
   - name: ansible.posix
     version: 1.5.2
+  # Docker
+  - name: community.docker
+    version: 3.10.4

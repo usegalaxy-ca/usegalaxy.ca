@@ -39,7 +39,7 @@ class Ansible:
     Build an ansible requirements command
     """
     def requirements(self) -> None:
-        command = str("doppler run -- .venv/bin/ansible-galaxy install -p roles -r requirements.yml").split()
+        command = str("doppler run -- .venv/bin/ansible-galaxy install -r requirements.yml").split()
         env = {"ANSIBLE_FORCE_COLOR": "true"}
         self.runner.run_cmd(command, env=env)
 
