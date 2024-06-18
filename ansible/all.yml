@@ -198,6 +198,6 @@
     - usegalaxy_eu.influxdb
     - cloudalchemy.grafana
     - dj-wasabi.telegraf
-    - mvdbeek.sentry_selfhosted
+    - laperlej.sentry_selfhosted
     - usegalaxy_ca.backup_influx
     - usegalaxy_ca.backup_tsm

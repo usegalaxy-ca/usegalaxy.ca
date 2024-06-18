@@ -52,4 +52,4 @@
   roles:
     - usegalaxy_ca.volume
     - usegalaxy_ca.docker
-    - mvdbeek.sentry_selfhosted
+    - laperlej.sentry_selfhosted
