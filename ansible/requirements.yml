@@ -53,3 +53,6 @@ collections:
   # Ansible Posix
   - name: ansible.posix
     version: 1.5.2
+  # Docker
+  - name: community.docker
+    version: 3.10.4
