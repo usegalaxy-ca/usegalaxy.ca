@@ -1,3 +1,2 @@
 docker==7.1.0
-docker-compose==1.29.2
 requests<2.32,>=2.25
