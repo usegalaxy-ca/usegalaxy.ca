@@ -28,9 +28,6 @@
     - role: usegalaxy_ca.patch
       become: true
       become_user: "{{ galaxy_privsep_user }}"
-    - include_role:
-      name: galaxyproject.galaxy
-      tasks_from: client
     - role: galaxyproject.miniconda
       become: true
       become_user: "{{ galaxy_user_name }}"
