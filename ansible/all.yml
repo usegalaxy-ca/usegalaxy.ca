@@ -142,6 +142,7 @@
     - galaxyproject.nginx
     - laperlej.cvmfs
     - usegalaxy_ca.drmaa
+    - usegalaxy_ca.patch
     - role: usegalaxy_ca.restart_galaxy
       become: true
       become_user: root

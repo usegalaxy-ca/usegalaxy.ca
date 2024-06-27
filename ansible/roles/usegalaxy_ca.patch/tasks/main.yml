@@ -1,0 +1,16 @@
+---
+- name: Patch LoginForm
+  copy:
+    src: LoginForm.vue
+    dest: /mnt/nfs/galaxy/server/client/src/components/Login/LoginForm.vue
+    owner: pgalaxy
+    group: pgalaxy
+    mode: 664
+
+- name: Patch ExternalLogin
+  copy:
+    src: ExternalLogin.vue
+    dest: /mnt/nfs/galaxy/server/client/src/components/User/ExternalIdentities/ExternalLogin.vue
+    owner: pgalaxy
+    group: pgalaxy
+    mode: 664
