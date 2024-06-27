@@ -134,7 +134,14 @@
     - galaxyproject.slurm
     - usegalaxy_eu.apptainer
     - galaxyproject.tusd
-    - galaxyproject.galaxy
+    - role: galaxyproject.galaxy
+      galaxy_build_client: false
+    - role: usegalaxy_ca.patch
+      become: true
+      become_user: "{{ galaxy_privsep_user }}"
+    - include_role:
+      name: galaxyproject.galaxy
+      tasks_from: client
     - role: galaxyproject.miniconda
       become: true
       become_user: "{{ galaxy_user_name }}"
@@ -142,9 +149,6 @@
     - galaxyproject.nginx
     - laperlej.cvmfs
     - usegalaxy_ca.drmaa
-    - role: usegalaxy_ca.patch
-      become: true
-      become_user: "{{ galaxy_privsep_user }}"
     - role: usegalaxy_ca.restart_galaxy
       become: true
       become_user: root
