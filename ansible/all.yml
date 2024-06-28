@@ -134,14 +134,7 @@
     - galaxyproject.slurm
     - usegalaxy_eu.apptainer
     - galaxyproject.tusd
-    - role: galaxyproject.galaxy
-      galaxy_build_client: false
-    - role: usegalaxy_ca.patch
-      become: true
-      become_user: "{{ galaxy_privsep_user }}"
-    - include_role:
-      name: galaxyproject.galaxy
-      tasks_from: client
+    - galaxyproject.galaxy
     - role: galaxyproject.miniconda
       become: true
       become_user: "{{ galaxy_user_name }}"
