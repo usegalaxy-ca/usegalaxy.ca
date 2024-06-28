@@ -23,7 +23,7 @@ galaxy_extra_privsep_dirs:
   - "{{ tpv_mutable_dir }}"
 tpv_privsep: true
 
-galaxy_commit_id: release_24.1
+galaxy_commit_id: release_23.2
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
 miniconda_version: 24.1.2
