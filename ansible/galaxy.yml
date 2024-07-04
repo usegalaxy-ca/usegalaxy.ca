@@ -1,0 +1,57 @@
+- hosts: galaxyservers
+  become: true
+  become_user: root
+  vars:
+    slurm_roles: ["exec"]
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/slurm.yml
+    - group_vars/cvmfsclient.yml
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+  roles:
+    - usegalaxy_ca.nfs_client
+    - usegalaxy_ca.slurm
+    - galaxyproject.repos
+    - galaxyproject.slurm
+    - usegalaxy_eu.apptainer
+    - galaxyproject.tusd
+    - galaxyproject.galaxy
+    - role: galaxyproject.miniconda
+      become: true
+      become_user: "{{ galaxy_user_name }}"
+    - usegalaxy_ca.maintenance
+    - galaxyproject.nginx
+    - laperlej.cvmfs
+    - usegalaxy_ca.drmaa
+    - role: usegalaxy_ca.restart_galaxy
+      become: true
+      become_user: root
+    - role: usegalaxy_ca.service_account
+      become: false
+    - dj-wasabi.telegraf
+
+  post_tasks:
+    - name: fetch edugain idps the first time
+      command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
+      become: true
+      become_user: pgalaxy
+    - name: set cron jobs
+      ansible.builtin.cron:
+        name: "cron jobs to adjust allocations group for canadian users"
+        minute: "*/5"
+        user: pgalaxy
+        job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
