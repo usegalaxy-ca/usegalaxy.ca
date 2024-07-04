@@ -62,7 +62,7 @@ def run(args):
 
     ansible = Ansible()
     if args.init:
-        ansible.add_tags("never")
+        ansible.add_tags("all", "never")
     depManager = DependencyManager()
 
     depManager.verify_all()
