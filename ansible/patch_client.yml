@@ -28,14 +28,4 @@
     - role: usegalaxy_ca.patch
       become: true
       become_user: "{{ galaxy_privsep_user }}"
-    - usegalaxy_ca.client
-    - role: galaxyproject.miniconda
-      become: true
-      become_user: "{{ galaxy_user_name }}"
-    - usegalaxy_ca.maintenance
-    - galaxyproject.nginx
-    - laperlej.cvmfs
-    - usegalaxy_ca.drmaa
-    - role: usegalaxy_ca.restart_galaxy
-      become: true
-      become_user: root
+    - role: galaxyproject.galaxy
