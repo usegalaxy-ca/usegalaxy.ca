@@ -2,13 +2,15 @@
   become: true
   become_user: root
   tasks:
-    apt:
-      name:
-        - openssh-server
-        - openssh-client
-      update_cache: yes
-      only_upgrade: yes
-      state: latest
-    systemd:
-      name: sshd
-      state: restarted
+    - name: update ssh
+      apt:
+        name:
+          - openssh-server
+          - openssh-client
+        update_cache: yes
+        only_upgrade: yes
+        state: latest
+    - name: restart sshd
+      systemd:
+        name: sshd
+        state: restarted
