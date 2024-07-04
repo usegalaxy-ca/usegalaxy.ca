@@ -40,10 +40,11 @@ class ArgParser():
             if playbook == "requirements":
                 continue
             setup_command = subparsers.add_parser(playbook, help="setup %s" % playbook)
+            setup_command.add_argument(
+                "--init",
+                help="run the playbook with the never tag",
+                action="store_true")
             setup_command.set_defaults(func=run, playbook=playbook)
-
-
-
 
     def run(self) -> None:
         args = self.parser.parse_args()
@@ -60,6 +61,8 @@ def run(args):
     playbook_path = args.playbook + ".yml"
 
     ansible = Ansible()
+    if args.init:
+        ansible.add_tags("never")
     depManager = DependencyManager()
 
     depManager.verify_all()
