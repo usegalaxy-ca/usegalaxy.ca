@@ -25,6 +25,6 @@
   roles:
     - role: galaxyproject.galaxy
       galaxy_build_client: false
-    - role: usegalaxy_ca.patch
+    - role: usegalaxy_ca.client
       become: true
       become_user: "{{ galaxy_privsep_user }}"
