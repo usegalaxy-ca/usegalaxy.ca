@@ -89,7 +89,7 @@ staging:
   instances:
     galaxyservers:
       - name: galaxy
-        flavor: p4-7.5gb
+        flavor: p4-15gb
         security_groups: [usegal, web, usegal-tusd, usegal-slurm]
     dbservers:
       - name: db
