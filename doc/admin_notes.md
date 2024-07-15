@@ -54,35 +54,39 @@ doppler run -- terraform apply
 
 ## Ansible
 
+Favor using the usegalaxy executable in the ansible folder to run anything related to ansible.
+
+This prevents several disastrous mistakes by among other things:
+
+- Ensuring the correct python virtual environment is used
+- Ensuring doppler is used to inject secrets
+- Prevents multiple playbooks from running at the same time
+
+This executable should be run from the ansible subfolder
+
 ### Install ansible-roles
 
-Create a python virtual environment and install the python dependencies
+Will create a python virtual environment and install the python dependencies as well as the ansible roles and collections in the ~/.ansible/ directory
 
 ```
-- python -m venv .venv
-- source .venv/bin/activate
-- pip install -r requirements.txt
-```
-
-Then install the ansible roles and collections. They will be installed in ~/.ansible/ by default
-
-```
-ansible-galaxy install -r requirements.yml
+cd ansible/
+./usegalaxy requirements
 ```
 
 ### Run the playbook
 
 ```
-cd ansible
-doppler run -- ansible-playbook --tags $TAG galaxy.yml
+cd ansible/
+./usegalaxy $TAG
 ```
 
-Where $TAG = setup, galaxy, postgres, proxy, etc...
+Where $TAG is the name of a playbook: all for all.yaml, galaxy for galaxy.yml, slurm, etc...
 
-Or use the CLI
+use the --init flag on the first run. This will add extra steps to ensure compatibility with preexisting volumes.
 
 ```
-./usegalaxy setup
+cd ansible/
+./usegalaxy all --init
 ```
 
 [Dopp]: https://www.doppler.com/
