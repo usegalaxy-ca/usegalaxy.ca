@@ -20,10 +20,10 @@
     #     dest: "~/requirements.txt"
     # - pip:
     #     requirements: "~/requirements.txt"
-    - pip:
-        name: [docker, docker-compose]
-      tags:
-        - always
+    # - pip:
+    #     name: [docker, docker-compose]
+    #   tags:
+    #     - always
   vars_files:
     - group_vars/secret.yml
     - group_vars/terraform.yml
