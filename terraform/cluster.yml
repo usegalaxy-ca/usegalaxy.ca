@@ -89,10 +89,12 @@ staging:
   instances:
     galaxyservers:
       - name: galaxy
+        image: ubuntu24
         flavor: p4-15gb
         security_groups: [usegal, web, usegal-tusd, usegal-slurm]
     dbservers:
       - name: db
+        image: ubuntu24
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-psql]
     monitorservers:
@@ -103,23 +105,28 @@ staging:
           [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
     nfsservers:
       - name: nfs
+        image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-nfs]
     squidservers:
       - name: squid
+        image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-squid]
     slurmcontrolservers:
       - name: slurmcontrol
+        image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
       - name: slurmexec
+        image: ubuntu24
         volume_type: volumes-ec
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
         count: 2
       - name: slurmfat
+        image: ubuntu24
         volume_type: volumes-ec
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]

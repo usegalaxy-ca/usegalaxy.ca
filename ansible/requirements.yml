@@ -18,8 +18,6 @@ roles:
   - name: laperlej.cvmfs
     src: https://github.com/laperlej/ansible-cvmfs
     version: main
-  # - src: galaxyproject.cvmfs
-  #   version: 0.2.21
   # TUS (uploads)
   - name: galaxyproject.tusd
     version: 0.0.1
@@ -41,7 +39,6 @@ roles:
   - name: dj-wasabi.telegraf
     src: https://github.com/dj-wasabi/ansible-telegraf
     version: 39bc504fd50fbf11a36a4e72690c5de81f0e3010
-    #version: 6f6fdf7f5ead491560783d52528b79e9e088bd5b
   # Grafana
   - src: cloudalchemy.grafana
     version: 0.14.2
