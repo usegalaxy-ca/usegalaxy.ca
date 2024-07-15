@@ -8,15 +8,33 @@ view the help for more information
 """
 import argparse
 import glob
+import logging
+import sys
 from cli.ansible import Ansible
 from cli.dependencies import DependencyManager
+from cli.runner import NonZeroExitCodeException
 
 """
 Parse args and run the appropriate function
 """
 def main():
+    exitcode = 0
+    logging.basicConfig(filename='.usegalaxy.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger()
     parser = ArgParser()
-    parser.run()
+    arguments = " ".join(sys.argv)
+    logger.info("Start %s" % arguments)
+    try:
+        parser.run()
+    except NonZeroExitCodeException as e:
+        exitcode = 1
+        print(e)
+        logger.error(e)
+    except argparse.ArgumentError as e:
+        exitcode = 1
+        logger.error("Invalid arguments")
+    logger.info("End %s" % arguments)
+    exit(exitcode)
 
 """
 ArgParser class
@@ -26,7 +44,7 @@ Attributes:
 """
 class ArgParser():
     def __init__(self):
-        self.parser = argparse.ArgumentParser(
+        self.parser = ArgumentParser(
             prog="UseGalaxyCLI",
             description="Used to run commmon ansible recipes")
         subparsers = self.parser.add_subparsers(help='sub-command help')
@@ -53,6 +71,14 @@ class ArgParser():
             exit(1)
         args.func(args)
 
+"""
+Custom ArgumentParser to raise an error and print the usage
+"""
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        self.print_usage()
+        print(message)
+        raise argparse.ArgumentError(None, message)
 
 """
 Run an ansible playbook

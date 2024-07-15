@@ -12,6 +12,7 @@ terraform.tfstate.backup
 *.swp
 *.pyc
 *.pyo
+*.log
 .vagrant
 .git/
 
