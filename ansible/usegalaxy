@@ -30,7 +30,6 @@ def main():
     try:
         import time
         lock.acquire()
-        time.sleep(5)
         parser.run()
     except NonZeroExitCodeException as e:
         exitcode = 1
