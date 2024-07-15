@@ -6,6 +6,7 @@
     owner: pgalaxy
     group: pgalaxy
     mode: "0664"
+  register: patch_login_form
 
 - name: Patch ExternalLogin
   copy:
@@ -14,6 +15,7 @@
     owner: pgalaxy
     group: pgalaxy
     mode: "0664"
+  register: patch_external_login
 
 - name: Build client
   make:
@@ -22,3 +24,4 @@
   environment:
     PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  when: patch_login_form.changed or patch_external_login.changed
