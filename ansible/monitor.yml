@@ -15,15 +15,8 @@
             "python3-venv",
             "python3-setuptools",
           ]
-    # - copy:
-    #     src: "files/monitor/requirements.txt"
-    #     dest: "~/requirements.txt"
-    # - pip:
-    #     requirements: "~/requirements.txt"
-    # - pip:
-    #     name: [docker, docker-compose]
-    #   tags:
-    #     - always
+      tags:
+        - always
   vars_files:
     - group_vars/secret.yml
     - group_vars/terraform.yml
