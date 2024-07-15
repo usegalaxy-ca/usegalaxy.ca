@@ -97,6 +97,7 @@ staging:
         security_groups: [usegal, usegal-psql]
     monitorservers:
       - name: monitor
+        image: ubuntu24
         flavor: p4-7.5gb
         security_groups:
           [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
