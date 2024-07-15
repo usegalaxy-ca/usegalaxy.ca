@@ -25,7 +25,9 @@
     - usegalaxy_ca.monitor
     - usegalaxy_ca.docker
     - usegalaxy_ca.influxdb_key
-    - usegalaxy_eu.influxdb
+    - role: usegalaxy_eu.influxdb
+      vars:
+        ansible_distribution_release: "stable"
     - cloudalchemy.grafana
     - dj-wasabi.telegraf
     - laperlej.sentry_selfhosted
