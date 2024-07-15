@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 """
 This CLI is used to run common ansible recipes
  
@@ -13,6 +13,7 @@ import sys
 from cli.ansible import Ansible
 from cli.dependencies import DependencyManager
 from cli.runner import NonZeroExitCodeException
+from cli.lock import Lock, LockAlreadyAcquiredError
 
 """
 Parse args and run the appropriate function
@@ -21,10 +22,15 @@ def main():
     exitcode = 0
     logging.basicConfig(filename='.usegalaxy.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     logger = logging.getLogger()
+    lock = Lock(".lock")
     parser = ArgParser()
+
     arguments = " ".join(sys.argv)
     logger.info("Start %s" % arguments)
     try:
+        import time
+        lock.acquire()
+        time.sleep(5)
         parser.run()
     except NonZeroExitCodeException as e:
         exitcode = 1
@@ -33,7 +39,13 @@ def main():
     except argparse.ArgumentError as e:
         exitcode = 1
         logger.error("Invalid arguments")
+    except LockAlreadyAcquiredError as e:
+        msg = "Another instance of UseGalaxyCLI is already running"
+        print(msg)
+        logger.error(msg)
+        exit(1)
     logger.info("End %s" % arguments)
+
     exit(exitcode)
 
 """

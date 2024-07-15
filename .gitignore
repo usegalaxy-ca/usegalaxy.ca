@@ -13,6 +13,7 @@ terraform.tfstate.backup
 *.pyc
 *.pyo
 *.log
+*.lock
 .vagrant
 .git/
 
