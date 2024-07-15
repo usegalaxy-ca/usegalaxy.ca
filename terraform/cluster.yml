@@ -115,7 +115,7 @@ staging:
         security_groups: [usegal, usegal-squid]
     slurmcontrolservers:
       - name: slurmcontrol
-        image: ubuntu24
+        image: ubuntu22
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
