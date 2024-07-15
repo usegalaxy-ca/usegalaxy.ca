@@ -89,7 +89,7 @@ staging:
   instances:
     galaxyservers:
       - name: galaxy
-        image: ubuntu24
+        image: ubuntu22
         flavor: p4-15gb
         security_groups: [usegal, web, usegal-tusd, usegal-slurm]
     dbservers:
@@ -120,13 +120,13 @@ staging:
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
       - name: slurmexec
-        image: ubuntu24
+        image: ubuntu22
         volume_type: volumes-ec
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
         count: 2
       - name: slurmfat
-        image: ubuntu24
+        image: ubuntu22
         volume_type: volumes-ec
         flavor: p8-30gb
         security_groups: [usegal, usegal-slurm]
