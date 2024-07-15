@@ -1,0 +1,40 @@
+- hosts: monitorservers
+  become: true
+  become_user: root
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-pip",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+    # - copy:
+    #     src: "files/monitor/requirements.txt"
+    #     dest: "~/requirements.txt"
+    # - pip:
+    #     requirements: "~/requirements.txt"
+    - pip:
+        name: [docker, docker-compose]
+      tags:
+        - always
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+  roles:
+    - usegalaxy_ca.volume
+    - usegalaxy_ca.monitor
+    - usegalaxy_ca.docker
+    - usegalaxy_ca.influxdb_key
+    - usegalaxy_eu.influxdb
+    - cloudalchemy.grafana
+    - dj-wasabi.telegraf
+    - laperlej.sentry_selfhosted
+    - usegalaxy_ca.backup_influx
+    - usegalaxy_ca.backup_tsm
