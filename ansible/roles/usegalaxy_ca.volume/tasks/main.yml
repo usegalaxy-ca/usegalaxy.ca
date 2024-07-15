@@ -1,7 +1,7 @@
 ---
 - name: install zfsutils-linux
   apt:
-    name: zfsutils-linux=2.1.*
+    name: zfsutils-linux
     state: present
 
 - name: Format Volume
