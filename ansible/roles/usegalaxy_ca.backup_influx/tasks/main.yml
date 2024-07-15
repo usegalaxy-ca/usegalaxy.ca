@@ -18,17 +18,9 @@
     name: "cargo"
     state: present
 
-- name: git clone backup-rotation
-  git:
-    repo: https://github.com/laperlej/backup-rotation.git
-    dest: ~/backup-rotation
-  become: true
-  become_user: influxdb
-
 - name: install backup-rotation cli
   command:
-    cmd: cargo install --path .
-    chdir: ~/backup-rotation
+    cmd: cargo install --git https://github.com/laperlej/backup-rotation.git
   become_user: influxdb
   become: true
 
