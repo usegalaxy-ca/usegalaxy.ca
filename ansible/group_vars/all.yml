@@ -1,5 +1,7 @@
 ---
 MAINTENANCE_MODE: false
+CLUSTER_NAME: "{{ lookup('env', 'TF_VAR_CLUSTER_NAME') }}"
+OS_USERNAME: "{{ lookup('env', 'TF_VAR_USERNAME') }}"
 
 # Python 3 support
 pip_virtualenv_command: /usr/bin/python3 -m venv # usegalaxy_eu.certbot, usegalaxy_eu.tiaas2, galaxyproject.galaxy
