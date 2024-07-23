@@ -38,4 +38,4 @@
     hour: "3"
     minute: "30"
     user: "influxdb"
-    job: "~/.cargo/bin/backup-rotation --format influx_%Y-%m-%d_%H-%M-%S /mnt/backup/influx_*"
+    job: "~/.cargo/bin/backup-rotation --format influx_\\%Y-\\%m-\\%d_\\%H-\\%M-\\%S /mnt/backup/influx_*"

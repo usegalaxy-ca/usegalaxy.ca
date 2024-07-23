@@ -39,4 +39,4 @@
     hour: "3"
     minute: "30"
     user: "postgres"
-    job: "~/.cargo/bin/backup-rotation --format pg_%Y-%m-%d_%H--%M-%S.tar /mnt/backup/pg_*.tar"
+    job: "~/.cargo/bin/backup-rotation --format pg_\\%Y-\\%m-\\%d_\\%H--\\%M-\\%S.tar /mnt/backup/pg_*.tar"
