@@ -21,7 +21,7 @@ grafana_datasources:
 #INFLUXDB
 influxdb_cache_size:
   - prod: 1048576000
-  - test: 5368709120
+  - staging: 5368709120
 influxdb_data_cache_max_memory_size: "{{ influxdb_cache_size[CLUSTER_NAME] }}"
 
 #SENTRY
