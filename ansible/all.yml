@@ -1,79 +1,9 @@
 ---
-- hosts: nfsservers
-  become: true
-  become_user: root
-  vars_files:
-    - group_vars/secret.yml
-    - group_vars/terraform.yml
-    - group_vars/galaxyservers.yml
-  roles:
-    - usegalaxy_ca.volume
-    - usegalaxy_ca.nfs_server
-    - dj-wasabi.telegraf
-    - usegalaxy_ca.backup_tsm
+- name: volumes
+  import_playbook: volumes.yml
 
-- hosts: squidservers
-  become: true
-  become_user: root
-  vars_files:
-    - group_vars/terraform.yml
-    - group_vars/galaxyservers.yml
-    - group_vars/cvmfsservers.yml
-  roles:
-    - usegalaxy_ca.volume
-    - usegalaxy_ca.squid
-    - laperlej.cvmfs
-    - dj-wasabi.telegraf
-
-- hosts: slurmcontrolservers
-  become: true
-  become_user: root
-  vars:
-    slurm_roles: ["controller"]
-  vars_files:
-    - group_vars/secret.yml
-    - group_vars/slurm.yml
-    - group_vars/galaxyservers.yml
-  roles:
-    - usegalaxy_ca.nfs_client
-    - usegalaxy_ca.slurm
-    - galaxyproject.repos
-    - galaxyproject.slurm
-    - dj-wasabi.telegraf
-
-- hosts: slurmexecservers
-  become: true
-  become_user: root
-  vars:
-    slurm_roles: ["exec"]
-  vars_files:
-    - group_vars/secret.yml
-    - group_vars/slurm.yml
-    - group_vars/galaxyservers.yml
-    - group_vars/cvmfsclient.yml
-  pre_tasks:
-    - name: install dependencies
-      package:
-        name:
-          [
-            "acl",
-            "bzip2",
-            "git",
-            "make",
-            "tar",
-            "python3-venv",
-            "python3-setuptools",
-          ]
-      tags:
-        - always
-  roles:
-    - usegalaxy_ca.nfs_client
-    - usegalaxy_eu.apptainer
-    - laperlej.cvmfs
-    - usegalaxy_ca.slurm
-    - galaxyproject.repos
-    - galaxyproject.slurm
-    - dj-wasabi.telegraf
+- name: slurm
+  import_playbook: slurm.yml
 
 - hosts: dbservers
   become: true
@@ -88,7 +18,6 @@
       tags:
         - always
   roles:
-    - usegalaxy_ca.volume
     - usegalaxy_ca.postgresql
     - galaxyproject.postgresql
     - role: usegalaxy_ca.restart_postgres
@@ -99,104 +28,13 @@
       become_user: postgres
     - usegalaxy_ca.gxadmin
     - galaxyproject.gxadmin
-    - dj-wasabi.telegraf
     - usegalaxy_ca.backup_pg
-    - usegalaxy_ca.backup_tsm
 
-- hosts: galaxyservers
-  become: true
-  become_user: root
-  vars:
-    slurm_roles: ["exec"]
-  vars_files:
-    - group_vars/secret.yml
-    - group_vars/slurm.yml
-    - group_vars/cvmfsclient.yml
-  pre_tasks:
-    - name: install dependencies
-      package:
-        name:
-          [
-            "acl",
-            "bzip2",
-            "git",
-            "make",
-            "tar",
-            "python3-venv",
-            "python3-setuptools",
-          ]
-      tags:
-        - always
-  roles:
-    - usegalaxy_ca.nfs_client
-    - usegalaxy_ca.slurm
-    - galaxyproject.repos
-    - galaxyproject.slurm
-    - usegalaxy_eu.apptainer
-    - galaxyproject.tusd
-    - role: galaxyproject.galaxy
-      galaxy_build_client: false
-    - role: usegalaxy_ca.client
-      become: true
-      become_user: "{{ galaxy_privsep_user }}"
-    - role: galaxyproject.miniconda
-      become: true
-      become_user: "{{ galaxy_user_name }}"
-    - usegalaxy_ca.maintenance
-    - galaxyproject.nginx
-    - laperlej.cvmfs
-    - usegalaxy_ca.drmaa
-    - role: usegalaxy_ca.restart_galaxy
-      become: true
-      become_user: root
-    - role: usegalaxy_ca.service_account
-      become: false
-    - dj-wasabi.telegraf
+- name: galaxy
+  import_playbook: galaxy.yml
 
-  post_tasks:
-    - name: fetch edugain idps the first time
-      command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
-      become: true
-      become_user: pgalaxy
-    - name: set cron jobs
-      ansible.builtin.cron:
-        name: "cron jobs to adjust allocations group for canadian users"
-        minute: "*/5"
-        user: pgalaxy
-        job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
+- name: monitor
+  import_playbook: monitor.yml
 
-- hosts: monitorservers
-  become: true
-  become_user: root
-  pre_tasks:
-    - name: install dependencies
-      package:
-        name:
-          [
-            "acl",
-            "bzip2",
-            "git",
-            "make",
-            "tar",
-            "python3-pip",
-            "python3-venv",
-            "python3-setuptools",
-          ]
-      tags:
-        - always
-  vars_files:
-    - group_vars/secret.yml
-    - group_vars/terraform.yml
-  roles:
-    - usegalaxy_ca.volume
-    - usegalaxy_ca.monitor
-    - usegalaxy_ca.docker
-    - usegalaxy_ca.influxdb_key
-    - role: usegalaxy_eu.influxdb
-      vars:
-        ansible_distribution_release: "stable"
-    - cloudalchemy.grafana
-    - dj-wasabi.telegraf
-    - laperlej.sentry_selfhosted
-    - usegalaxy_ca.backup_influx
-    - usegalaxy_ca.backup_tsm
+- name: tsm backups
+  import_playbook: tsm_backup.yml

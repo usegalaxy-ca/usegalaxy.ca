@@ -29,7 +29,13 @@
       vars:
         ansible_distribution_release: "stable"
     - cloudalchemy.grafana
-    - dj-wasabi.telegraf
     - laperlej.sentry_selfhosted
     - usegalaxy_ca.backup_influx
-    - usegalaxy_ca.backup_tsm
+
+- hosts: all
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+  roles:
+    - dj-wasabi.telegraf
