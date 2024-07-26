@@ -12,8 +12,11 @@ tools:
     mem: 160
   toolshed.g2.bx.psu.edu/repos/chemteam/bio3d_rmsf/bio3d_rmsf/.*:
     mem: 160
-  toolshed.g2.bx.psu.edu/repos/chemteam/bio3d_rmsf/bio3d_rmsf/.*:
-    mem: 160
+  toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/.*:
+    cores: 32
+    mem: 512
+    env:
+      _JAVA_OPTIONS: -Xmx{int(mem)}G -Xms1G
   .*testing.*:
     cores: 2
     mem: cores * 3.8
