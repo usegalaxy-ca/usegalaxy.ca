@@ -17,8 +17,6 @@ tools:
   toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/.*:
     cores: 32
     mem: 240
-    env:
-      _JAVA_OPTIONS: -Xmx{int(mem)}G -Xms1G
   .*testing.*:
     cores: 2
     mem: cores * 3.8
