@@ -46,6 +46,9 @@ roles:
   - name: laperlej.sentry_selfhosted
     src: https://github.com/laperlej/ansible-role-sentry
     version: main
+  # TPV Linting
+  - name: usegalaxy_eu.tpv_auto_lint
+    version: 0.4.3
 
 collections:
   # Ansible Posix
