@@ -24,11 +24,11 @@
         - always
   roles:
     - galaxyproject.tusd
-    - role: galaxyproject.galaxy
-      galaxy_build_client: false
     - role: usegalaxy_ca.tpv_auto_lint
       become: true
       become_user: "{{ galaxy_user_name }}"
+    - role: galaxyproject.galaxy
+      galaxy_build_client: false
     - role: usegalaxy_ca.client
       become: true
       become_user: "{{ galaxy_privsep_user }}"
