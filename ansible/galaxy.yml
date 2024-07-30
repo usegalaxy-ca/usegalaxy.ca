@@ -24,9 +24,9 @@
         - always
   roles:
     - galaxyproject.tusd
+    - role: usegalaxy_eu.tpv_auto_lint
     - role: galaxyproject.galaxy
       galaxy_build_client: false
-    - role: usegalaxy_eu.tpv_auto_lint
     - role: usegalaxy_ca.client
       become: true
       become_user: "{{ galaxy_privsep_user }}"
