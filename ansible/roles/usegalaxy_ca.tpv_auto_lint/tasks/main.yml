@@ -9,7 +9,7 @@
   ansible.builtin.template:
     src: tpv-lint-and-copy.sh.j2
     dest: "{{ tpv_mutable_dir }}/tpv-lint-and-copy.sh"
-    owner: pgalaxy
+    owner: galaxy
     group: galaxy
     mode: 0750
 
