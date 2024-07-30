@@ -17,7 +17,7 @@ galaxy_local_tools_dir: "{{ galaxy_root }}/local_tools"
 galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
 
 nginx_srv: /srv/nginx
-tpv_mutable_dir: /mnt/total_perspective_vortex
+tpv_mutable_dir: /mnt/nfs/galaxy/var/total_perspective_vortex
 tpv_config_dir: /mnt/nfs/galaxy/config/TPV_DO_NOT_TOUCH
 galaxy_extra_privsep_dirs:
   - "{{ tpv_mutable_dir }}"
