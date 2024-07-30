@@ -14,7 +14,6 @@ for f in "$TPV_MUTABLE_DIR"/*.yml; do
         FNAME=$(basename "$f")
         if PYTHONPATH=$PYTHONPATH tpv lint "$f"; then
                 echo "lint successful, checking job configuration..."
-                echo "looking for $TPV_DIR_NAME/$FNAME in file $JOB_CONFIG_FILE"
                 if grep -q "$TPV_DIR_NAME/$FNAME" "$JOB_CONFIG_FILE"; then
                         echo "$FNAME is present in job configuration, copying..."
                         [[ $(type -t cp) == "alias" ]] && unalias cp
