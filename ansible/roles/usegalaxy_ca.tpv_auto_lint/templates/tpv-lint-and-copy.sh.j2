@@ -17,7 +17,7 @@ for f in "$TPV_MUTABLE_DIR"/*.yml; do
                 if grep -q "$TPV_DIR_NAME/$FNAME" "$JOB_CONFIG_FILE"; then
                         echo "$FNAME is present in job configuration, copying..."
                         [[ $(type -t cp) == "alias" ]] && unalias cp
-                        cp -b "$f" "$TPV_DIR/$FNAME" {% if tpv_privsep %}&& chown root:{{ __galaxy_user_group }} "$TPV_DIR/$FNAME" {% endif %}
+                        cp -b "$f" "$TPV_DIR/$FNAME" {% if tpv_privsep %}&& chown root:{{ galaxy_user_group }} "$TPV_DIR/$FNAME" {% endif %}
 
                 else
                         echo "$FNAME is not present in job configuration, exiting..."
