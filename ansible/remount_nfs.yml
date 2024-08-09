@@ -10,6 +10,8 @@
       systemd:
         name: nfs-kernel-server
         state: stopped
+    - name: kill all processes using nfs
+      shell: fuser -km /mnt/nfs
     - name: unmount nfs
       command: umount -f /mnt/nfs
       register: result
