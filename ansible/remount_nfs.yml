@@ -11,7 +11,7 @@
         name: nfs-kernel-server
         state: stopped
     - name: unmount nfs
-      command: umount /mnt/nfs
+      command: umount -f /mnt/nfs
       retries: 5
     - name: remount nfs
       command: mount /mnt/nfs
