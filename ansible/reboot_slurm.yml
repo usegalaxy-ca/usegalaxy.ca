@@ -8,9 +8,3 @@
   tasks:
     - name: restart machine
       command: reboot
-    - name: mount nfs
-      command: mount /mnt/nfs
-    - name: turn on nfs-kernel-server
-      systemd:
-        name: nfs-kernel-server
-        state: started
