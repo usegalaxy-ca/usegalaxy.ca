@@ -1,0 +1,21 @@
+- hosts: slurmcontrolservers,slurmexecservers,galaxyservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/slurm.yml
+    - group_vars/galaxyservers.yml
+  tasks:
+    - name: turn off nfs-kernel-server
+      systemd:
+        name: nfs-kernel-server
+        state: stopped
+    - name: unmount nfs
+      command: umount /mnt/nfs
+      retries: 5
+    - name: remount nfs
+      command: mount /mnt/nfs
+    - name: turn on nfs-kernel-server
+      systemd:
+        name: nfs-kernel-server
+        state: started
