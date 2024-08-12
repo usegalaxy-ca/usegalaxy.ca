@@ -11,7 +11,7 @@ different values for each of your environment. Dev, testing, prod, etc...
 
 - Authenticate and authorise the Doppler Client (CLI) in your client machine account
 
-```
+```bash
 # Just follow the instruction
 doppler login
 ```
@@ -20,7 +20,7 @@ doppler login
 - ... and run the setup command to link the project
 - note: requires read/write token
 
-```
+```bash
 cd /your-project-directory/
 echo 'THE_GENERATED_TOKEN' | doppler configure set token --scope /usr/src/app
 doppler setup
@@ -28,13 +28,13 @@ doppler setup
 
 - To have Doppler inject all your secrets through environmenet variables accessible at run time by your application
 
-```
+```bash
 doppler run -- your-command-here
 ```
 
 - Other doppler commands:
 
-```
+```bash
 # Display the value of one secret variable
 doppler run --command="echo \$SECRET_VAR_NAME"
 ```
@@ -45,7 +45,7 @@ Adjust your cluster using the cluster.yml file, the first level of your cluster 
 
 The available parameters and their default values can be found in the instances_info variable of the [terraform/modules/openstack/variables.tf](../terraform/modules/openstack/variables.tf) file
 
-```
+```bash
 cd terraform/
 terraform init
 # To run terraform. Terraform will show you what will be changed (its "plan of action") before applying the changes.
@@ -68,14 +68,14 @@ This executable should be run from the ansible subfolder
 
 Will create a python virtual environment and install the python dependencies as well as the ansible roles and collections in the ~/.ansible/ directory
 
-```
+```bash
 cd ansible/
 ./usegalaxy requirements
 ```
 
 ### Run the playbook
 
-```
+```bash
 cd ansible/
 ./usegalaxy $TAG
 ```
@@ -84,7 +84,7 @@ Where $TAG is the name of a playbook: all for all.yaml, galaxy for galaxy.yml, s
 
 use the --init flag on the first run. This will add extra steps to ensure compatibility with preexisting volumes.
 
-```
+```bash
 cd ansible/
 ./usegalaxy all --init
 ```
@@ -92,3 +92,19 @@ cd ansible/
 [Dopp]: https://www.doppler.com/
 [AGR]: https://github.com/galaxyproject/ansible-galaxy
 [GIWA]: https://training.galaxyproject.org/training-material/topics/admin/tutorials/ansible-galaxy/tutorial.html
+
+## NFS
+
+The galaxy and slurm instances depend on a shared file system. This is achieved using NFS.
+
+In order for the NFS clients to recover if the NFS server is recreated (e.g. after increasing the RAM
+of the NFS server), the NFS server must be recreated with the same IP address, otherwise it will be
+stuck in an infinite retry loop.
+
+Note that this will most likely require a restart of the galaxy instance if there is any downtime.
+
+on the galaxy node:
+
+```bash
+sudo galaxyctl restart
+```
