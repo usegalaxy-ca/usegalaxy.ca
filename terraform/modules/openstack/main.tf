@@ -67,5 +67,6 @@ resource "openstack_compute_instance_v2" "instances" {
   security_groups = each.value.security_groups
   network {
     uuid = each.value.network_uuid
+    fixed_ip_v4 = each.value.fixed_ip
   }
 }

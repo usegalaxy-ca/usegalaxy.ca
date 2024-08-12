@@ -105,6 +105,7 @@ staging:
           [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
     nfsservers:
       - name: nfs
+        fixed_ip: 172.16.59.114
         image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-nfs]

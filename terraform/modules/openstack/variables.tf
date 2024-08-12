@@ -6,6 +6,7 @@ variable "instance_config" {
         volume_type = optional(string, null)
         image = optional(string, "ubuntu22")
         network_uuid = optional(string, "94db2a0a-14a4-4934-896d-a28bbc651b09")
+        fixed_ip = optional(string, null)
         security_groups = optional(list(string), ["default"])
         count = optional(number, 1)
     })))
@@ -47,6 +48,7 @@ locals {
             image = local.images[instance.image]
             image_uuid = local.uuids[instance.image]
             network_uuid = instance.network_uuid
+            fixed_ip = instance.fixed_ip
             security_groups = instance.security_groups
             group_name = group_name
         }
