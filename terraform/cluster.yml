@@ -17,7 +17,8 @@ prod:
           [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
     nfsservers:
       - name: nfs
-        flavor: p4-7.5gb
+        fixed_ip: 172.16.59.160
+        flavor: p8-30gb
         security_groups: [usegal, usegal-nfs]
     squidservers:
       - name: squid

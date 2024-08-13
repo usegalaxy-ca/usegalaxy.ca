@@ -1,5 +1,5 @@
 ---
-MAINTENANCE_MODE: false
+MAINTENANCE_MODE: true
 CLUSTER_NAME: "{{ lookup('env', 'TF_VAR_CLUSTER_NAME') }}"
 OS_USERNAME: "{{ lookup('env', 'TF_VAR_USERNAME') }}"
 
