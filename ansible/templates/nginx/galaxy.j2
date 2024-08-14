@@ -18,6 +18,9 @@ server {
 
     {% if MAINTENANCE_MODE %}
     location / {
+        add_header Cache-Control 'no-cache';
+        add_header Cache-Control 'no-store';
+        expires 0;
         root   /var/www/html/;
         index  /var/www/html/maintenance.html;
         rewrite ^ /maintenance.html break;
