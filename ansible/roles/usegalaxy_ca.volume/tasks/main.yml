@@ -4,6 +4,11 @@
     name: zfsutils-linux
     state: present
 
+- name: install zfs-auto-snapshot
+  apt:
+    name: zfs-auto-snapshot
+    state: present
+
 - name: Format Volume
   community.general.filesystem:
     fstype: "{{ item.fstype }}"
@@ -34,6 +39,52 @@
   command: "zpool create -m {{ item.mount_point }} pool{{ idx }} {{ item.device }}"
   args:
     creates: "{{ item.mount_point }}"
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'
+
+### ZFS Auto-Snapshot
+
+- name: Turn on ZFS auto-snapshot
+  command: zfs set com.sun:auto-snapshot=true pool{{ idx }}
+  args:
+    creates: "{{ item.mount_point }}"
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'
+
+- name: ZFS Auto Snapshot Daily Cron
+  cron:
+    name: "ZFS Auto Snapshot Daily"
+    minute: 0
+    hour: 3
+    job: zfs-auto-snapshot -q -g --label=daily --keep=3 pool{{ idx }}
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'
+
+- name: ZFS Auto Snapshot Weekly Cron
+  minute: 7
+  hour: 3
+  weekday: 7
+  cron:
+    name: "ZFS Auto Snapshot Weekly"
+    job: zfs-auto-snapshot -q -g --label=weekly --keep=3 pool{{ idx }}
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'
+
+- name: ZFS Auto Snapshot Monthly Cron
+  cron:
+    name: "ZFS Auto Snapshot Monthly"
+    minute: 14
+    hour: 3
+    day: 1
+    job: zfs-auto-snapshot -q -g --label=monthly --keep=3 pool{{ idx }}
   loop: "{{ volumes[inventory_hostname] | list }}"
   loop_control:
     index_var: idx
