@@ -67,11 +67,11 @@
   when: item.fstype == 'zfs'
 
 - name: ZFS Auto Snapshot Weekly Cron
-  minute: 7
-  hour: 3
-  weekday: 7
   cron:
     name: "ZFS Auto Snapshot Weekly"
+    minute: 7
+    hour: 3
+    weekday: 7
     job: zfs-auto-snapshot -q -g --label=weekly --keep=3 pool{{ idx }}
   loop: "{{ volumes[inventory_hostname] | list }}"
   loop_control:
