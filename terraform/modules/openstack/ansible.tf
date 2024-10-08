@@ -70,8 +70,9 @@ locals{
 #     }
 #   ]
 # }
-output "ansible_hosts" {
-    value =  {
+
+locals {
+    ansible_hosts =  {
         for group_name, instances in var.instance_config: 
             group_name => flatten([
                 for instance in instances : [
@@ -79,11 +80,20 @@ output "ansible_hosts" {
                         name = openstack_compute_instance_v2.instances[instance.count==1?instance.name:"${instance.name}${i}"].name
                         cpu = local.flavor_cpu[instance.flavor]
                         mem = local.flavor_mem[instance.flavor]
-                        training = instance.count==0?true:false
                     }
                 ]
             ])
     }
+}
+output "ansible_hosts" {
+    value = local.ansible_hosts
+}
+
+output "training_nodes" {
+    value = "${join(",", [
+        for host in local.ansible_hosts["slurmexecservers"] :
+            host.name
+    ])}"
 }
 
 # example of output
