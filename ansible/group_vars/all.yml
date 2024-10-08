@@ -21,7 +21,7 @@ slurm_config:
   SelectType: select/cons_res
   SelectTypeParameters: CR_CPU_Memory # Allocate individual cores/memory instead of entire node
   ReturnToService: 2
-  SchedulerParamaters: nohold_on_prolog_fail
+  SchedulerParameters: nohold_on_prolog_fail
   # AccountingStorageHost: "{{ groups['slurmcontrolservers'][0] }}"
   # AccountingStorageType: "accounting_storage/slurmdbd"
   # AccountingStorageUser: "slurm"
