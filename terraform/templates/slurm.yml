@@ -22,4 +22,4 @@ slurm_partitions:
   - name: main
     Default: YES
     MaxTime: UNLIMITED
-    Nodes: %{ for host in hosts ~}%{ if not '0' in host.name }${ host.name }%{ endif ~}%{ if loop.last ~},%{ endif ~}%{ endfor ~}
+    Nodes: %{ for host in hosts ~}%{ if not "0" in host.name }${ host.name }%{ endif ~}%{ if loop.last ~},%{ endif ~}%{ endfor ~}
