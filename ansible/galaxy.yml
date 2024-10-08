@@ -25,6 +25,9 @@
   roles:
     - galaxyproject.tusd
     - role: galaxyproject.galaxy
+      tags:
+        - never
+    - role: galaxyproject.galaxy
       galaxy_build_client: false
     - role: usegalaxy_ca.tpv_auto_lint
       become: true
