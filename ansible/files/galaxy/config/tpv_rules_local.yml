@@ -69,3 +69,6 @@ destinations:
       SINGULARITY_CACHEDIR: /tmp/singularity
       # Singularity uses a temporary directory to build the squashfs filesystem
       APPTAINER_TMPDIR: /tmp
+    scheduling:
+      reject:
+        - training
