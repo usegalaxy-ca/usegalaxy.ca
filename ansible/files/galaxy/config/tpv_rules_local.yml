@@ -43,18 +43,13 @@ destinations:
     runner: slurm
     max_accepted_cores: 32
     max_accepted_mem: 240
-    # max_cores: 2
-    # max_mem: 8
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=training
       singularity_enabled: true
       singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
     env:
-      # Ensuring a consistent collation environment is good for reproducibility.
       LC_ALL: C
-      # The cache directory holds the docker containers that get converted
       SINGULARITY_CACHEDIR: /tmp/singularity
-      # Singularity uses a temporary directory to build the squashfs filesystem
       APPTAINER_TMPDIR: /tmp
     scheduling:
       require:
@@ -63,8 +58,6 @@ destinations:
     runner: slurm
     max_accepted_cores: 32
     max_accepted_mem: 240
-    # max_cores: 2
-    # max_mem: 8
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=main
       singularity_enabled: true
