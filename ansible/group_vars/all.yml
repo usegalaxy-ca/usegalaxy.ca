@@ -40,12 +40,6 @@ slurm_cgroup_config:
   MaxRAMPercent: 100
   MaxSwapPercent: 100
 
-slurm_partitions:
-  - name: main
-    Default: YES
-    MaxTime: UNLIMITED
-    Nodes: ALL
-
 slurm_user:
   group: slurm
   name: slurm

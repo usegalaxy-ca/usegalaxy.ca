@@ -13,3 +13,13 @@ slurm_nodes:
 %{ endfor ~}
 %{ endif ~}
 %{ endfor ~}
+
+slurm_partitions:
+  - name: training
+    Default: NO
+    MaxTime: UNLIMITED
+    Nodes: ALL
+  - name: main
+    Default: YES
+    MaxTime: UNLIMITED
+    Nodes: %{ for host in hosts ~}%{ if not '0' in host.name }${ host.name }%{ endif ~}%{ if loop.last ~},%{ endif ~}%{ endfor ~}
