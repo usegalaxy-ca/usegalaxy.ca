@@ -22,4 +22,4 @@ slurm_partitions:
   - name: main
     Default: YES
     MaxTime: UNLIMITED
-    Nodes: ${training_nodes}
+    Nodes: ${main_nodes}

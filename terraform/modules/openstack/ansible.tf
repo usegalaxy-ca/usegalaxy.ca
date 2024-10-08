@@ -89,10 +89,10 @@ output "ansible_hosts" {
     value = local.ansible_hosts
 }
 
-output "training_nodes" {
+output "main_nodes" {
     value = "${join(",", [
         for host in local.ansible_hosts["slurmexecservers"] :
-            host.name
+            host.name if regexall(".*0", host.name) > 0
     ])}"
 }
 
