@@ -1,9 +1,15 @@
 import json
 import base64
+import logging
 import datetime,psycopg2
 from pprint import pprint
 import bioblend.galaxy
 from datetime import datetime
+
+logging.basicConfig(
+    format='%(asctime)s:%(levelname)s:%(message)s',
+    level=logging.INFO)
+
 
 ###################################################################################  
 
@@ -93,16 +99,19 @@ for token in custos_authnz_tokens:
         # Terminate the user account ?
         continue
 
-    if user_session_idp['code'] == 'CAF':
-        # Add user to the CanadianUsers Group
-        added_user=gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
-        if added_user not in CUAG_initial_users:
-            print(str(datetime.now())+" | User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
-    else:
-        # Add user to the EdugainUsers Group
-        added_user=gal.groups.add_group_user(EdugainUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
-        if added_user not in EUAG_initial_users:
-            print(str(datetime.now())+" | User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
+    try:
+        if user_session_idp['code'] == 'CAF':
+            # Add user to the CanadianUsers Group
+            added_user=gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+            if added_user not in CUAG_initial_users:
+                logging.info("User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
+        else:
+            # Add user to the EdugainUsers Group
+            added_user=gal.groups.add_group_user(EdugainUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+            if added_user not in EUAG_initial_users:
+                logging.info("User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
+    except Exception as err:
+        logging.exception("")
 
 # Maintain unique constraint manually until 24.2 is released
 cursor = conn.cursor()
