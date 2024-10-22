@@ -105,6 +105,18 @@ for token in custos_authnz_tokens:
             if added_user not in EUAG_initial_users:
                 print(str(datetime.now())+" | User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
 
+# Maintain unique constraint manually until 24.2 is released
+cursor = conn.cursor()
+cursor.execute("""
+DELETE FROM user_group_association
+WHERE (group_id, user_id, create_time) NOT IN (
+    SELECT group_id, user_id, min(create_time)
+    FROM user_group_association
+    GROUP BY (user_id, group_id)
+);
+""")
+cursor.close()
+
 # Closing db connection
 conn.close()
 
