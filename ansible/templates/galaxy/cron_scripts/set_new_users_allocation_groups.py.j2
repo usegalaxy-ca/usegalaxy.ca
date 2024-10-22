@@ -83,7 +83,7 @@ for token in custos_authnz_tokens:
     API_galaxy_user_infos=gal.users.get_users(f_email=galaxy_user_email)
 
     # Get infos of IDP used to authenticate
-    session_idp=None
+    user_session_idp=None
     for idp in idps:
         if idp[0]['entityid'] == user_session_infos['idp']:
             user_session_idp=idp[0]
