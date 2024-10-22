@@ -69,6 +69,7 @@ except:
 cursor = conn.cursor()
 cursor.execute("SELECT galaxy_user.email,custos_authnz_token.id_token FROM galaxy_user,custos_authnz_token WHERE custos_authnz_token.expiration_time > NOW() AND galaxy_user.id=custos_authnz_token.user_id")
 custos_authnz_tokens = cursor.fetchall()
+cursor.close()
 
 # Loop over the tokens and Fetch detailed info at CILogon for each
 
@@ -103,7 +104,6 @@ for token in custos_authnz_tokens:
             added_user=gal.groups.add_group_user(EdugainUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
             if added_user not in EUAG_initial_users:
                 print(str(datetime.now())+" | User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
-
 
 # Closing db connection
 conn.close()
