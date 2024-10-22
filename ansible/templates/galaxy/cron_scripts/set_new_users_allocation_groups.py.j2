@@ -1,6 +1,5 @@
-
-
 import json
+import base64
 import datetime,psycopg2
 from pprint import pprint
 import requests
@@ -68,7 +67,7 @@ except:
 ###################################################################################
 # Fetch the CILogon non expired session tokens in galaxy DB
 cursor = conn.cursor()
-cursor.execute("SELECT galaxy_user.email,custos_authnz_token.access_token FROM galaxy_user,custos_authnz_token WHERE custos_authnz_token.expiration_time > NOW() AND galaxy_user.id=custos_authnz_token.user_id")
+cursor.execute("SELECT galaxy_user.email,custos_authnz_token.id_token FROM galaxy_user,custos_authnz_token WHERE custos_authnz_token.expiration_time > NOW() AND galaxy_user.id=custos_authnz_token.user_id")
 custos_authnz_tokens = cursor.fetchall()
 
 # Loop over the tokens and Fetch detailed info at CILogon for each
@@ -77,9 +76,8 @@ for token in custos_authnz_tokens:
 
     # Extract user session information and galaxy user id
     galaxy_user_email=token[0]
-    headers={'Authorization': 'Bearer {}'.format(token[1]), 'Accept' : 'application/json' }  
-    r = requests.get('https://cilogon.org/oauth2/userinfo', headers=headers)
-    user_session_infos=r.json()
+    parts = token[1].split('.')
+    user_session_infos = json.loads(base64.b64decode(parts[1]))
 
     # Get galaxy user info from email in the Session 
     API_galaxy_user_infos=gal.users.get_users(f_email=galaxy_user_email)
