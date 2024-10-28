@@ -81,7 +81,7 @@ for token in custos_authnz_tokens:
     # Extract user session information and galaxy user id
     galaxy_user_email=token[0]
     parts = token[1].split('.')
-    user_session_infos = json.loads(base64.b64decode(parts[1]))
+    user_session_infos = json.loads(base64.b64decode(parts[1] + '=='))
 
     # Get galaxy user info from email in the Session 
     API_galaxy_user_infos=gal.users.get_users(f_email=galaxy_user_email)
