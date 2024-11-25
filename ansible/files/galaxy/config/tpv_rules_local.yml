@@ -14,12 +14,9 @@ tools:
     mem: 160
   toolshed.g2.bx.psu.edu/repos/iuc/spades_biosyntheticspades/spades_biosyntheticspades/.*:
     cores: 10
-    mem: 200 
+    mem: 200
   toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/.*:
     cores: 10
-    mem: 200
-  toolshed.g2.bx.psu.edu/repos/nml/spades/spades/.*:
-    cores: 20
     mem: 200
   toolshed.g2.bx.psu.edu/repos/iuc/spades_metaplasmidspades/spades_metaplasmidspades/.*:
     cores: 10
