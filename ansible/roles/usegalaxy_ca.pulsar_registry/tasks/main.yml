@@ -1,0 +1,24 @@
+- name: install cargo
+  package:
+    name: "cargo"
+    state: present
+
+- name: install pulsar_registry
+  command:
+    cmd: cargo install --git https://github.com/laperlej/pulsar_registry.git
+  become_user: galaxy
+  become: true
+
+- name: Add pulsar_registry to systemd
+  copy:
+    src: pulsar_registry.service
+    dest: /etc/systemd/system/pulsar_registry.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Start pulsar_registry
+  systemd:
+    name: pulsar_registry
+    state: started
+    enabled: yes

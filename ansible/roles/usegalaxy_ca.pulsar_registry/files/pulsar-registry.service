@@ -1,0 +1,26 @@
+[Unit]
+Description=Pulsar Registry
+After=network.target
+
+[Service]
+Type=simple
+User=galaxy
+Group=galaxy
+ExecStart=/home/galaxy/.cargo/bin/pulsar_registry
+WorkingDirectory=/home/galaxy
+
+# Restart configuration
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Basic hardening
+ProtectSystem=full
+ProtectHome=read-only
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
