@@ -2,9 +2,16 @@
 # This file is managed by Terraform. Do not edit.
 ###############################################
 
-volumes:
-%{ for info in volumes ~}
-  ${info.instance_name}:
-    volume_name: ${info.volume_name}
-    device: ${info.device}
-%{ endfor ~}
+${yamlencode({
+  volumes: {
+    for instance_name, infos in volumes:
+      instance_name => [
+        for idx, info in infos: {
+          volume_name: info.volume_name
+          device: info.device
+          fstype: info.fstype
+          mount_point: idx == 0 ? "/mnt/volume" : "/mnt/volume${idx}"
+        }
+      ]
+   }
+})}

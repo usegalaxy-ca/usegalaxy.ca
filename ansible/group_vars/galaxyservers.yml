@@ -6,8 +6,16 @@ galaxy_manage_paths: false # False by default as your administrator might e.g. h
 galaxy_privsep_user: pgalaxy
 galaxy_config_perms: 0664
 galaxy_layout: root-dir
-# galaxy_root: /srv/galaxy
 galaxy_root: /mnt/nfs/galaxy
+galaxy_server_dir: "{{ galaxy_root }}/server"
+galaxy_venv_dir: "{{ galaxy_root }}/venv"
+galaxy_config_dir: "{{ galaxy_root }}/config"
+galaxy_mutable_data_dir: "{{ galaxy_root }}/var"
+galaxy_mutable_config_dir: "{{ galaxy_mutable_data_dir }}/config"
+galaxy_cache_dir: "{{ galaxy_mutable_data_dir }}/cache"
+galaxy_local_tools_dir: "{{ galaxy_root }}/local_tools"
+galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
+
 nginx_srv: /srv/nginx
 tpv_mutable_dir: /mnt/nfs/galaxy/var/total_perspective_vortex
 tpv_config_dir: /mnt/nfs/galaxy/config/TPV_DO_NOT_TOUCH
@@ -15,14 +23,11 @@ galaxy_extra_privsep_dirs:
   - "{{ tpv_mutable_dir }}"
 tpv_privsep: true
 
-galaxy_commit_id: release_23.1
+galaxy_commit_id: release_24.1
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
-miniconda_version: 23.7.1
+miniconda_version: 24.1.2
 miniconda_channels: ["conda-forge", "defaults"]
-
-# disable running tusd from the galaxyproject.tusd role
-#tusd_systemd: false
 
 # Galaxy Job Configuration
 galaxy_job_config:
@@ -48,7 +53,7 @@ galaxy_job_config:
         rules_module: tpv.rules
         tpv_config_files:
           - https://raw.githubusercontent.com/galaxyproject/tpv-shared-database/main/tools.yml
-          - "{{ tpv_mutable_dir }}/tpv_rules_local.yml"
+          - "{{ tpv_config_dir }}/tpv_rules_local.yml"
   tools:
     - class: local # these special tools that aren't parameterized for remote execution - expression tools, upload, etc
       environment: local_env
@@ -60,6 +65,8 @@ galaxy_config:
     admin_users:
       - Jonathan.Laperle@USherbrooke.ca
       - Carol.Gauthier@USherbrooke.ca
+      - Olivier.Fisette@USherbrooke.ca
+      - aroudgar@sfu.ca
       - service@admin.com
     database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
     file_path: /mnt/nfs/data/datasets
@@ -97,6 +104,7 @@ galaxy_config:
     show_welcome_with_login: false
     allow_user_creation: false
     require_login: true
+    session_duration: 40000
     use_remote_user: false
     auth_config_file: "{{ galaxy_config_dir }}/auth_conf.xml"
     enable_oidc: true
@@ -104,8 +112,8 @@ galaxy_config:
     oidc_backends_config_file: "{{ galaxy_config_dir }}/oidc_backends_config.xml"
     oidc_auto_redirect: false
     # TUS
-    #galaxy_infrastructure_url: "https://{{ usegalaxy_domain }}"
-    #tus_upload_store: "{{ galaxy_tus_upload_store }}"
+    galaxy_infrastructure_url: "https://{{ usegalaxy_domain }}"
+    tus_upload_store: "{{ galaxy_tus_upload_store }}"
     # CVMFS
     tool_data_table_config_path: /cvmfs/data.galaxyproject.org/byhand/location/tool_data_table_conf.xml,/cvmfs/data.galaxyproject.org/managed/location/tool_data_table_conf.xml
     # Tool Dependencies
@@ -138,10 +146,10 @@ galaxy_config:
     celery:
       concurrency: 2
       loglevel: DEBUG
-    # tusd:
-    #   enable: true
-    #   tusd_path: /usr/local/sbin/tusd
-    #   upload_dir: "{{ galaxy_tus_upload_store }}"
+    tusd:
+      enable: true
+      tusd_path: /usr/local/sbin/tusd
+      upload_dir: "{{ galaxy_tus_upload_store }}"
     handlers:
       handler:
         processes: 2
@@ -193,6 +201,7 @@ certbot_post_renewal: |
   systemctl restart nginx || true
 certbot_domains:
   - "{{ usegalaxy_domain }}"
+  - "sentry.{{ usegalaxy_domain }}"
 certbot_agree_tos: --agree-tos
 
 # NGINX
@@ -232,9 +241,10 @@ nginx_conf_ssl_certificate: /etc/ssl/certs/fullchain.pem
 nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
 
 # TUS
-# galaxy_tusd_host: localhost
-# galaxy_tusd_port: 1080
-# galaxy_tus_upload_store: /mnt/nfs/data/tus
+tusd_version: v1.13.0
+galaxy_tusd_host: localhost
+galaxy_tusd_port: 1080
+galaxy_tus_upload_store: /mnt/nfs/data/tus
 
 #NFS
 nfs_host: "{{ groups['nfsservers'][0] }}"

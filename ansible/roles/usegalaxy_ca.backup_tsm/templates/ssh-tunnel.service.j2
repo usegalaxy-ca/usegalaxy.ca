@@ -1,0 +1,14 @@
+[Unit]
+Description=SSH tunnel for TSM
+After=network.target
+[Service]
+Environment="LOCAL_PORT={{ local_port }}"
+Environment="DESTINATION_HOST={{ destination_host }}"
+Environment="DESTINATION_PORT={{ destination_port }}" 
+Environment="SSH_USER={{ ssh_user }}"
+Environment="SSH_SERVER={{ ssh_server }}"
+ExecStart=/usr/bin/ssh -NT -o ServerAliveInterval=60 -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=accept-new -L ${LOCAL_PORT}:${DESTINATION_HOST}:${DESTINATION_PORT} ${SSH_USER}@${SSH_SERVER}
+RestartSec=5
+Restart=always
+[Install]
+WantedBy=multi-user.target

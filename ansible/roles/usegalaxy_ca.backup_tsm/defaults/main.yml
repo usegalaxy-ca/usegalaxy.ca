@@ -1,0 +1,8 @@
+---
+local_port: 1500
+destination_host: 10.100.130.22
+destination_port: 1500
+ssh_user: usegalaxy
+ssh_server: 132.219.136.90
+
+backup_dir: /mnt/backup

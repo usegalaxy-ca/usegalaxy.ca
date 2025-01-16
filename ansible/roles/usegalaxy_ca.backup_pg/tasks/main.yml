@@ -6,6 +6,17 @@
     state: directory
     mode: 0700
 
+- name: install cargo
+  package:
+    name: "cargo"
+    state: present
+
+- name: install backup-rotation cli
+  command:
+    cmd: cargo install --git https://github.com/laperlej/backup-rotation.git
+  become_user: postgres
+  become: true
+
 - name: pgpass
   copy:
     content: "{{ groups['dbservers'][0] }}:5432:{{ galaxy_db_name }}:{{ galaxy_user_name }}:{{ galaxy_postgres_password }}"
@@ -20,4 +31,12 @@
     hour: "3"
     minute: "0"
     user: "postgres"
-    job: "pg_dump -d {{ galaxy_db_name }} -Fc > /mnt/backup/pg_`date +%Y-%m-%d_%H-%M-%S`.tar"
+    job: "pg_dump -d {{ galaxy_db_name }} -Fc > /mnt/backup/pg_$(date +\\%Y-\\%m-\\%d_\\%H--\\%M-\\%S).tar"
+
+- name: Cron job for psql backup rotation
+  ansible.builtin.cron:
+    name: "Rotate psql backups"
+    hour: "3"
+    minute: "30"
+    user: "postgres"
+    job: "~/.cargo/bin/backup-rotation --format pg_\\%Y-\\%m-\\%d_\\%H--\\%M-\\%S.tar /mnt/backup/pg_*.tar"

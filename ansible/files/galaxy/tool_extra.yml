@@ -1,0 +1,9 @@
+# This file is used to define tools and revisions that are not in the .eu tool list but are in the .ca tool list
+# The list will be merged with the .eu tool list
+tools:
+  - name: compose_text_param
+    owner: iuc
+    revisions:
+      - e188c9826e0f
+    tool_panel_section_label: Expression Tools
+    tool_shed_url: toolshed.g2.bx.psu.edu

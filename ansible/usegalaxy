@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 """
 This CLI is used to run common ansible recipes
  
@@ -7,15 +7,45 @@ view the help for more information
 ./usegalaxy.py -h
 """
 import argparse
+import glob
+import logging
+import sys
 from cli.ansible import Ansible
 from cli.dependencies import DependencyManager
+from cli.runner import NonZeroExitCodeException
+from cli.lock import Lock, LockAlreadyAcquiredError
 
 """
 Parse args and run the appropriate function
 """
 def main():
+    exitcode = 0
+    logging.basicConfig(filename='.usegalaxy.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger()
+    lock = Lock(".lock")
     parser = ArgParser()
-    parser.run()
+
+    arguments = " ".join(sys.argv)
+    logger.info("Start %s" % arguments)
+    try:
+        import time
+        lock.acquire()
+        parser.run()
+    except NonZeroExitCodeException as e:
+        exitcode = 1
+        print(e)
+        logger.error(e)
+    except argparse.ArgumentError as e:
+        exitcode = 1
+        logger.error("Invalid arguments")
+    except LockAlreadyAcquiredError as e:
+        msg = "Another instance of UseGalaxyCLI is already running"
+        print(msg)
+        logger.error(msg)
+        exit(1)
+    logger.info("End %s" % arguments)
+
+    exit(exitcode)
 
 """
 ArgParser class
@@ -25,28 +55,25 @@ Attributes:
 """
 class ArgParser():
     def __init__(self):
-        self.parser = argparse.ArgumentParser(
+        self.parser = ArgumentParser(
             prog="UseGalaxyCLI",
             description="Used to run commmon ansible recipes")
         subparsers = self.parser.add_subparsers(help='sub-command help')
 
-        setup_command = subparsers.add_parser('setup', help="setup all components")
-        setup_command.set_defaults(func=setup)
-
-        setup_command = subparsers.add_parser('sentry', help="setup sentry")
-        setup_command.set_defaults(func=sentry)
-
-        setup_command = subparsers.add_parser('slurm', help="setup slurm")
-        setup_command.set_defaults(func=slurm)
-
-        setup_command = subparsers.add_parser('cvmfs', help="setup cvmfs")
-        setup_command.set_defaults(func=cvmfs)
-
-        setup_command = subparsers.add_parser('tools', help="install tools")
-        setup_command.set_defaults(func=tools)
-
         setup_command = subparsers.add_parser('requirements', help="download all requirements")
         setup_command.set_defaults(func=requirements)
+
+        playbooks = map(lambda x: x.split(".")[0], glob.glob("*.yml"))
+
+        for playbook in playbooks:
+            if playbook == "requirements":
+                continue
+            setup_command = subparsers.add_parser(playbook, help="setup %s" % playbook)
+            setup_command.add_argument(
+                "--init",
+                help="run the playbook with the never tag",
+                action="store_true")
+            setup_command.set_defaults(func=run, playbook=playbook)
 
     def run(self) -> None:
         args = self.parser.parse_args()
@@ -55,6 +82,30 @@ class ArgParser():
             exit(1)
         args.func(args)
 
+"""
+Custom ArgumentParser to raise an error and print the usage
+"""
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        self.print_usage()
+        print(message)
+        raise argparse.ArgumentError(None, message)
+
+"""
+Run an ansible playbook
+"""
+def run(args):
+    playbook_path = args.playbook + ".yml"
+
+    ansible = Ansible()
+    if args.init:
+        ansible.add_tags("all", "never")
+    depManager = DependencyManager()
+
+    depManager.verify_all()
+    ansible.set_yaml(playbook_path)
+
+    ansible.run()
 
 """
 run the ansible requirements
@@ -67,72 +118,6 @@ def requirements(args):
     depManager.verify_all()
 
     ansible.requirements()
-
-"""
-run the galaxy setup(includes all components)
-"""
-def setup(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("galaxy.yml")
-    ansible.add_tags("setup")
-    ansible.run()
-
-"""
-run the sentry setup
-"""
-def sentry(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("sentry.yml")
-    ansible.add_tags("setup")
-    ansible.run()
-
-"""
-run the cvmfs setup
-"""
-def cvmfs(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("cvmfs.yml")
-    ansible.add_tags("setup")
-    ansible.run()
-
-"""
-install tools
-"""
-def tools(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("tools.yml")
-    ansible.add_tags("setup")
-    ansible.run()
-
-"""
-run the slurm setup(includes nfs)
-"""
-def slurm(args):
-    ansible = Ansible()
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-
-    ansible.set_yaml("galaxy.yml")
-    ansible.add_tags("slurm", "nfs", "volume", "cvmfs")
-    ansible.run()
-
 
 
 if __name__ == "__main__":

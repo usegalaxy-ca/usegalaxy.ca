@@ -24,14 +24,21 @@ locals {
 }
 
 resource "openstack_blockstorage_volume_v2" "volumes" {
-  for_each = { for volume in var.volume_config: volume.name => volume }
+  for_each = { for volume in flatten([
+                    for instance_name, volumes in var.volume_config: volumes
+                        ]): volume.name => volume}
   name        = "${var.INSTANCE_NAME_PREFIX}-${var.project_name}-${each.key}"
   volume_type = each.value.type
   size        = each.value.size
 }
 
 resource "openstack_compute_volume_attach_v2" "volumes" {
-  for_each = { for volume in var.volume_config: volume.name => volume }
+  for_each = { for volume in flatten([
+                    for instance_name, volumes in var.volume_config: flatten([
+                        for volume in volumes: { 
+                            name: volume.name,
+                            attach_to: instance_name
+                        }])]): volume.name => volume}
   instance_id = "${openstack_compute_instance_v2.instances[each.value.attach_to].id}"
   volume_id   = "${openstack_blockstorage_volume_v2.volumes[each.key].id}"
 }
@@ -60,5 +67,6 @@ resource "openstack_compute_instance_v2" "instances" {
   security_groups = each.value.security_groups
   network {
     uuid = each.value.network_uuid
+    fixed_ip_v4 = each.value.fixed_ip
   }
 }

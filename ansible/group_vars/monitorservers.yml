@@ -1,3 +1,4 @@
+#GRAFANA
 grafana_url: "https://{{ inventory_hostname }}/grafana/"
 
 grafana_security:
@@ -6,6 +7,7 @@ grafana_security:
   admin_password: "{{ MONITOR_PASSWORD }}"
 
 # These datasources will be automatically included into Grafana
+grafana_version: 10.4.3
 grafana_datasources:
   - name: Galaxy
     type: influxdb
@@ -16,6 +18,13 @@ grafana_datasources:
     editable: false
     database: telegraf
 
+#INFLUXDB
+influxdb_cache_size:
+  prod: 1048576000
+  staging: 5368709120
+influxdb_data_cache_max_memory_size: "{{ influxdb_cache_size[CLUSTER_NAME] }}"
+
+#SENTRY
 sentry_version: 23.3.1
 # sentry_url: "https://{{ sentry_domain }}"
 sentry_url: "https://{{ sentry_domain }}"
@@ -23,3 +32,6 @@ sentry_docker_compose_project_folder: /srv/sentry
 sentry_superusers:
   - email: "{{ MONITOR_EMAIL }}"
     password: "{{ MONITOR_PASSWORD }}"
+
+#TSM
+tsm_user: usegalaxy-monitor

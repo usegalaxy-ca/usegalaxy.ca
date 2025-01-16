@@ -1,0 +1,21 @@
+# List of tools to remove from the .eu tool list because they are not supported
+# if only a name is provided, the tool will be removed from all versions
+# if a revision is provided, only that revision will be removed
+#
+# example:
+# tools:
+#   - name: tool_name1
+#   - name: tool_name2
+#     revisions:
+#     - e188c9826e0f
+#   - name: tool_name3
+#     revisions:
+#     - 6ea73833cf67
+#     - f5ea3ce9b9b0
+#
+# This will remove:
+# all versions of tool_name1
+# only revision e188c9826e0f of tool_name2
+# only revisions 6ea73833cf67 and f5ea3ce9b9b0 of tool_name3
+tools:
+  - name: alphafold2

@@ -2,12 +2,13 @@
   become: true
   become_user: root
   vars:
-    - slurm_roles: ["exec"]
+    slurm_roles: ["exec"]
   vars_files:
-    - group_vars/slurm.yml
     - group_vars/secret.yml
+    - group_vars/slurm.yml
+    - group_vars/cvmfsclient.yml
   pre_tasks:
-    - name: Install Dependencies
+    - name: install dependencies
       package:
         name:
           [
@@ -22,7 +23,8 @@
       tags:
         - always
   roles:
-    - role: usegalaxy_ca.tools
-      tags:
-        - setup
-        - tools
+    - role: galaxyproject.galaxy
+      galaxy_build_client: false
+    - role: usegalaxy_ca.tpv_auto_lint
+      become: true
+      become_user: "{{ galaxy_user_name }}"

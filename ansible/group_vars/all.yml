@@ -1,4 +1,8 @@
 ---
+MAINTENANCE_MODE: false
+CLUSTER_NAME: "{{ lookup('env', 'TF_VAR_CLUSTER_NAME') }}"
+OS_USERNAME: "{{ lookup('env', 'TF_VAR_USERNAME') }}"
+
 # Python 3 support
 pip_virtualenv_command: /usr/bin/python3 -m venv # usegalaxy_eu.certbot, usegalaxy_eu.tiaas2, galaxyproject.galaxy
 
@@ -17,6 +21,7 @@ slurm_config:
   SelectType: select/cons_res
   SelectTypeParameters: CR_CPU_Memory # Allocate individual cores/memory instead of entire node
   ReturnToService: 2
+  SchedulerParameters: nohold_on_prolog_fail
   # AccountingStorageHost: "{{ groups['slurmcontrolservers'][0] }}"
   # AccountingStorageType: "accounting_storage/slurmdbd"
   # AccountingStorageUser: "slurm"
@@ -34,12 +39,6 @@ slurm_cgroup_config:
   AllowedSwapSpace: 0
   MaxRAMPercent: 100
   MaxSwapPercent: 100
-
-slurm_partitions:
-  - name: main
-    Default: YES
-    MaxTime: UNLIMITED
-    Nodes: ALL
 
 slurm_user:
   group: slurm
@@ -72,7 +71,7 @@ telegraf_plugins_default:
   - plugin: disk
   - plugin: kernel
   - plugin: processes
-  - plugin: io
+  - plugin: diskio
   - plugin: mem
   - plugin: system
   - plugin: swap
@@ -81,3 +80,6 @@ telegraf_plugins_default:
 
 # Sentry
 sentry_domain: "sentry.{{ inventory_hostname }}"
+
+# IBM TSM
+tsm_deb: /home/{{ OS_USERNAME }}/SP_CLIENT_8.1.20.tgz

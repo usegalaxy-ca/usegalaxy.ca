@@ -14,5 +14,8 @@ class Runner:
         p = subprocess.Popen(command, shell=False, env=env)
         p.communicate()
         if p.returncode != 0:
-            print("Command returned non-zero exit code")
-            exit(1)
+            raise NonZeroExitCodeException("Command returned non-zero exit code")
+
+class NonZeroExitCodeException(Exception):
+    pass
+

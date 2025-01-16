@@ -73,6 +73,7 @@ resource "local_file" "group_vars" {
 resource "local_file" "slurm" {
   content = templatefile("templates/slurm.yml", {
       nodes = module.openstack.ansible_hosts
+      main_nodes = module.openstack.main_nodes
   })
   filename = format("%s/../ansible/group_vars/slurm.yml", path.module)
   file_permission = "0644"

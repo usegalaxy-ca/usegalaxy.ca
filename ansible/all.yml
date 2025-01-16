@@ -1,0 +1,40 @@
+---
+- name: volumes
+  import_playbook: volumes.yml
+
+- name: slurm
+  import_playbook: slurm.yml
+
+- hosts: dbservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name: "acl"
+      tags:
+        - always
+  roles:
+    - usegalaxy_ca.postgresql
+    - galaxyproject.postgresql
+    - role: usegalaxy_ca.restart_postgres
+      tags:
+        - never
+    - role: galaxyproject.postgresql_objects
+      become: true
+      become_user: postgres
+    - usegalaxy_ca.gxadmin
+    - galaxyproject.gxadmin
+    - usegalaxy_ca.backup_pg
+
+- name: galaxy
+  import_playbook: galaxy.yml
+
+- name: monitor
+  import_playbook: monitor.yml
+
+- name: tsm backups
+  import_playbook: tsm_backup.yml

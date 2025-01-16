@@ -1,0 +1,75 @@
+---
+- hosts: slurmcontrolservers
+  become: true
+  become_user: root
+  vars:
+    slurm_roles: ["controller"]
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/slurm.yml
+    - group_vars/galaxyservers.yml
+  roles:
+    - usegalaxy_ca.slurm
+    - galaxyproject.repos
+    - galaxyproject.slurm
+
+- hosts: slurmexecservers
+  become: true
+  become_user: root
+  vars:
+    slurm_roles: ["exec"]
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/slurm.yml
+    - group_vars/galaxyservers.yml
+    - group_vars/cvmfsclient.yml
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+  roles:
+    - usegalaxy_eu.apptainer
+    - usegalaxy_ca.slurm
+    - galaxyproject.repos
+    - galaxyproject.slurm
+
+- hosts: galaxyservers
+  become: true
+  become_user: root
+  vars:
+    slurm_roles: ["exec"]
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/slurm.yml
+    - group_vars/cvmfsclient.yml
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+  roles:
+    - usegalaxy_ca.slurm
+    - galaxyproject.repos
+    - galaxyproject.slurm
+    - usegalaxy_eu.apptainer

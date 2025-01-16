@@ -1,0 +1,27 @@
+---
+- name: Patch LoginForm
+  copy:
+    src: LoginForm.vue
+    dest: /mnt/nfs/galaxy/server/client/src/components/Login/LoginForm.vue
+    owner: pgalaxy
+    group: pgalaxy
+    mode: "0664"
+  register: patch_login_form
+
+- name: Patch ExternalLogin
+  copy:
+    src: ExternalLogin.vue
+    dest: /mnt/nfs/galaxy/server/client/src/components/User/ExternalIdentities/ExternalLogin.vue
+    owner: pgalaxy
+    group: pgalaxy
+    mode: "0664"
+  register: patch_external_login
+
+- name: Build client
+  make:
+    chdir: "{{ galaxy_server_dir }}"
+    target: "{{ galaxy_client_make_target }}"
+  environment:
+    PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
+    VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+  when: patch_login_form.changed or patch_external_login.changed

@@ -1,0 +1,22 @@
+SErvername      {{ tsm_user }}
+        COMMMethod      TCPip
+        TCPServeraddress        127.0.0.1
+        passwordaccess  generate
+        SCHEDMODE       POlling
+        MANAGEDSERVICES SCHEDULE
+        NODEName        {{ tsm_user }}
+        TCPWindowsize   0
+        TCPNodelay      yes
+        TXNBYTELIMIT    10G
+        COMPRESSIon     yes
+        CHAngingretries 1
+        MEMORYEFFICIENTBACKUP   YES
+        ERRORLOGName    /opt/tivoli/tsm/client/ba/bin/dsmerror-tsm-client.log
+        SCHEDLOGName    /opt/tivoli/tsm/client/ba/bin/dsmsched-tsm-client.log
+        SCHEDLOGRetention       30 D
+        RESOURCEUTILIZATION     3
+        DIRMC   EXTUDEM
+        PASSWORDACCESS GENERATE
+        PASSWORDDIR "/opt/tivoli/tsm/client/ba/"
+        INCLUDE     {{ backup_dir }}/.../*
+

@@ -12,6 +12,32 @@ tools:
     mem: 160
   toolshed.g2.bx.psu.edu/repos/chemteam/bio3d_rmsf/bio3d_rmsf/.*:
     mem: 160
+  toolshed.g2.bx.psu.edu/repos/iuc/spades_biosyntheticspades/spades_biosyntheticspades/.*:
+    cores: 10
+    mem: 200
+  toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/.*:
+    cores: 10
+    mem: 200
+  toolshed.g2.bx.psu.edu/repos/iuc/spades_metaplasmidspades/spades_metaplasmidspades/.*:
+    cores: 10
+    mem: 200
+  toolshed.g2.bx.psu.edu/repos/iuc/spades_metaviralspades/spades_metaviralspades/.*:
+    cores: 10
+    mem: 200
+  toolshed.g2.bx.psu.edu/repos/iuc/spades_plasmidspades/spades_plasmidspades/.*:
+    cores: 10
+    mem: 200
+  toolshed.g2.bx.psu.edu/repos/iuc/trinity/trinity/.*:
+    cores: 32
+    mem: 200
+    env:
+      _JAVA_OPTIONS: -Xmx{int(mem)}G -Xms1G
+  toolshed.g2.bx.psu.edu/repos/nml/spades/spades/.*:
+    cores: 20
+    mem: 200
+  toolshed.g2.bx.psu.edu/repos/iuc/minimap2/minimap2/.*:
+    cores: 8
+    mem: 200
   .*testing.*:
     cores: 2
     mem: cores * 3.8
@@ -24,15 +50,34 @@ tools:
           not user or user.email not in admin_users
         fail: Unauthorized. Only admins can execute this tool.
 
+roles:
+  training.*:
+    scheduling:
+      prefer:
+        - training
+
 destinations:
+  slurm-training:
+    runner: slurm
+    max_accepted_cores: 32
+    max_accepted_mem: 240
+    params:
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=training
+      singularity_enabled: true
+      singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
+    env:
+      LC_ALL: C
+      SINGULARITY_CACHEDIR: /tmp/singularity
+      APPTAINER_TMPDIR: /tmp
+    scheduling:
+      require:
+        - training
   slurm:
     runner: slurm
     max_accepted_cores: 32
     max_accepted_mem: 240
-    # max_cores: 2
-    # max_mem: 8
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)}
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=main
       singularity_enabled: true
       singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
     env:
@@ -42,3 +87,6 @@ destinations:
       SINGULARITY_CACHEDIR: /tmp/singularity
       # Singularity uses a temporary directory to build the squashfs filesystem
       APPTAINER_TMPDIR: /tmp
+    scheduling:
+      reject:
+        - training

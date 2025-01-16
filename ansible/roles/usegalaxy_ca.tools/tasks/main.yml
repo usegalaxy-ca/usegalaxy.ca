@@ -1,11 +1,7 @@
-# - name: galaxy systemd restart
-#   systemd:
-#     name: galaxy.target
-#     state: restarted
-
-# - name: get tool list
-#   command:
-#     cmd: get-tool-list -g "https://usegalaxy.eu" -o "/tmp/eu_tool_list.yaml"
+- name: get tool list
+  command:
+    cmd: ./roles/usegalaxy_ca.tools/files/get_list.sh
+  delegate_to: "localhost"
 
 - name: install tools
   command:

@@ -1,14 +1,45 @@
 ---
+- name: install zfsutils-linux
+  apt:
+    name: zfsutils-linux
+    state: present
+
+- name: install zfs-auto-snapshot
+  apt:
+    name: zfs-auto-snapshot
+    state: present
+
 - name: Format Volume
   community.general.filesystem:
-    fstype: ext4
-    dev: "{{ volumes[inventory_hostname].device }}"
-  when: volumes[inventory_hostname] is defined
+    fstype: "{{ item.fstype }}"
+    dev: "{{ item.device }}"
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  when: item.fstype != 'zfs'
 
 - name: Mount Volume
   ansible.posix.mount:
-    path: /mnt/volume
-    src: "{{ volumes[inventory_hostname].device }}"
-    fstype: ext4
+    path: "{{ item.mount_point }}"
+    src: "{{ item.device }}"
+    fstype: "{{ item.fstype }}"
     state: mounted
-  when: volumes[inventory_hostname] is defined
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  when: item.fstype != 'zfs'
+
+- name: Import ZFS zpool
+  command: "zpool import -f pool{{ idx }}"
+  args:
+    creates: "{{ item.mount_point }}"
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'
+  ignore_errors: yes
+
+- name: Setup ZFS zpool
+  command: "zpool create -m {{ item.mount_point }} pool{{ idx }} {{ item.device }}"
+  args:
+    creates: "{{ item.mount_point }}"
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'

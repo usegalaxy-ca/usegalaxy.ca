@@ -1,0 +1,41 @@
+- hosts: monitorservers
+  become: true
+  become_user: root
+  pre_tasks:
+    - name: install dependencies
+      package:
+        name:
+          [
+            "acl",
+            "bzip2",
+            "git",
+            "make",
+            "tar",
+            "python3-pip",
+            "python3-venv",
+            "python3-setuptools",
+          ]
+      tags:
+        - always
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/terraform.yml
+  roles:
+    - usegalaxy_ca.volume
+    - usegalaxy_ca.monitor
+    - usegalaxy_ca.docker
+    - usegalaxy_ca.influxdb_key
+    - role: usegalaxy_eu.influxdb
+      vars:
+        ansible_distribution_release: "stable"
+    - cloudalchemy.grafana
+    - laperlej.sentry_selfhosted
+    - usegalaxy_ca.backup_influx
+
+- hosts: all
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+  roles:
+    - dj-wasabi.telegraf

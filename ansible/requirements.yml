@@ -16,11 +16,8 @@ roles:
     version: 0.1.11
   #CVMFS
   - name: laperlej.cvmfs
-    src: ssh://git@github.com/laperlej/ansible-cvmfs.git
+    src: https://github.com/laperlej/ansible-cvmfs
     version: main
-    scm: git
-  # - src: galaxyproject.cvmfs
-  #   version: 0.2.21
   # TUS (uploads)
   - name: galaxyproject.tusd
     version: 0.0.1
@@ -41,15 +38,22 @@ roles:
   # Monitoring
   - name: dj-wasabi.telegraf
     src: https://github.com/dj-wasabi/ansible-telegraf
-    version: 6f6fdf7f5ead491560783d52528b79e9e088bd5b
+    version: 39bc504fd50fbf11a36a4e72690c5de81f0e3010
   # Grafana
   - src: cloudalchemy.grafana
     version: 0.14.2
   # Sentry
-  - name: mvdbeek.sentry_selfhosted
-    src: https://github.com/mvdbeek/ansible-role-sentry/archive/main.tar.gz
+  - name: laperlej.sentry_selfhosted
+    src: https://github.com/laperlej/ansible-role-sentry
+    version: main
+  # TPV Linting
+  - name: usegalaxy_eu.tpv_auto_lint
+    version: 0.4.3
 
 collections:
   # Ansible Posix
   - name: ansible.posix
     version: 1.5.2
+  # Docker
+  - name: community.docker
+    version: 3.10.4

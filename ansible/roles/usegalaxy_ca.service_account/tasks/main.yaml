@@ -1,15 +1,18 @@
 - name: Wait for galaxy server to start
   ansible.builtin.wait_for:
     path: /mnt/nfs/galaxy/gunicorn.sock
+    timeout: 600
 
 - name: Register service user
   script: "register.py -u {{ service_account.username }} -e {{ service_account.email }} -p {{ service_account.password }} -c {{ galaxy_config.galaxy.database_connection }}"
   args:
     executable: .venv/bin/python3
   delegate_to: "localhost"
+  when: MAINTENANCE_MODE == false
 
 - name: Get service user API key and register to Doppler
   script: "get_api_key.py -g {{ galaxy_url }} -e {{ service_account.email }} -p {{ service_account.password }}"
   args:
     executable: .venv/bin/python3
   delegate_to: "localhost"
+  when: MAINTENANCE_MODE == false

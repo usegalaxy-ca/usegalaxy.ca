@@ -16,6 +16,16 @@ server {
 	access_log  syslog:server=unix:/dev/log;
 	error_log   syslog:server=unix:/dev/log;
 
+    {% if MAINTENANCE_MODE %}
+    location / {
+        add_header Cache-Control 'no-cache';
+        add_header Cache-Control 'no-store';
+        expires 0;
+        root   /var/www/html/;
+        index  /var/www/html/maintenance.html;
+        rewrite ^ /maintenance.html break;
+    }
+    {% else %}
 	# The most important location block, by default all requests are sent to gunicorn
 	# If you serve galaxy at a path like /galaxy, change that below (and all other locations!)
 	location / {
@@ -31,6 +41,23 @@ server {
         proxy_send_timeout          600;
         proxy_read_timeout          600;
         send_timeout                600;
+	}
+    {% endif %}
+
+	location /api/upload/resumable_upload {
+		# Disable request and response buffering
+		proxy_request_buffering     off;
+		proxy_buffering             off;
+		proxy_http_version          1.1;
+
+		# Add X-Forwarded-* headers
+		proxy_set_header X-Forwarded-Host   $host;
+		proxy_set_header X-Forwarded-Proto  $scheme;
+
+		proxy_set_header Upgrade            $http_upgrade;
+		proxy_set_header Connection         "upgrade";
+		client_max_body_size        0;
+		proxy_pass http://localhost:{{ galaxy_tusd_port }}/files;
 	}
 
 	location /grafana/ {

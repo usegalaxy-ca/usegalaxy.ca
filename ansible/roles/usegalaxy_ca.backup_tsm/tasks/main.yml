@@ -1,0 +1,105 @@
+---
+- name: extract deb packages
+  unarchive:
+    src: "{{ tsm_deb }}"
+    dest: /home/{{ OS_USERNAME }}/
+    owner: "{{ OS_USERNAME }}"
+    group: "{{ OS_USERNAME }}"
+    mode: 0700
+  when: CLUSTER_NAME == 'prod'
+
+# apt install
+# ./tivsm-api64.amd64.deb
+# ./tivsm-ba.amd64.deb
+# ./gskssl64_8.0-55.31.linux.x86_64.deb
+# ./gskcrypt64_8.0-55.31.linux.x86_64.deb
+
+- name: install gskcrypt64_8.0-55.31.linux.x86_64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/gskcrypt64_8.0-55.31.linux.x86_64.deb
+  when: CLUSTER_NAME == 'prod'
+
+- name: install gskssl64_8.0-55.31.linux.x86_64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/gskssl64_8.0-55.31.linux.x86_64.deb
+  when: CLUSTER_NAME == 'prod'
+
+- name: install tivsm-api64.amd64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/tivsm-api64.amd64.deb
+  when: CLUSTER_NAME == 'prod'
+
+- name: install tivsm-ba.amd64.deb
+  apt:
+    deb: /home/{{ OS_USERNAME }}/linux86_DEB/tivsm-ba.amd64.deb
+  when: CLUSTER_NAME == 'prod'
+
+# créér et modifier les fichiers  /opt/tivoli/tsm/client/ba/bin/{dsm.sys.dsm.opt}  :  SErvername, NODEName,Path de backup
+- name: template dsm.sys
+  template:
+    src: dsm.sys.j2
+    dest: "/opt/tivoli/tsm/client/ba/bin/dsm.sys"
+    owner: root
+    group: bin
+    mode: 0644
+  when: CLUSTER_NAME == 'prod'
+
+- name: template dsm.opt
+  template:
+    src: dsm.opt.j2
+    dest: "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
+    owner: root
+    group: bin
+    mode: 0644
+  when: CLUSTER_NAME == 'prod'
+
+# Copier les clés publique et privé sur le host
+- name: copy ssh keys
+  copy:
+    content: "{{ TSM_SSH_KEY }}"
+    dest: "~/.ssh/id_ed25519"
+    owner: root
+    group: root
+    mode: 0600
+  no_log: true
+  when: CLUSTER_NAME == 'prod'
+
+- name: copy ssh keys
+  copy:
+    content: "{{ TSM_SSH_KEY_PUB }}"
+    dest: "~/.ssh/id_ed25519.pub"
+    owner: root
+    group: root
+    mode: 0644
+  no_log: true
+  when: CLUSTER_NAME == 'prod'
+
+# créér un tunnel SSH:  ssh -NT -L 1500:10.100.130.22:1500 usegalaxy@132.219.136.90
+- name: setup ssh tunnel service
+  template:
+    src: ssh-tunnel.service.j2
+    dest: /etc/systemd/system/tsm-tunnel.service
+  when: CLUSTER_NAME == 'prod'
+
+- name: start ssh tunnel service
+  systemd:
+    name: tsm-tunnel
+    daemon-reload: true
+    state: started
+  when: CLUSTER_NAME == 'prod'
+
+# démarrer le service dsmcad :   systemctl start dsmcad
+- name: start dsmcad service
+  systemd:
+    name: dsmcad
+    state: started
+  when: CLUSTER_NAME == 'prod'
+
+# Entrer une fois le mot de passe pour le client tsm:  dsmc
+# Based on https://blog.sigterm.se/posts/the-joys-of-bootstrapping-ibm-backup-client/
+# It is itself based on https://adsm.org/forum/index.php?threads/initial-login-automate.23774/
+- name: install
+  command:
+    cmd: "dsmc set password {{ TSM_PASSWORD }} {{ TSM_PASSWORD }}"
+  no_log: true
+  when: CLUSTER_NAME == 'prod'
