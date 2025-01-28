@@ -3,6 +3,11 @@
     name: "sqlite3"
     state: present
 
+- name: Install virtualenv via pip
+  pip:
+    name: virtualenv
+    executable: pip3
+
 - name: checkout pulsar_registry
   ansible.builtin.git:
     repo: https://github.com/laperlej/pulsar_registry.git
