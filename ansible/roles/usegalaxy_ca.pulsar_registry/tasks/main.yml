@@ -5,7 +5,7 @@
 
 - name: checkout pulsar_registry
   ansible.builtin.git:
-    repo: https://github.com/galaxyproject/pulsar_registry.git
+    repo: https://github.com/laperlej/pulsar_registry.git
     dest: /home/{{ galaxy_user }}/pulsar_registry
 
 - name: install dependencies
