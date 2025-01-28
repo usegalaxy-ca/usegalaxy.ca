@@ -18,11 +18,5 @@ RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
-# Basic hardening
-ProtectSystem=full
-ProtectHome=yes
-ReadWritePaths=/home/{{ galaxy_user_name }}/pulsar_registry.db /home/{{ galaxy_user_name }}
-NoNewPrivileges=true
-
 [Install]
 WantedBy=multi-user.target
