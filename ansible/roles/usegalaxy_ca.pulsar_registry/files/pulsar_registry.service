@@ -4,11 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=galaxy
-Group=galaxy
+User={{ galaxy_user_name }}
+Group={{ galaxy_user_name }}
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/home/galaxy/pulsar_registry/venv/bin/python /home/galaxy/pulsar_registry/app/main.py
-WorkingDirectory=/home/galaxy/pulsar_registry/
+ExecStart=/home/{{ galaxy_user_name }}/pulsar_registry/venv/bin/python /home/{{ galaxy_user_name }}/pulsar_registry/app/main.py
+WorkingDirectory=/home/{{ galaxy_user_name }}/pulsar_registry/
 
 # Restart configuration
 Restart=always
@@ -21,7 +21,7 @@ StandardError=journal
 # Basic hardening
 ProtectSystem=full
 ProtectHome=yes
-ReadWritePaths=/home/galaxy/pulsar_registry.db /home/galaxy
+ReadWritePaths=/home/{{ galaxy_user_name }}/pulsar_registry.db /home/{{ galaxy_user_name }}
 NoNewPrivileges=true
 
 [Install]

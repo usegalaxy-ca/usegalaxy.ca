@@ -25,7 +25,7 @@
     virtualenv_python: python3
 
 - name: Create config file
-  copy:
+  template:
     src: config.ini
     dest: /home/galaxy/pulsar_registry/config.ini
     owner: galaxy
@@ -33,7 +33,7 @@
     mode: 0644
 
 - name: Add pulsar_registry to systemd
-  copy:
+  template:
     src: pulsar_registry.service
     dest: /etc/systemd/system/pulsar_registry.service
     owner: root
