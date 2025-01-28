@@ -1,13 +1,26 @@
-- name: install cargo
+- name: install sqlite3
   package:
-    name: "cargo"
+    name: "sqlite3"
     state: present
 
-- name: install pulsar_registry
-  command:
-    cmd: cargo install --git https://github.com/laperlej/pulsar_registry.git
-  become_user: galaxy
-  become: true
+- name: checkout pulsar_registry
+  ansible.builtin.git:
+    repo: https://github.com/galaxyproject/pulsar_registry.git
+    dest: /home/{{ galaxy_user }}/pulsar_registry
+
+- name: install dependencies
+  ansible.builtin.pip:
+    requirements: /home/{{ galaxy_user }}/pulsar_registry/requirements.txt
+    virtualenv: /home/{{ galaxy_user }}/pulsar_registry/venv
+    virtualenv_command: virtualenv
+
+- name: Create config file
+  copy:
+    src: config.ini
+    dest: /home/galaxy/pulsar_registry/config.ini
+    owner: galaxy
+    group: galaxy
+    mode: 0644
 
 - name: Add pulsar_registry to systemd
   copy:

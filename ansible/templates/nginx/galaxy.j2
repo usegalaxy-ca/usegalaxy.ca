@@ -44,7 +44,7 @@ server {
 	}
     {% endif %}
 
-	location /api_pulsar {
+	location /api/pulsar {
 		proxy_pass http://localhost:3456;
 
 		proxy_set_header Host $http_host;

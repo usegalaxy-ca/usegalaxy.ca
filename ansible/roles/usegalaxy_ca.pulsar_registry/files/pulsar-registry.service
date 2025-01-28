@@ -6,8 +6,9 @@ After=network.target
 Type=simple
 User=galaxy
 Group=galaxy
-ExecStart=/home/galaxy/.cargo/bin/pulsar_registry
-WorkingDirectory=/home/galaxy
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/galaxy/pulsar_registry/venv/bin/python /home/galaxy/pulsar_registry/app/main.py
+WorkingDirectory=/home/galaxy/pulsar_registry/
 
 # Restart configuration
 Restart=always
@@ -19,7 +20,8 @@ StandardError=journal
 
 # Basic hardening
 ProtectSystem=full
-ProtectHome=read-only
+ProtectHome=yes
+ReadWritePaths=/home/galaxy/pulsar_registry.db /home/galaxy
 NoNewPrivileges=true
 
 [Install]
