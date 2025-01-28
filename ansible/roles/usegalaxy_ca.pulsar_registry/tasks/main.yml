@@ -16,12 +16,12 @@
 - name: checkout pulsar_registry
   ansible.builtin.git:
     repo: https://github.com/laperlej/pulsar_registry.git
-    dest: /home/{{ galaxy_user }}/pulsar_registry
+    dest: /home/{{ galaxy_user_name }}/pulsar_registry
 
 - name: install dependencies
   ansible.builtin.pip:
-    requirements: /home/{{ galaxy_user }}/pulsar_registry/requirements.txt
-    virtualenv: /home/{{ galaxy_user }}/pulsar_registry/venv
+    requirements: /home/{{ galaxy_user_name }}/pulsar_registry/requirements.txt
+    virtualenv: /home/{{ galaxy_user_name }}/pulsar_registry/venv
     virtualenv_python: python3
 
 - name: Create config file
