@@ -12,7 +12,7 @@
   ansible.builtin.pip:
     requirements: /home/{{ galaxy_user }}/pulsar_registry/requirements.txt
     virtualenv: /home/{{ galaxy_user }}/pulsar_registry/venv
-    virtualenv_command: virtualenv
+    virtualenv_python: python3
 
 - name: Create config file
   copy:
