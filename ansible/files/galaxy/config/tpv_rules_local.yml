@@ -58,7 +58,24 @@ roles:
       prefer:
         - training
 
+users:
+  default:
+    if: user and user.preferences.get('pulsar_api_key')
+    scheduling:
+      prefer:
+        - pulsar
+
 destinations:
+  pulsar:
+    runner: pulsar_runner
+    max_accepted_cores: 16
+    max_accepted_mem: 180
+    params:
+      url: user.preferences.get('pulsar_host')
+      private_token: user.preferences.get('pulsar_api_key')
+    scheduling:
+      require:
+        - pulsar
   slurm-training:
     runner: slurm
     max_accepted_cores: 32

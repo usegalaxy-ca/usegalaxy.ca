@@ -41,7 +41,7 @@ galaxy_job_config:
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
       url: http://localhost
-      api_key: fakekey
+      private_token: fakekey
   handling:
     assign: ["db-skip-locked"]
   execution:
