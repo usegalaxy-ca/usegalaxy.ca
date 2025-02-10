@@ -38,6 +38,10 @@ galaxy_job_config:
     slurm:
       load: galaxy.jobs.runners.slurm:SlurmJobRunner
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
+    pulsar_runner:
+      load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
+      url: http://localhost
+      api_key: fakekey
   handling:
     assign: ["db-skip-locked"]
   execution:
@@ -124,6 +128,8 @@ galaxy_config:
     statsd_includb: true
     sentry_dsn: "{{ SENTRY_DSN_URL if GALAXY_SENTRY_DSN | length > 0 else '' }}"
     sentry_traces_sample_rate: 1.0
+    # Pulsar
+    user_preferences_extra_conf_path: "{{ galaxy_config_dir }}/user_preferences_extra_conf.yml"
 
   gravity:
     process_manager: systemd
@@ -181,6 +187,9 @@ galaxy_config_templates:
     dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
   - src: templates/galaxy/cron_scripts/fetch-edugain-idps.bash.j2
     dest: "{{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
+  # Pulsar
+  - src: templates/galaxy/config/user_preferences_extra_conf.yml
+    dest: "{{ galaxy_config.galaxy.user_preferences_extra_conf_path }}"
 
 galaxy_config_files:
   - src: files/galaxy/config/tpv_rules_local.yml

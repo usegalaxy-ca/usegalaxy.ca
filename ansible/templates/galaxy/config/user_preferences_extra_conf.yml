@@ -1,0 +1,12 @@
+preferences:
+  accp:
+    description: ACCP (Alliance Cloud Connect Pilot) Settings
+    inputs:
+      - name: pulsar_host
+        label: Pulsar Host
+        type: text
+        required: False
+      - name: pulsar_api_key
+        label: Pulsar API Key
+        type: text
+        required: False
