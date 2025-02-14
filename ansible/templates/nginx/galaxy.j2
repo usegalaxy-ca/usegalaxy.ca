@@ -9,6 +9,7 @@ upstream galaxy {
 server {
 	# Listen on port 443
 	listen        *:443 ssl default_server;
+    add_header Strict-Transport-Security “max-age=31536000; 
 	# The virtualhost is our domain name
 	server_name   "{{ inventory_hostname }}";
 
