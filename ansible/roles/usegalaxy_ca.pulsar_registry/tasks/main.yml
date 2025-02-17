@@ -17,12 +17,16 @@
   ansible.builtin.git:
     repo: https://github.com/laperlej/pulsar_registry.git
     dest: /home/{{ galaxy_user_name }}/pulsar_registry
+  become: yes
+  become_user: "{{ galaxy_user_name }}"
 
 - name: install dependencies
   ansible.builtin.pip:
     requirements: /home/{{ galaxy_user_name }}/pulsar_registry/requirements.txt
     virtualenv: /home/{{ galaxy_user_name }}/pulsar_registry/venv
     virtualenv_python: python3
+  become: yes
+  become_user: "{{ galaxy_user_name }}"
 
 - name: Create config file
   template:
