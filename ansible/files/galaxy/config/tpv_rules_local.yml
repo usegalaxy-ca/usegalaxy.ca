@@ -85,6 +85,7 @@ destinations:
       # }
       url: "{user.preferences.get('extra_user_preferences').split('\"')[3]}"
       private_token: "{user.preferences.get('extra_user_preferences').split('\"')[7]}"
+      pulsar_file_action_config: config/pulsar_actions.yml
     scheduling:
       require:
         - pulsar
