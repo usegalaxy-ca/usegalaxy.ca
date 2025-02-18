@@ -39,7 +39,7 @@ galaxy_job_config:
       load: galaxy.jobs.runners.slurm:SlurmJobRunner
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
-      load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
+      load: galaxy.jobs.runners.pulsar:PulsarLegacyJobRunner
       url: http://localhost
       private_token: fakekey
   handling:
