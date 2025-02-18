@@ -71,8 +71,8 @@ destinations:
     max_accepted_cores: 16
     max_accepted_mem: 180
     params:
-      url: "{user.preferences.get('pulsar_host')}"
-      private_token: "{user.preferences.get('pulsar_api_key')}"
+      url: "{user.preferences.get('accp|pulsar_host')}"
+      private_token: "{user.preferences.get('accp|pulsar_api_key')}"
     scheduling:
       require:
         - pulsar
