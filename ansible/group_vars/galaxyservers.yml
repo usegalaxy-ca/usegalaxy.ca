@@ -188,7 +188,7 @@ galaxy_config_templates:
   # Pulsar
   - src: templates/galaxy/config/user_preferences_extra_conf.yml
     dest: "{{ galaxy_config.galaxy.user_preferences_extra_conf_path }}"
-  - src: templates/galaxy/config/pulsar_actions.yml
+  - src: templates/galaxy/config/pulsar_action.yml
     dest: "{{ galaxy_config.galaxy.pulsar_action_path }}"
 
 galaxy_config_files:
