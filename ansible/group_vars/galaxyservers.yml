@@ -40,6 +40,7 @@ galaxy_job_config:
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarLegacyJobRunner
+  handling:
     assign: ["db-skip-locked"]
   execution:
     default: tpv_dispatcher
