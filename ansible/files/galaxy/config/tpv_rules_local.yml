@@ -83,8 +83,8 @@ destinations:
       #     "accp|pulsar_api_key": "PEghmEDau4fLjNvV6tMW"
       #   }'
       # }
-      url: "{user.preferences.get('extra_user_preferences').split('\"')}"
-      private_token: "{user.preferences.get('extra_user_preferences')}"
+      url: "{user.preferences.get('extra_user_preferences').split('\"')[3]}"
+      private_token: "{user.preferences.get('extra_user_preferences').split('\"')[7]}"
     scheduling:
       require:
         - pulsar
