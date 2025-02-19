@@ -60,12 +60,6 @@ roles:
 
 users:
   default:
-    # user.preferences = {
-    #   'extra_user_preferences': '{
-    #     "accp|pulsar_host": "http://206.12.90.123", 
-    #     "accp|pulsar_api_key": "PEghmEDau4fLjNvV6tMW"
-    #   }'
-    # }
     if: user and user.preferences.get('extra_user_preferences')
     scheduling:
       prefer:
@@ -79,8 +73,8 @@ destinations:
     params:
       # user.preferences = {
       #   'extra_user_preferences': '{
-      #     "accp|pulsar_host": "http://206.12.90.123", 
-      #     "accp|pulsar_api_key": "PEghmEDau4fLjNvV6tMW"
+      #     "accp|pulsar_host": "<URL>", 
+      #     "accp|pulsar_api_key": "<API_KEY>"
       #   }'
       # }
       url: "{user.preferences.get('extra_user_preferences').split('\"')[3]}"
