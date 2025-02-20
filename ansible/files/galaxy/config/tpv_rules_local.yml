@@ -80,8 +80,8 @@ destinations:
       url: "{user.preferences.get('extra_user_preferences').split('\"')[3]}"
       private_token: "{user.preferences.get('extra_user_preferences').split('\"')[7]}"
       file_action_config: /mnt/nfs/galaxy/config/pulsar_action.yml
-      docker_enabled: "true"
-      docker_default_container_id: "quay.io/galaxyproject/galaxy-min:24.2-uid"
+      singularity_enabled: true
+      singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
     scheduling:
       require:
         - pulsar
