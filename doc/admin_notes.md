@@ -22,7 +22,7 @@ doppler login
 
 ```bash
 cd /your-project-directory/
-echo 'THE_GENERATED_TOKEN' | doppler configure set token --scope /usr/src/app
+echo 'THE_GENERATED_TOKEN' | doppler configure set token --scope .
 doppler setup
 ```
 
