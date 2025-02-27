@@ -10,8 +10,7 @@ class Runner:
     """
     def run_cmd(self, command: list[str], env = None) -> None:
         env = env or {}
-        env = os.environ.copy()
-        env.update(env)
+        env.update(os.environ.copy())
         p = subprocess.Popen(command, shell=False, env=env)
         p.communicate()
         if p.returncode != 0:
