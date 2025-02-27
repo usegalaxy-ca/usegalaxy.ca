@@ -213,7 +213,7 @@ carolg:
       - name: nfs-volume
         type: volumes-ec
         size: 1000
-    cvmfs:
+    squid:
       - name: cvmfs-volume
         type: volumes-ec
         size: 50
