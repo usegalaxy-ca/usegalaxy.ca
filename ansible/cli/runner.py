@@ -8,7 +8,8 @@ class Runner:
     """
     Run a command in a subprocess
     """
-    def run_cmd(self, command: list[str], env = {}) -> None:
+    def run_cmd(self, command: list[str], env = None) -> None:
+        env = env or {}
         env = os.environ.copy()
         env.update(env)
         p = subprocess.Popen(command, shell=False, env=env)
