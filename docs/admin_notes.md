@@ -108,3 +108,19 @@ on the galaxy node:
 ```bash
 sudo galaxyctl restart
 ```
+
+## Training
+
+In terraform/modules/openstack/ansible.tf change "main_nodes" to include all nodes that are *not* reserved for training. The following code for example will reverse all nodes with index 0 for training.
+
+```hcl
+output "main_nodes" {
+     value = "${join(",", [
+         for host in local.ansible_hosts["slurmexecservers"] :
+             host.name if length(regexall(".*0", host.name)) > 0
+     ])}"
+ }
+```
+rerun terraform apply and ansible(slurm.yml playbook) to apply
+
+Anyone with a role or belonging to a group with a role that starts with "training" can use training nodes.
