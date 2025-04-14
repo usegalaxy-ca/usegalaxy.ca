@@ -124,3 +124,20 @@ output "main_nodes" {
 rerun terraform apply and ansible(slurm.yml playbook) to apply
 
 Anyone with a role or belonging to a group with a role that starts with "training" can use training nodes.
+
+## Pulsar Registry
+
+the pulsar_registry is a server running on the same server as galaxy and responds to requests at /api/pulsar.
+
+ACCP registers pulsars with CRUD operations at /api/pulsar. The server uses a sqlite database to keep track of pulsar configurations and users.
+
+The server will periodically sync it's state with the galaxy DB, o
+
+The table user_preference for each user will look like this:
+```
+ id | user_id |          name          |                            value
+----+---------+------------------------+-------------------------------------------------------------
+  1 |       2 | extra_user_preferences | {"accp|pulsar_host": "test", "accp|pulsar_api_key": "test"}
+```
+
+user_preferences can be accessed by TPV for job routing.
