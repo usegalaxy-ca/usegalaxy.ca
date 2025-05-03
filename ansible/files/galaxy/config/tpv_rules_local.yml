@@ -63,10 +63,12 @@ roles:
 
 users:
   default:
-    if: user and user.preferences.get('extra_user_preferences')
-    scheduling:
-      prefer:
-        - pulsar
+    rules:
+      - id: user_has_own_pulsar_rule
+        if: user and user.preferences.get('extra_user_preferences')
+        scheduling:
+          prefer:
+            - pulsar
 
 destinations:
   pulsar:
