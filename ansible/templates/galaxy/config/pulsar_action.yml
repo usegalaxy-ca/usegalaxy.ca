@@ -1,6 +1,3 @@
 paths:
-  - path: /mnt/nfs
-    path_types: unstructured
-    action: rewrite
-    source_directory: /mnt/nfs
-    destination_directory: /mnt/block_storage
+  - path: /cvmfs
+    action: none
