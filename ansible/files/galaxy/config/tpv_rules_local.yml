@@ -86,7 +86,18 @@ destinations:
       private_token: "{user.preferences.get('extra_user_preferences').split('\"')[7]}"
       file_action_config: /mnt/nfs/galaxy/config/pulsar_action.yml
       singularity_enabled: true
-      singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
+      singularity_default_container_id: docker://quay.io/galaxyproject/galaxy-min:24.2.3
+      singularity_volumes: "/tmp:rw,$job_directory:rw,/cvmfs/data.galaxyproject.org:ro"
+      dependency_resolution: remote
+      outputs_to_working_directory: false
+      rewrite_parameters: true
+      container_resolvers:
+        - type: explicit_singularity
+        - type: mulled_singularity
+    env:
+      # This is for adding Galaxy to the path when using the default container
+      - name: SINGULARITYENV_PYTHONPATH
+        value: /galaxy/server/lib
     scheduling:
       require:
         - pulsar
