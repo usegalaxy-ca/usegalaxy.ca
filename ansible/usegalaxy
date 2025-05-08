@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 """
 This CLI is used to run common ansible recipes
- 
+
 view the help for more information
 
 ./usegalaxy.py -h
@@ -14,6 +14,8 @@ from cli.ansible import Ansible
 from cli.dependencies import DependencyManager
 from cli.runner import NonZeroExitCodeException
 from cli.lock import Lock, LockAlreadyAcquiredError
+from cli.checker import run_checks
+
 
 """
 Parse args and run the appropriate function
@@ -121,4 +123,5 @@ def requirements(args):
 
 
 if __name__ == "__main__":
+    run_checks()
     main()
