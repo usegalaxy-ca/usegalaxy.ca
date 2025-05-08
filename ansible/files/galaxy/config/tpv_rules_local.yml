@@ -6,6 +6,10 @@ tools:
     abstract: true
     cores: 1
     mem: cores * 3.8
+  __DATA_FETCH__:
+    scheduling:
+      reject:
+        - pulsar
   toolshed.g2.bx.psu.edu/repos/galaxyp/diann/diann/.*:
     cores: 16
     mem: 110
