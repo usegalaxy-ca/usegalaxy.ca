@@ -33,7 +33,6 @@ pycparser==2.21
 pydantic==1.10.12
 Pygments==2.16.1
 pyparsing==3.1.1
-pysam==0.21.0
 PyYAML==6.0
 repoze.lru==0.7
 requests==2.31.0
