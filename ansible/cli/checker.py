@@ -12,7 +12,7 @@ def check_uncommitted_changes(repo_path='.'):
     Returns:
         bool: True if there are uncommitted changes, False otherwise.
     """
-    repo = Repo(repo_path)
+    repo = Repo(repo_path, search_parent_directories=True)
     return repo.is_dirty(untracked_files=True)
 
 
@@ -32,7 +32,7 @@ def check_unpulled_changes(repo_path='.'):
         Exception: If the fetch operation is rejected.
     """
     unpulled, msg = 0, None
-    repo = Repo(repo_path)
+    repo = Repo(repo_path, search_parent_directories=True)
 
     for remote in repo.remotes:
         fetch_info = remote.fetch()[0]
