@@ -43,6 +43,6 @@
   ansible.posix.mount:
     path: "{{ nfs_mnt_folder }}"
     src: "{{ nfs_host }}:{{ nfs_host_folder }}"
-    opts: rw,async,noatime,nodiratime
+    opts: fstype=nfs4,rw,async,noatime,nodiratime
     fstype: nfs
     state: mounted
