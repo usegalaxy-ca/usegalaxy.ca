@@ -64,11 +64,9 @@ class ArgParser():
         setup_command = subparsers.add_parser('requirements', help="download all requirements")
         setup_command.set_defaults(func=requirements)
 
-        playbooks = map(lambda x: x.split(".")[0], glob.glob("*.yml"))
+        playbooks = [fn[:-4] for fn in glob.glob("*.yml") if fn != "requirements.yml"]
 
         for playbook in playbooks:
-            if playbook == "requirements":
-                continue
             setup_command = subparsers.add_parser(playbook, help="setup %s" % playbook)
             setup_command.add_argument(
                 "--init",
