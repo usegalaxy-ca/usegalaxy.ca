@@ -30,7 +30,6 @@ def main():
     arguments = " ".join(sys.argv)
     logger.info("Start %s" % arguments)
     try:
-        import time
         lock.acquire()
         parser.run()
     except NonZeroExitCodeException as e:
