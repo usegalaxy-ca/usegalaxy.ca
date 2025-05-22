@@ -59,6 +59,7 @@ class ArgParser():
         self.parser = ArgumentParser(
             prog="UseGalaxyCLI",
             description="Used to run commmon ansible recipes")
+        self.parser.add_argument("--skip-checks", action="store_true", help="Skip git repository checks for uncommitted/unpulled changes")
         subparsers = self.parser.add_subparsers(help='sub-command help')
 
         setup_command = subparsers.add_parser('requirements', help="download all requirements")
@@ -79,6 +80,8 @@ class ArgParser():
         if not hasattr(args, "func"):
             self.parser.print_help()
             exit(1)
+        if not args.skip_checks:
+            check_git_repo()
         args.func(args)
 
 """
@@ -115,5 +118,4 @@ def requirements(args):
 
 
 if __name__ == "__main__":
-    check_git_repo()
     main()
