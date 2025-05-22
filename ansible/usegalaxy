@@ -14,7 +14,7 @@ from cli.ansible import Ansible
 from cli.dependencies import DependencyManager
 from cli.runner import NonZeroExitCodeException
 from cli.lock import Lock, LockAlreadyAcquiredError
-from cli.checker import run_checks
+from cli.checker import run_checks as check_git_repo
 
 
 """
@@ -123,5 +123,5 @@ def requirements(args):
 
 
 if __name__ == "__main__":
-    run_checks()
+    check_git_repo()
     main()
