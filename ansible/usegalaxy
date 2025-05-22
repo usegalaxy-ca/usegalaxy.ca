@@ -94,28 +94,23 @@ class ArgumentParser(argparse.ArgumentParser):
 Run an ansible playbook
 """
 def run(args):
-    playbook_path = args.playbook + ".yml"
+    depManager = DependencyManager()
+    depManager.verify_all()
 
     ansible = Ansible()
     if args.init:
         ansible.add_tags("all", "never")
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-    ansible.set_yaml(playbook_path)
-
-    ansible.run()
+    ansible.run(args.playbook + ".yml")
 
 """
 run the ansible requirements
 """
 def requirements(args):
-    ansible = Ansible()
     depManager = DependencyManager()
-
     depManager.update_venv()
     depManager.verify_all()
 
+    ansible = Ansible()
     ansible.requirements()
 
 
