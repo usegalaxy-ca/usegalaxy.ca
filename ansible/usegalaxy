@@ -62,7 +62,9 @@ class ArgParser():
     def __init__(self):
         self.parser = ArgumentParser(
             prog="UseGalaxyCLI",
-            description="Used to run commmon ansible recipes")
+            description="Used to run commmon ansible recipes",
+            allow_abbrev=False,  # Since we do partial parsing, prefix matching is unsafe.
+        )
         self.parser.add_argument("--skip-checks", action="store_true", help="Skip git repository checks for uncommitted/unpulled changes")
         subparsers = self.parser.add_subparsers(help='sub-command help')
 
@@ -80,13 +82,13 @@ class ArgParser():
             setup_command.set_defaults(func=run, playbook=playbook)
 
     def run(self) -> None:
-        args = self.parser.parse_args()
+        args, other_args = self.parser.parse_known_args()
         if not hasattr(args, "func"):
             self.parser.print_help()
             exit(1)
         if not args.skip_checks:
             check_git_repo()
-        args.func(args)
+        args.func(args, other_args)
 
 """
 Custom ArgumentParser to raise an error and print the usage
@@ -99,25 +101,25 @@ class ArgumentParser(argparse.ArgumentParser):
 """
 Run an ansible playbook
 """
-def run(args):
+def run(args, other_args):
     depManager = DependencyManager()
     depManager.verify_all()
 
     ansible = Ansible()
     if args.init:
         ansible.add_tags("all", "never")
-    ansible.run(args.playbook + ".yml")
+    ansible.run(args.playbook + ".yml", other_args)
 
 """
 run the ansible requirements
 """
-def requirements(args):
+def requirements(args, other_args):
     depManager = DependencyManager()
     depManager.update_venv()
     depManager.verify_all()
 
     ansible = Ansible()
-    ansible.requirements()
+    ansible.requirements(other_args)
 
 
 if __name__ == "__main__":

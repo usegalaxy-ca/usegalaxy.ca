@@ -1,3 +1,5 @@
+from typing import List
+
 from cli.runner import Runner
 
 """
@@ -31,8 +33,8 @@ class Ansible:
     """
     Build an ansible requirements command
     """
-    def requirements(self) -> None:
-        command = str("doppler run -- .venv/bin/ansible-galaxy install -r requirements.yml --force").split()
+    def requirements(self, args: List[str]) -> None:
+        command = str("doppler run -- .venv/bin/ansible-galaxy install -r requirements.yml --force").split() + args
         env = {"ANSIBLE_FORCE_COLOR": "true"}
         self.runner.run_cmd(command, env=env)
 
@@ -40,8 +42,8 @@ class Ansible:
     """
     Run the ansible command
     """
-    def run(self, playbook: str) -> None:
-        command = self._build_command(playbook)
+    def run(self, playbook: str, args: List[str]) -> None:
+        command = self._build_command(playbook) + args
         env = {"ANSIBLE_FORCE_COLOR": "true"}
         self.runner.run_cmd(command, env=env)
 
