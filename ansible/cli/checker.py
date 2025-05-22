@@ -1,26 +1,22 @@
 from git import Repo
 
+REPO_PATH = "."
 
-def check_uncommitted_changes(repo_path='.'):
+
+def check_uncommitted_changes():
     """
     Checks for uncommitted changes in a Git repository (ie. is dirty).
-
-    Parameters:
-        repo_path (str): The path to the Git repository.
 
     Returns:
         bool: True if there are uncommitted changes, False otherwise.
     """
-    repo = Repo(repo_path, search_parent_directories=True)
+    repo = Repo(REPO_PATH, search_parent_directories=True)
     return repo.is_dirty(untracked_files=True)
 
 
-def check_unpulled_changes(repo_path='.'):
+def check_unpulled_changes():
     """
     Checks for unpulled changes in a Git repository.
-
-    Parameters:
-        repo_path (str): The path to the Git repository.
 
     Returns:
         tuple: The number of unpulled commits, and a message indicating the status of the repository.
@@ -31,7 +27,7 @@ def check_unpulled_changes(repo_path='.'):
         Exception: If the fetch operation is rejected.
     """
     unpulled, msg = 0, None
-    repo = Repo(repo_path, search_parent_directories=True)
+    repo = Repo(REPO_PATH, search_parent_directories=True)
 
     for remote in repo.remotes:
         fetch_info = remote.fetch()[0]
@@ -59,15 +55,9 @@ def run_checks():
     """
     Run checks for uncommitted and unpulled changes in the repository.
     """
-    repo_path = "."  # Replace with your repository path
-
     if check_uncommitted_changes():
         raise Exception("Uncommitted changes detected in the local usegalaxy git repository.")
 
-    unpulled, msg = check_unpulled_changes(repo_path)
+    unpulled, msg = check_unpulled_changes()
     if unpulled > 0:
         raise Exception(msg)
-
-
-if __name__ == "__main__":
-    run_checks()
