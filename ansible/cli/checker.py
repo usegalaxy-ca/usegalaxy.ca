@@ -1,5 +1,4 @@
 from git import Repo
-import warnings
 
 
 def check_uncommitted_changes(repo_path='.'):
@@ -63,11 +62,11 @@ def run_checks():
     repo_path = "."  # Replace with your repository path
 
     if check_uncommitted_changes():
-        warnings.warn("Uncommitted changes detected in the repository.", UserWarning)
+        raise Exception("Uncommitted changes detected in the local usegalaxy git repository.")
 
     unpulled, msg = check_unpulled_changes(repo_path)
     if unpulled > 0:
-        warnings.warn(msg, UserWarning)
+        raise Exception(msg)
 
 
 if __name__ == "__main__":
