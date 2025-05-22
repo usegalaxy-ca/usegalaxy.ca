@@ -27,6 +27,10 @@ def main():
     lock = Lock(".lock")
     parser = ArgParser()
 
+    def _handle_error_message(msg):
+        print(msg)
+        logger.error(msg)
+
     arguments = " ".join(sys.argv)
     logger.info("Start %s" % arguments)
     try:
@@ -34,16 +38,16 @@ def main():
         parser.run()
     except NonZeroExitCodeException as e:
         exitcode = 1
-        print(e)
-        logger.error(e)
+        _handle_error_message(e)
     except argparse.ArgumentError as e:
         exitcode = 1
-        logger.error("Invalid arguments")
+        _handle_error_message("Invalid arguments")
     except LockAlreadyAcquiredError as e:
-        msg = "Another instance of UseGalaxyCLI is already running"
-        print(msg)
-        logger.error(msg)
-        exit(1)
+        exitcode = 1
+        _handle_error_message("Another instance of UseGalaxyCLI is already running")
+    except Exception as e:
+        exitcode = 1
+        _handle_error_message(e)
     logger.info("End %s" % arguments)
 
     exit(exitcode)
@@ -90,7 +94,6 @@ Custom ArgumentParser to raise an error and print the usage
 class ArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         self.print_usage()
-        print(message)
         raise argparse.ArgumentError(None, message)
 
 """
