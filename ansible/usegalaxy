@@ -14,7 +14,7 @@ from cli.ansible import Ansible
 from cli.dependencies import DependencyManager
 from cli.runner import NonZeroExitCodeException
 from cli.lock import Lock, LockAlreadyAcquiredError
-from cli.checker import run_checks
+from cli.checker import run_checks as check_git_repo
 
 
 """
@@ -27,24 +27,27 @@ def main():
     lock = Lock(".lock")
     parser = ArgParser()
 
+    def _handle_error_message(msg):
+        print(msg)
+        logger.error(msg)
+
     arguments = " ".join(sys.argv)
     logger.info("Start %s" % arguments)
     try:
-        import time
         lock.acquire()
         parser.run()
     except NonZeroExitCodeException as e:
         exitcode = 1
-        print(e)
-        logger.error(e)
+        _handle_error_message(e)
     except argparse.ArgumentError as e:
         exitcode = 1
-        logger.error("Invalid arguments")
+        _handle_error_message("Invalid arguments")
     except LockAlreadyAcquiredError as e:
-        msg = "Another instance of UseGalaxyCLI is already running"
-        print(msg)
-        logger.error(msg)
-        exit(1)
+        exitcode = 1
+        _handle_error_message("Another instance of UseGalaxyCLI is already running")
+    except Exception as e:
+        exitcode = 1
+        _handle_error_message(e)
     logger.info("End %s" % arguments)
 
     exit(exitcode)
@@ -59,17 +62,18 @@ class ArgParser():
     def __init__(self):
         self.parser = ArgumentParser(
             prog="UseGalaxyCLI",
-            description="Used to run commmon ansible recipes")
+            description="Used to run commmon ansible recipes",
+            allow_abbrev=False,  # Since we do partial parsing, prefix matching is unsafe.
+        )
+        self.parser.add_argument("--skip-checks", action="store_true", help="Skip git repository checks for uncommitted/unpulled changes")
         subparsers = self.parser.add_subparsers(help='sub-command help')
 
         setup_command = subparsers.add_parser('requirements', help="download all requirements")
         setup_command.set_defaults(func=requirements)
 
-        playbooks = map(lambda x: x.split(".")[0], glob.glob("*.yml"))
+        playbooks = [fn[:-4] for fn in glob.glob("*.yml") if fn != "requirements.yml"]
 
         for playbook in playbooks:
-            if playbook == "requirements":
-                continue
             setup_command = subparsers.add_parser(playbook, help="setup %s" % playbook)
             setup_command.add_argument(
                 "--init",
@@ -78,11 +82,13 @@ class ArgParser():
             setup_command.set_defaults(func=run, playbook=playbook)
 
     def run(self) -> None:
-        args = self.parser.parse_args()
+        args, other_args = self.parser.parse_known_args()
         if not hasattr(args, "func"):
             self.parser.print_help()
             exit(1)
-        args.func(args)
+        if not args.skip_checks:
+            check_git_repo()
+        args.func(args, other_args)
 
 """
 Custom ArgumentParser to raise an error and print the usage
@@ -90,38 +96,31 @@ Custom ArgumentParser to raise an error and print the usage
 class ArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         self.print_usage()
-        print(message)
         raise argparse.ArgumentError(None, message)
 
 """
 Run an ansible playbook
 """
-def run(args):
-    playbook_path = args.playbook + ".yml"
+def run(args, other_args):
+    depManager = DependencyManager()
+    depManager.verify_all()
 
     ansible = Ansible()
     if args.init:
         ansible.add_tags("all", "never")
-    depManager = DependencyManager()
-
-    depManager.verify_all()
-    ansible.set_yaml(playbook_path)
-
-    ansible.run()
+    ansible.run(args.playbook + ".yml", other_args)
 
 """
 run the ansible requirements
 """
-def requirements(args):
-    ansible = Ansible()
+def requirements(args, other_args):
     depManager = DependencyManager()
-
     depManager.update_venv()
     depManager.verify_all()
 
-    ansible.requirements()
+    ansible = Ansible()
+    ansible.requirements(other_args)
 
 
 if __name__ == "__main__":
-    run_checks()
     main()
