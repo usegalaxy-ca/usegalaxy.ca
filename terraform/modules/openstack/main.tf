@@ -23,7 +23,7 @@ locals {
     })
 }
 
-resource "openstack_blockstorage_volume_v2" "volumes" {
+resource "openstack_blockstorage_volume_v3" "volumes" {
   for_each = { for volume in flatten([
                     for instance_name, volumes in var.volume_config: volumes
                         ]): volume.name => volume}
@@ -40,7 +40,7 @@ resource "openstack_compute_volume_attach_v2" "volumes" {
                             attach_to: instance_name
                         }])]): volume.name => volume}
   instance_id = "${openstack_compute_instance_v2.instances[each.value.attach_to].id}"
-  volume_id   = "${openstack_blockstorage_volume_v2.volumes[each.key].id}"
+  volume_id   = "${openstack_blockstorage_volume_v3.volumes[each.key].id}"
 }
 
 resource "openstack_compute_floatingip_associate_v2" "floating_ips" {
