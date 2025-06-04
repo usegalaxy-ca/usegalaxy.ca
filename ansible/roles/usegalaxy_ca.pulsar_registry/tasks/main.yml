@@ -44,8 +44,15 @@
     group: root
     mode: 0644
 
-- name: Start pulsar_registry
+# Make sure the pulsar_registry service is not started (Until development of this service is resumed)
+- name: Stop pulsar_registry
   systemd:
     name: pulsar_registry
-    state: started
-    enabled: yes
+    state: stopped
+    enabled: no
+
+#- name: Start pulsar_registry
+#  systemd:
+#    name: pulsar_registry
+#    state: started
+#    enabled: yes
