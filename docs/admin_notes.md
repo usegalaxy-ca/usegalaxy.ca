@@ -108,3 +108,38 @@ on the galaxy node:
 ```bash
 sudo galaxyctl restart
 ```
+
+## Training
+
+In terraform/modules/openstack/ansible.tf change "main_nodes" to include all nodes that are *not* reserved for training. The following code for example will reverse all nodes with index 0 for training.
+
+```hcl
+output "main_nodes" {
+     value = "${join(",", [
+         for host in local.ansible_hosts["slurmexecservers"] :
+             host.name if length(regexall(".*0", host.name)) > 0
+     ])}"
+ }
+```
+rerun terraform apply and ansible(slurm.yml playbook) to apply
+
+Anyone with a role or belonging to a group with a role that starts with "training" can use training nodes (see current TPV config)
+
+## Pulsar Registry
+
+the pulsar_registry runs on the same server as galaxy and responds to requests at /api/pulsar. The code and sqilte DB are found in /home/galaxy/ and is run by the galaxy user.
+
+It runs as a systemd service so the usualy systemctl/journalctl commands can be used to check the status.
+
+ACCP registers pulsars with CRUD operations at /api/pulsar. The server uses a sqlite database to keep track of pulsar configurations and users.
+
+The server will periodically sync it's state with the galaxy DB, o
+
+The table user_preference for each user will look like this:
+```
+ id | user_id |          name          |                            value
+----+---------+------------------------+-------------------------------------------------------------
+  1 |       2 | extra_user_preferences | {"accp|pulsar_host": "test", "accp|pulsar_api_key": "test"}
+```
+
+user_preferences can be accessed by TPV for job routing(see current TPV config).

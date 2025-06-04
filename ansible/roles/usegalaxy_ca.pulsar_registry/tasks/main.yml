@@ -1,0 +1,51 @@
+- name: install sqlite3
+  package:
+    name: "sqlite3"
+    state: present
+
+- name: install pip
+  package:
+    name: "python3-pip"
+    state: present
+
+- name: Install virtualenv via pip
+  pip:
+    name: virtualenv
+    executable: pip3
+
+- name: checkout pulsar_registry
+  ansible.builtin.git:
+    repo: https://github.com/laperlej/pulsar_registry.git
+    dest: /home/{{ galaxy_user_name }}/pulsar_registry
+  become: yes
+  become_user: "{{ galaxy_user_name }}"
+
+- name: install dependencies
+  ansible.builtin.pip:
+    requirements: /home/{{ galaxy_user_name }}/pulsar_registry/requirements.txt
+    virtualenv: /home/{{ galaxy_user_name }}/pulsar_registry/venv
+    virtualenv_python: python3
+  become: yes
+  become_user: "{{ galaxy_user_name }}"
+
+- name: Create config file
+  template:
+    src: config.ini
+    dest: /home/galaxy/pulsar_registry/config.ini
+    owner: galaxy
+    group: galaxy
+    mode: 0644
+
+- name: Add pulsar_registry to systemd
+  template:
+    src: pulsar_registry.service
+    dest: /etc/systemd/system/pulsar_registry.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Start pulsar_registry
+  systemd:
+    name: pulsar_registry
+    state: started
+    enabled: yes

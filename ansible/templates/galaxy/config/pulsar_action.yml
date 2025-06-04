@@ -1,0 +1,3 @@
+paths:
+  - path: /cvmfs
+    action: none

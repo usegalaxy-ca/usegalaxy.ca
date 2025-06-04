@@ -1,0 +1,74 @@
+[groups]
+admin = [
+    "jonathan.laperle@userbrooke.ca",
+    "carol.gauthier@usherbrooke.ca",
+]
+BFT708_A14 = [
+    "Aura-Lee.Beliveau-Caron@USherbrooke.ca",
+    "Felix-Antoine.Trifiro@USherbrooke.ca",
+    "Ihor.Arefiev@USherbrooke.ca",
+    "Jeremy.Gagnon@USherbrooke.ca",
+    "Jonathan.Wilson2@USherbrooke.ca",
+    "Kevin-Row.Malkoun@USherbrooke.ca",
+    "Louis.Robitaille@USherbrooke.ca",
+    "Michelle.Scott@USherbrooke.ca",
+    "Nicolas.Provencher@USherbrooke.ca",
+    "Pierre-Etienne.Jacques@USherbrooke.ca",
+    "Samuel.Coderre@USherbrooke.ca",
+    "Sebastien.Rodrigue@USherbrooke.ca",
+    "Shawn.Pires.Mendes@USherbrooke.ca",
+    "Simon.Bache@USherbrooke.ca",
+    "Valeriia.Vasylieva2@USherbrooke.ca",
+]
+OMX750_V1_A14 = [
+    "Amelie.De.Grandmaison@USherbrooke.ca",
+    "Amelie.Doucet2@USherbrooke.ca",
+    "Antoine.Levenes@USherbrooke.ca",
+    "Audrey.Poirier6@USherbrooke.ca",
+    "David.Jaramillo.Salazar@USherbrooke.ca",
+    "Dominick.Matteau@USherbrooke.ca",
+    "Marika.Groleau@USherbrooke.ca",
+    "Nancy.Allard@USherbrooke.ca",
+    "Nicolas.Allaire.Tanguay@USherbrooke.ca",
+    "Paula.Andrea.Perea.Molina@USherbrooke.ca",
+    "Pierre-Etienne.Jacques@USherbrooke.ca",
+    "Sandrine.Lebel-Beaucage@USherbrooke.ca",
+    "Sebastien.Rodrigue@USherbrooke.ca",
+    "Willem.Laverlochere@USherbrooke.ca",
+]
+OMX750_V2_A14 = [
+    "anitza.fragas.quintero@USherbrooke.ca",
+    "addablah.audrey@gmail.com",
+    "audrey.leprince.1@ulaval.ca",
+    "beatriz.delgado.hernandez@umontreal.ca",
+    "Camelie.Mailhot@USherbrooke.ca",
+    "Constance.inkel@usherbrooke.ca",
+    "daryna.kurban@umontreal.ca",
+    "Dervel.Felipe.Diaz.Herrera@USherbrooke.ca",
+    "evelyne.lacasse@usherbrooke.ca",
+    "gabriel.bernier.2@ulaval.ca",
+    "guillaume.millette@usherbrooke.ca",
+    "jean-philippe.langlois.6@ulaval.ca",
+    "mariam.richter.1@ulaval.ca",
+    "pauline.denis.2@ulaval.ca",
+    "pingwinde.bruno.sawadogo@umontreal.ca",
+    "Renaud.binette@usherbrooke.ca",
+    "rosie.beaulieu.1@ulaval.ca",
+    "william.lelorel.nankam.nguekap@umontreal.ca",
+    "miatanie@tlb.sympatico.ca",
+]
+
+
+[schedule]
+admin = [
+    {from = "2024-10-10", to = "3000-10-10"},
+]
+BFT708_A14 = [
+    {from = "2024-10-1", to = "2024-11-31"},
+]
+OMX750_V1_A14 = [
+    {from = "2024-10-1", to = "2024-11-31"},
+]
+OMX750_V2_A14 = [
+    {from = "2024-11-1", to = "2024-12-31"},
+]

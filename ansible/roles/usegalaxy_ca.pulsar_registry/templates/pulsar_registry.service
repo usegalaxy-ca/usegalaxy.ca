@@ -1,0 +1,22 @@
+[Unit]
+Description=Pulsar Registry
+After=network.target
+
+[Service]
+Type=simple
+User={{ galaxy_user_name }}
+Group={{ galaxy_user_name }}
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/{{ galaxy_user_name }}/pulsar_registry/venv/bin/python /home/{{ galaxy_user_name }}/pulsar_registry/app/main.py
+WorkingDirectory=/home/{{ galaxy_user_name }}/pulsar_registry/
+
+# Restart configuration
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
