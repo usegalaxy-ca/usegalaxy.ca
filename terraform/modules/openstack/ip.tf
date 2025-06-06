@@ -1,6 +1,6 @@
 output "public_IP" {
   description = "Public IP address of the gateway instance"
-  value       = { for floating_ip in var.ip_config: floating_ip.attach_to => openstack_compute_floatingip_associate_v2.floating_ips[floating_ip.ip].floating_ip }
+  value       = { for floating_ip in var.ip_config: floating_ip.attach_to => openstack_networking_floatingip_associate_v2.floating_ips[floating_ip.ip].floating_ip }
 }
 
 output "private_IPs" {

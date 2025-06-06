@@ -43,11 +43,16 @@ resource "openstack_compute_volume_attach_v2" "volumes" {
   volume_id   = "${openstack_blockstorage_volume_v3.volumes[each.key].id}"
 }
 
-resource "openstack_compute_floatingip_associate_v2" "floating_ips" {
+data "openstack_networking_port_v2" "ports" {
+  for_each = { for instance in local.flat_instance_config: instance.name => instance}
+  device_id = openstack_compute_instance_v2.instances[each.value.name].id
+  network_id = each.value.network_uuid
+}
+
+resource "openstack_networking_floatingip_associate_v2" "floating_ips" {
   for_each = { for ip in var.ip_config : ip.ip => ip }
-  floating_ip           = "${each.value.ip}"
-  instance_id           = openstack_compute_instance_v2.instances[each.value.attach_to].id
-  wait_until_associated = true
+  floating_ip = each.value.ip
+  port_id = data.openstack_networking_port_v2.ports[each.value.attach_to].id
 }
 
 resource "openstack_compute_instance_v2" "instances" {
