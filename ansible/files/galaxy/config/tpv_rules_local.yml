@@ -6,6 +6,15 @@ tools:
     abstract: true
     cores: 1
     mem: cores * 3.8
+  __DATA_FETCH__:
+    scheduling:
+      reject:
+        - pulsar
+  toolshed.g2.bx.psu.edu/repos/galaxyp/diann/diann/.*:
+    cores: 16
+    mem: 110
+  toolshed.g2.bx.psu.edu/repos/iuc/dada2_assigntaxonomyaddspecies/.*:
+    mem: 50
   toolshed.g2.bx.psu.edu/repos/q2d2/qiime2__dada2__denoise_paired/.*:
     mem: 50
   toolshed.g2.bx.psu.edu/repos/chemteam/bio3d_pca/bio3d_pca/.*:
@@ -58,33 +67,46 @@ roles:
       prefer:
         - training
 
-users:
-  default:
-    if: user and user.preferences.get('extra_user_preferences')
-    scheduling:
-      prefer:
-        - pulsar
+#users:
+#  default:
+#    rules:
+#      - id: user_has_own_pulsar_rule
+#        if: user and user.preferences.get('extra_user_preferences')
+#        scheduling:
+#          prefer:
+#            - pulsar
 
 destinations:
-  pulsar:
-    runner: pulsar_runner
-    max_accepted_cores: 16
-    max_accepted_mem: 180
-    params:
-      # user.preferences = {
-      #   'extra_user_preferences': '{
-      #     "accp|pulsar_host": "<URL>", 
-      #     "accp|pulsar_api_key": "<API_KEY>"
-      #   }'
-      # }
-      url: "{user.preferences.get('extra_user_preferences').split('\"')[3]}"
-      private_token: "{user.preferences.get('extra_user_preferences').split('\"')[7]}"
-      file_action_config: /mnt/nfs/galaxy/config/pulsar_action.yml
-      singularity_enabled: true
-      singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
-    scheduling:
-      require:
-        - pulsar
+#  pulsar:
+#    runner: pulsar_runner
+#    max_accepted_cores: 16
+#    max_accepted_mem: 180
+#    params:
+#      # user.preferences = {
+#      #   'extra_user_preferences': '{
+#      #     "accp|pulsar_host": "<URL>",
+#      #     "accp|pulsar_api_key": "<API_KEY>"
+#      #   }'
+#      # }
+#      url: "{user.preferences.get('extra_user_preferences').split('\"')[3]}"
+#      private_token: "{user.preferences.get('extra_user_preferences').split('\"')[7]}"
+#      file_action_config: /mnt/nfs/galaxy/config/pulsar_action.yml
+#      singularity_enabled: true
+#      singularity_default_container_id: docker://quay.io/galaxyproject/galaxy-min:24.2.3
+#      singularity_volumes: "/tmp:rw,$job_directory:rw,/cvmfs/data.galaxyproject.org:ro"
+#      dependency_resolution: remote
+#      outputs_to_working_directory: false
+#      rewrite_parameters: true
+#      container_resolvers:
+#        - type: explicit_singularity
+#        - type: mulled_singularity
+#    env:
+#      # This is for adding Galaxy to the path when using the default container
+#      - name: SINGULARITYENV_PYTHONPATH
+#        value: /galaxy/server/lib
+#    scheduling:
+#      require:
+#        - pulsar
   slurm-training:
     runner: slurm
     max_accepted_cores: 32
