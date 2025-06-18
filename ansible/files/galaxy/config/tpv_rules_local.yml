@@ -29,6 +29,7 @@ tools:
   toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/.*:
     cores: 10
     mem: 200
+    rules:
       # stubbornly override the shared tpv rule
       - id: tpvdb_metaspades_medium_input_rule
         if: 1 <= input_size < 60
