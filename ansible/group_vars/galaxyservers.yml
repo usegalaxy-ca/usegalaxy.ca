@@ -40,6 +40,19 @@ galaxy_job_config:
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
+  limits:
+    -
+      # Limit on the number of jobs a user with a registered Galaxy account can have active across all environments.
+      type: registered_user_concurrent_jobs
+      value: 2
+      # Limit total jobs running on the galaxy server (upload, etc)
+    - type: environment_total_concurrent_jobs
+      id: local_env
+      value: 10
+      # Limit total jobs running on the computes
+    - type: environment_total_concurrent_jobs
+      id: tpv_dispatcher
+      value: 100
   handling:
     assign: ["db-skip-locked"]
   execution:
@@ -95,6 +108,7 @@ galaxy_config:
     expose_user_name: true
     expose_dataset_path: true
     expose_potentially_sensitive_job_metrics: true
+    cache_user_job_count: true
     # HTML sanitation
     sanitize_all_html: false
     # NFS workarounds
