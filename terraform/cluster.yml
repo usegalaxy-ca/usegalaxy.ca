@@ -30,19 +30,19 @@ prod:
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
       - name: slurmexec-xs
-        volume_size: 1000
+        volume_size: 250
         volume_type: volumes-ec
         flavor: p4-15gb
         security_groups: [usegal, usegal-slurm]
         count: 10
       - name: slurmexec-sm
-        volume_size: 1000
+        volume_size: 250
         volume_type: volumes-ec
         flavor: c8-30gb
         security_groups: [usegal, usegal-slurm]
         count: 20
       - name: slurmexec-md
-        volume_size: 1000
+        volume_size: 250
         volume_type: volumes-ec
         flavor: c16-60gb
         security_groups: [usegal, usegal-slurm]
