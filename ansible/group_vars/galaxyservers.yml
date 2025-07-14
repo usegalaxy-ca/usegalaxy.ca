@@ -109,6 +109,7 @@ galaxy_config:
     expose_dataset_path: true
     expose_potentially_sensitive_job_metrics: true
     cache_user_job_count: true
+    enable_notification_system: true
     # HTML sanitation
     sanitize_all_html: false
     # NFS workarounds
