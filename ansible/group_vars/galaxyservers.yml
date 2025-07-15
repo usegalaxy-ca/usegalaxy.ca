@@ -44,7 +44,7 @@ galaxy_job_config:
     -
       # Limit on the number of jobs a user with a registered Galaxy account can have active across all environments.
       type: registered_user_concurrent_jobs
-      value: 2
+      value: 6
       # Limit total jobs running on the galaxy server (upload, etc)
     - type: environment_total_concurrent_jobs
       id: local_env
