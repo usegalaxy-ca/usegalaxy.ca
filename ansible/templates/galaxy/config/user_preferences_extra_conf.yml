@@ -1,23 +1,5 @@
 preferences:
   accp:
-    description: ACCP (Alliance Cloud Connect Pilot) Settings
-    inputs:
-      - name: pulsar_host
-        label: Pulsar Host
-        type: text
-        required: False
-      - name: pulsar_api_key
-        label: Pulsar API Key
-        type: text
-        required: False
-      - name: pulsar_ram
-        label: Pulsar RAM
-        type: text
-        required: False
-      - name: pulsar_cpu
-        label: Pulsar CPU Cores
-        type: text
-        required: False
   omero_account:
     description: Your OMERO instance connection credentials
     inputs:
@@ -29,3 +11,21 @@ preferences:
         label: Password
         type:  password
         required: False
+#    description: ACCP (Alliance Cloud Connect Pilot) Settings
+#    inputs:
+#      - name: pulsar_host
+#        label: Pulsar Host
+#        type: text
+#        required: False
+#      - name: pulsar_api_key
+#        label: Pulsar API Key
+#        type: text
+#        required: False
+#      - name: pulsar_ram
+#        label: Pulsar RAM
+#        type: text
+#        required: False
+#      - name: pulsar_cpu
+#        label: Pulsar CPU Cores
+#        type: text
+#        required: False
