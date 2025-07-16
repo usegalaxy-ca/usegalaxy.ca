@@ -29,6 +29,12 @@ tools:
   toolshed.g2.bx.psu.edu/repos/nml/metaspades/metaspades/.*:
     cores: 10
     mem: 200
+    rules:
+      # stubbornly override the shared tpv rule
+      - id: tpvdb_metaspades_medium_input_rule
+        if: 1 <= input_size < 60
+        cores: 10
+        mem: 200
   toolshed.g2.bx.psu.edu/repos/iuc/spades_metaplasmidspades/spades_metaplasmidspades/.*:
     cores: 10
     mem: 200
@@ -125,7 +131,10 @@ destinations:
   slurm:
     runner: slurm
     max_accepted_cores: 32
-    max_accepted_mem: 240
+    max_accepted_mem: 1000 # virtually high to catch all, and then downsize to max_mem
+    # Clamp resources to what the nodes support.
+    max_cores: 32
+    max_mem: 220
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=training #set to main for autumn season
       singularity_enabled: true

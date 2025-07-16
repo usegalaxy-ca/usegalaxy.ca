@@ -34,12 +34,25 @@ galaxy_job_config:
   runners:
     local_runner:
       load: galaxy.jobs.runners.local:LocalJobRunner
-      workers: 16
+      workers: 8
     slurm:
       load: galaxy.jobs.runners.slurm:SlurmJobRunner
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
+  limits:
+    -
+      # Limit on the number of jobs a user with a registered Galaxy account can have active across all environments.
+      type: registered_user_concurrent_jobs
+      value: 6
+      # Limit total jobs running on the galaxy server (upload, etc)
+    - type: environment_total_concurrent_jobs
+      id: local_env
+      value: 10
+      # Limit total jobs running on the computes
+    - type: environment_total_concurrent_jobs
+      id: tpv_dispatcher
+      value: 100
   handling:
     assign: ["db-skip-locked"]
   execution:
@@ -73,6 +86,8 @@ galaxy_config:
       - john.davis@jhu.edu
       - charles.coulombe@calculquebec.ca
     database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
+    database_engine_option_pool_size: 10
+    database_engine_option_max_overflow: 20
     file_path: /mnt/nfs/data/datasets
     job_working_directory: /mnt/nfs/data/jobs
     # file_path: /data/datasets
@@ -93,6 +108,8 @@ galaxy_config:
     expose_user_name: true
     expose_dataset_path: true
     expose_potentially_sensitive_job_metrics: true
+    cache_user_job_count: true
+    enable_notification_system: true
     # HTML sanitation
     sanitize_all_html: false
     # NFS workarounds
