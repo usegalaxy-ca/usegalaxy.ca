@@ -18,3 +18,14 @@ preferences:
         label: Pulsar CPU Cores
         type: text
         required: False
+  omero_account:
+    description: Your OMERO instance connection credentials
+    inputs:
+      - name: username
+        label: Username
+        type: text
+        required: False
+      - name: password
+        label: Password
+        type:  password
+        required: False
