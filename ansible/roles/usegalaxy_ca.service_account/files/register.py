@@ -170,6 +170,9 @@ class DB:
         self._insert_user(username, password, email)
         self.conn.commit()
 
+        self._insert_service_role()
+        self.conn.commit()
+
         user_id = self._get_user_id(username)
         self._insert_user_role(user_id)
         self.conn.commit()
@@ -180,6 +183,12 @@ class DB:
         self.cur.execute(
             'INSERT INTO galaxy_user (email, username, password, active) VALUES (%s, %s, %s, true) ON CONFLICT DO NOTHING',
             (email, username, password)
+        )
+
+    def _insert_service_role(self):
+        self.cur.execute(
+            'INSERT INTO role (name, type) VALUES (%s, %s)', 
+            ("admin", "private")
         )
 
     def _get_user_id(self, username: str):
