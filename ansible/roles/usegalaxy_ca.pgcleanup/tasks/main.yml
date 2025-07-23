@@ -1,0 +1,11 @@
+- name: Add cron job for pgcleanup of deleted datasets in galaxy
+  cron:
+    name: "galaxy_pgcleanup"
+    user: galaxy
+    weekday: "{{ galaxy_pgcleanup_cron_weekday }}"
+    hour: "{{ galaxy_pgcleanup_cron_hour }}"
+    minute: "{{ galaxy_pgcleanup_cron_min }}"
+    job: >
+      source {{ galaxy_venv_dir }}/bin/activate;
+      cd {{ galaxy_server_dir }};
+      {{ galaxy_venv_dir }}/bin/python ./scripts/cleanup_datasets/pgcleanup.py -w 128MB --config-file {{ galaxy_config_file }} --log-dir {{ galaxy_log_dir }} --older-than {{ galaxy_pgcleanup_days }} {{ galaxy_pgcleanup_actions | join(' ') }} 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_datasets.log;
