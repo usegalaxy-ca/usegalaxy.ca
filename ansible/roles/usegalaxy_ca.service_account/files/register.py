@@ -126,8 +126,8 @@ def main():
     args = get_args()
 
     config = Config(args.connect)
-    galaxy = Galaxy(config)
-    galaxy.create_user(args.username, args.password, args.email)
+    db = DB(config)
+    db.create_service_account(args.username, args.password, args.email)
 
 
 class DB:
@@ -162,60 +162,87 @@ class DB:
         if self.conn is not None:
             self.conn.close()
 
-    def insert_user(self, username: str, password: str, email: str):
-        logging.info(f'Inserting user {username} into database')
-        
+    def create_service_account(self, username: str, password: str, email: str):
+        """ Create service account if it does not exist."""
+        if self._service_account_exists(username, email):
+            logging.info(f'Service account {username} already exists')
+            return
+
+        logging.info(f'Creating service account {username}')
+
         password = hash_password_PBKDF2(password)
 
         self._insert_user(username, password, email)
-        self.conn.commit()
-
-        self._insert_service_role()
-        self.conn.commit()
-
+        self._insert_role(username)
         user_id = self._get_user_id(username)
-        self._insert_user_role(user_id)
+        role_id = self._get_role_id(username)
+        self._insert_user_role(user_id, role_id)
         self.conn.commit()
 
-        logging.info(f'User {username} inserted into database')
+        logging.info(f'Service account {username} created')
 
-    def _insert_user(self, username: str, password: str, email: str):
-        self.cur.execute(
-            'INSERT INTO galaxy_user (email, username, password, active) VALUES (%s, %s, %s, true) ON CONFLICT DO NOTHING',
-            (email, username, password)
-        )
+    def _service_account_exists(self, username: str, email: str) -> bool:
+        """ Check and verify service account."""
+        user_data = self._get_user_data(username)
+        if not user_data:
+            return False
 
-    def _insert_service_role(self):
+        user_id, db_email = user_data
+        assert db_email == email
+
+        role_id = self._get_role_id(username)
+        assert role_id
+
+        assoc_id = self._get_user_role_association_id(user_id, role_id)
+        assert assoc_id
+
+        return True
+
+    def _get_user_data(self, username: str):
         self.cur.execute(
-            'INSERT INTO role (name, type) VALUES (%s, %s)', 
-            ("admin", "private")
+            'SELECT id, email FROM galaxy_user WHERE username = %s',
+            (username,)
         )
+        return self.cur.fetchone()
 
     def _get_user_id(self, username: str):
         self.cur.execute(
             'SELECT id FROM galaxy_user WHERE username = %s',
             (username,)
         )
-        user_id = self.cur.fetchone()
-        if user_id is None:
-            raise Exception('Unable to retrieve user id')
-        return user_id[0]
+        return self.cur.fetchone()[0]
 
-    def _insert_user_role(self, user_id: str):
+    def _get_role_id(self, name: str):
         self.cur.execute(
-            "INSERT INTO user_role_association (user_id, role_id) VALUES (%s, (SELECT id FROM role WHERE name = 'admin')) ON CONFLICT DO NOTHING",
-            (user_id,)
+            'SELECT id FROM role WHERE name = %s',
+            (name,)
+        )
+        return self.cur.fetchone()[0]
+
+    def _get_user_role_association_id(self, user_id: int, role_id: int):
+        self.cur.execute(
+            'SELECT id FROM user_role_association WHERE user_id = %s and role_id = %s',
+            (user_id, role_id)
+        )
+        return self.cur.fetchone()[0]
+
+    def _insert_user(self, username: str, password: str, email: str):
+        self.cur.execute(
+            'INSERT INTO galaxy_user (email, username, password, active) VALUES (%s, %s, %s, true)',
+            (email, username, password)
         )
 
+    def _insert_role(self, rolename: str):
+        self.cur.execute(
+            'INSERT INTO role (name, type) VALUES (%s, %s)', 
+            (rolename, 'private')
+        )
 
-
-class Galaxy:
-    def __init__(self, config):
-        self.config = config
-        self.db = DB(config)
-
-    def create_user(self, username: str, password: str, email: str):
-        self.db.insert_user(username, password, email)
+    def _insert_user_role(self, user_id: int, role_id: int):
+        self.cur.execute(
+            "INSERT INTO user_role_association (user_id, role_id) VALUES (%s, %s)",
+            (user_id, role_id)
+        )
 
 
 class Config():
@@ -253,8 +280,6 @@ class Config():
             raise Exception('No username provided')
         if self.password == '':
             raise Exception('No password provided')
-
-
 
 
 if __name__ == '__main__':
