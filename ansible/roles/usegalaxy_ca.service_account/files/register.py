@@ -173,9 +173,9 @@ class DB:
         password = hash_password_PBKDF2(password)
 
         self._insert_user(username, password, email)
-        self._insert_role(username)
+        self._insert_role(email)
         user_id = self._get_user_id(username)
-        role_id = self._get_role_id(username)
+        role_id = self._get_role_id(email)
         self._insert_user_role(user_id, role_id)
         self.conn.commit()
 
@@ -190,7 +190,7 @@ class DB:
         user_id, db_email = user_data
         assert db_email == email
 
-        role_id = self._get_role_id(username)
+        role_id = self._get_role_id(email)
         assert role_id
 
         assoc_id = self._get_user_role_association_id(user_id, role_id)
