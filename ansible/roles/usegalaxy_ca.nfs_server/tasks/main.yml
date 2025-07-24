@@ -75,6 +75,7 @@
     mode: 0775
   with_items:
     - /mnt/volume/galaxy/var/total_perspective_vortex
+    - /mnt/volume/galaxy/var/log
 
 - name: Check every exported folder exists
   file:

@@ -46,6 +46,9 @@
       become_user: root
     - role: usegalaxy_ca.service_account
       become: false
+    - role: usegalaxy_ca.pgcleanup
+      become: true
+      become_user: "{{ galaxy_user_name }}"
 
   post_tasks:
     - name: fetch edugain idps the first time
