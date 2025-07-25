@@ -43,3 +43,38 @@
   loop_control:
     index_var: idx
   when: item.fstype == 'zfs'
+
+- name: Enable ZFS compression
+  command: "zfs set compression=zstd pool{{ idx }}"
+  loop: "{{ volumes[inventory_hostname] | list }}"
+  loop_control:
+    index_var: idx
+  when: item.fstype == 'zfs'
+
+# keep a day of hourly snaps
+- name: Update hourly ZFS snapshot retention
+  replace:
+    path: /etc/cron.hourly/zfs-auto-snapshot
+    regexp: '--keep=\d+'
+    replace: '--keep=24'
+
+# keep 7 daily snaps
+- name: Update daily ZFS snapshot retention
+  replace:
+    path: /etc/cron.daily/zfs-auto-snapshot
+    regexp: '--keep=\d+'
+    replace: '--keep=7'
+
+# keep a month of weekly snaps
+- name: Update weekly ZFS snapshot retention
+  replace:
+    path: /etc/cron.weekly/zfs-auto-snapshot
+    regexp: '--keep=\d+'
+    replace: '--keep=4'
+
+# keep 2 months snaps
+- name: Update monthly ZFS snapshot retention
+  replace:
+    path: /etc/cron.monthly/zfs-auto-snapshot
+    regexp: '--keep=\d+'
+    replace: '--keep=2'
