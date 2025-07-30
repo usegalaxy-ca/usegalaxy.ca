@@ -3,7 +3,7 @@
 galaxy_pgcleanup_cron_weekday: "1"
 galaxy_pgcleanup_cron_hour: "06"
 galaxy_pgcleanup_cron_min: "0"
-galaxy_pgcleanup_days: 14
+galaxy_pgcleanup_days: 30
 # order of action is important!
 galaxy_pgcleanup_actions:
   - delete_userless_histories
