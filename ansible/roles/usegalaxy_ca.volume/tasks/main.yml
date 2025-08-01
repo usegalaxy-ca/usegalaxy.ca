@@ -57,6 +57,7 @@
     path: /etc/cron.hourly/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=24'
+  ignore_errors: yes # ignore when file does exist
 
 # keep 7 daily snaps
 - name: Update daily ZFS snapshot retention
@@ -64,6 +65,7 @@
     path: /etc/cron.daily/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=7'
+  ignore_errors: yes # ignore when file does exist
 
 # keep a month of weekly snaps
 - name: Update weekly ZFS snapshot retention
@@ -71,6 +73,7 @@
     path: /etc/cron.weekly/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=4'
+  ignore_errors: yes # ignore when file does exist
 
 # keep 2 months snaps
 - name: Update monthly ZFS snapshot retention
@@ -78,3 +81,4 @@
     path: /etc/cron.monthly/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=2'
+  ignore_errors: yes # ignore when file does exist
