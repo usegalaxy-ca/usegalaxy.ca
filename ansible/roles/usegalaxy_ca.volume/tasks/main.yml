@@ -52,33 +52,53 @@
   when: item.fstype == 'zfs'
 
 # keep a day of hourly snaps
+- name: Check if hourly ZFS snapshot script exists
+  stat:
+    path: /etc/cron.hourly/zfs-auto-snapshot
+  register: zfs_script_hourly
+
 - name: Update hourly ZFS snapshot retention
   replace:
     path: /etc/cron.hourly/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=24'
-  ignore_errors: yes # ignore when file does exist
+  when: zfs_script_hourly.stat.exists
 
 # keep 7 daily snaps
+- name: Check if daily ZFS snapshot script exists
+  stat:
+    path: /etc/cron.daily/zfs-auto-snapshot
+  register: zfs_script_daily
+
 - name: Update daily ZFS snapshot retention
   replace:
     path: /etc/cron.daily/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=7'
-  ignore_errors: yes # ignore when file does exist
+  when: zfs_script_daily.stat.exists
 
 # keep a month of weekly snaps
+- name: Check if weekly ZFS snapshot script exists
+  stat:
+    path: /etc/cron.weekly/zfs-auto-snapshot
+  register: zfs_script_weekly
+
 - name: Update weekly ZFS snapshot retention
   replace:
     path: /etc/cron.weekly/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=4'
-  ignore_errors: yes # ignore when file does exist
+  when: zfs_script_weekly.stat.exists
 
 # keep 2 months snaps
+- name: Check if monthly ZFS snapshot script exists
+  stat:
+    path: /etc/cron.monthly/zfs-auto-snapshot
+  register: zfs_script_monthly
+
 - name: Update monthly ZFS snapshot retention
   replace:
     path: /etc/cron.monthly/zfs-auto-snapshot
     regexp: '--keep=\d+'
     replace: '--keep=2'
-  ignore_errors: yes # ignore when file does exist
+  when: zfs_script_monthly.stat.exists
