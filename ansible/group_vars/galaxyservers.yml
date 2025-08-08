@@ -150,6 +150,10 @@ galaxy_config:
     # Pulsar
     user_preferences_extra_conf_path: "{{ galaxy_config_dir }}/user_preferences_extra_conf.yml"
     pulsar_action_path: "{{ galaxy_config_dir }}/pulsar_action.yml"
+    # Email
+    smtp_server: mail.smtp2go.com
+    smtp_username: "{{ SMTP2GO_USERNAME }}"
+    smtp_password: "{{ SMTP2GO_PASSWORD }}"
 
   gravity:
     process_manager: systemd
