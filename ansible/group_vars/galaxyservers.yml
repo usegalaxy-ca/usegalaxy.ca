@@ -154,6 +154,7 @@ galaxy_config:
     smtp_server: mail.smtp2go.com
     smtp_username: "{{ SMTP2GO_USERNAME }}"
     smtp_password: "{{ SMTP2GO_PASSWORD }}"
+    email_from: UseGalaxy.ca <no-reply@usegalaxy.ca> # dummy from
 
   gravity:
     process_manager: systemd
