@@ -136,7 +136,7 @@ destinations:
     max_cores: 32
     max_mem: 220
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=training #set to main for autumn season
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=main #set to main for autumn season
       singularity_enabled: true
       singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
     env:
