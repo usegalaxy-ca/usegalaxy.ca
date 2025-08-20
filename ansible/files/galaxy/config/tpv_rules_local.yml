@@ -118,7 +118,7 @@ destinations:
     max_accepted_cores: 32
     max_accepted_mem: 240
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=2-00:00:00 --partition=training
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=48:00:00 --partition=training
       singularity_enabled: true
       singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
     env:
@@ -136,7 +136,7 @@ destinations:
     max_cores: 32
     max_mem: 220
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=7-00:00:00 --partition=main #set to main for autumn season
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=168:00:00 --partition=main #set to main for autumn season
       singularity_enabled: true
       singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
     env:
