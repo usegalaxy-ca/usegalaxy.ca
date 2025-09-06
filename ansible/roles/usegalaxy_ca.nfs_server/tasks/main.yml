@@ -62,9 +62,17 @@
     - /mnt/volume/galaxy/server
     - /mnt/volume/galaxy/venv
     - /mnt/volume/galaxy/var
-    - /mnt/volume/data
     - /mnt/volume/galaxy/var/total_perspective_vortex
     - /mnt/volume/galaxy/config/TPV_DO_NOT_TOUCH
+
+- name: Create galaxy folder structure for data directories
+  file:
+    path: "{{ item.strip() }}/data"
+    owner: pgalaxy
+    group: galaxy
+    state: directory
+    mode: 0775
+  loop: "{{ nfs_host_folders }}"
 
 - name: Create galaxy mutable folder structure
   file:
