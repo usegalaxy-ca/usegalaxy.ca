@@ -78,6 +78,14 @@ prod:
         type: volumes-ec
         fstype: zfs
         size: 40000
+      - name: nfs-volume1-zfs
+        type: volumes-ec
+        fstype: zfs
+        size: 25000
+      - name: nfs-volume2-zfs
+        type: volumes-ec
+        fstype: zfs
+        size: 25000
     squid:
       - name: cvmfs-volume
         type: volumes-ec
