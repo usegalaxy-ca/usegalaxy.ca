@@ -36,13 +36,15 @@
 
 - name: Check the mnt folder exists
   file:
-    path: "{{ nfs_mnt_folder }}"
+    path: "{{ item }}"
     state: directory
+  loop: "{{ nfs_mnt_folders }}"
 
 - name: Mount Volume
   ansible.posix.mount:
-    path: "{{ nfs_mnt_folder }}"
-    src: "{{ nfs_host }}:{{ nfs_host_folder }}"
+    path: "{{ item.0 }}"
+    src: "{{ nfs_host }}:{{ item.1 }}"
     opts: rw,async,noatime,nodiratime
     fstype: nfs
     state: mounted
+  loop: "{{ nfs_mnt_folders|zip(nfs_host_folders)|list }}"
