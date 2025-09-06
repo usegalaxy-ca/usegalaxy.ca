@@ -81,7 +81,7 @@ destinations:
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=48:00:00 --partition=training
       singularity_enabled: true
-      singularity_volumes: "$galaxy_root:ro,$tool_directory:ro,$working_directory:rw,$job_directory:rw,/mnt/nfs/data/datasets:ro,/cvmfs/data.galaxyproject.org:ro"
+      singularity_volumes: "$galaxy_root:ro,$tool_directory:ro,$working_directory:rw,$job_directory:rw,/mnt/nfs/data/datasets:ro,/mnt/nfs1/data/datasets:ro,/mnt/nfs2/data/datasets:ro,/cvmfs/data.galaxyproject.org:ro"
     env:
       LC_ALL: C
       SINGULARITY_CACHEDIR: /tmp/singularity
@@ -99,7 +99,7 @@ destinations:
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=168:00:00 --partition=main #set to main for autumn season
       singularity_enabled: true
-      singularity_volumes: "$galaxy_root:ro,$tool_directory:ro,$working_directory:rw,$job_directory:rw,/mnt/nfs/data/datasets:ro,/cvmfs/data.galaxyproject.org:ro"
+      singularity_volumes: "$galaxy_root:ro,$tool_directory:ro,$working_directory:rw,$job_directory:rw,/mnt/nfs/data/datasets:ro,/mnt/nfs1/data/datasets:ro,/mnt/nfs2/data/datasets:ro,/cvmfs/data.galaxyproject.org:ro"
     env:
       # Ensuring a consistent collation environment is good for reproducibility.
       LC_ALL: C
