@@ -17,7 +17,7 @@ server {
 	access_log  syslog:server=unix:/dev/log;
 	error_log   syslog:server=unix:/dev/log;
 
-    {% if MAINTENANCE_MODE %}
+    {% if MAINTENANCE_MODE | bool %}
     location / {
         add_header Cache-Control 'no-cache';
         add_header Cache-Control 'no-store';
