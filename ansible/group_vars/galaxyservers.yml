@@ -295,8 +295,15 @@ galaxy_tus_upload_store: /mnt/nfs/data/tus
 
 #NFS
 nfs_host: "{{ groups['nfsservers'][0] }}"
-nfs_host_folder: /mnt/volume
-nfs_mnt_folder: /mnt/nfs
+nfs_host_folders:
+  - /mnt/volume
+  - /mnt/volume1
+  - /mnt/volume2
+nfs_mnt_folders:
+  - /mnt/nfs
+  - /mnt/nfs1
+  - /mnt/nfs2
+
 
 # Telegraf
 telegraf_plugins_extra:
