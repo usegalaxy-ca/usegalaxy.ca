@@ -98,12 +98,30 @@ galaxy_config:
         - id: s0
           type: disk
           store_by: uuid
-          weight: 1
+          weight: 0
           files_dir: /mnt/nfs/data/datasets
           name: "Initial object store"
           extra_dirs:
             - type: job_work
               path: /mnt/nfs/data/jobs
+        - id: s1
+          type: disk
+          store_by: uuid
+          weight: 1
+          files_dir: /mnt/nfs1/data/datasets
+          name: "New object store 1"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs1/data/jobs
+        - id: s2
+          type: disk
+          store_by: uuid
+          weight: 1
+          files_dir: /mnt/nfs2/data/datasets
+          name: "New object store 2"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs2/data/jobs
 
     id_secret: "{{ vault_id_secret }}"
     job_config: "{{ galaxy_job_config }}" # Use the variable we defined above
