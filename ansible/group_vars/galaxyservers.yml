@@ -89,11 +89,40 @@ galaxy_config:
     database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
     database_engine_option_pool_size: 10
     database_engine_option_max_overflow: 20
-    file_path: /mnt/nfs/data/datasets
-    job_working_directory: /mnt/nfs/data/jobs
-    # file_path: /data/datasets
-    # job_working_directory: /data/jobs
     object_store_store_by: uuid
+
+    object_store_config:
+      type: distributed
+      search_for_missing: false
+      backends:
+        - id: s0
+          type: disk
+          store_by: uuid
+          weight: 0
+          files_dir: /mnt/nfs/data/datasets
+          name: "Initial object store"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs/data/jobs
+        - id: s1
+          type: disk
+          store_by: uuid
+          weight: 1
+          files_dir: /mnt/nfs1/data/datasets
+          name: "New object store 1"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs1/data/jobs
+        - id: s2
+          type: disk
+          store_by: uuid
+          weight: 1
+          files_dir: /mnt/nfs2/data/datasets
+          name: "New object store 2"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs2/data/jobs
+
     id_secret: "{{ vault_id_secret }}"
     job_config: "{{ galaxy_job_config }}" # Use the variable we defined above
     # SQL Performance
@@ -284,8 +313,15 @@ galaxy_tus_upload_store: /mnt/nfs/data/tus
 
 #NFS
 nfs_host: "{{ groups['nfsservers'][0] }}"
-nfs_host_folder: /mnt/volume
-nfs_mnt_folder: /mnt/nfs
+nfs_host_folders:
+  - /mnt/volume
+  - /mnt/volume1
+  - /mnt/volume2
+nfs_mnt_folders:
+  - /mnt/nfs
+  - /mnt/nfs1
+  - /mnt/nfs2
+
 
 # Telegraf
 telegraf_plugins_extra:
