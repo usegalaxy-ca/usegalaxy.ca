@@ -155,6 +155,11 @@ Turn on maintenance mode, from the `ansible` directory:
 sed -i -e 's/MAINTENANCE_MODE: false/MAINTENANCE_MODE: true/' group_vars/all.yml
 ./usegalaxy --skip-checks galaxy
 ```
+or
+```bash
+doppler run -- ./usegalaxy nginx --extra-vars="MAINTENANCE_MODE=true"
+doppler run -- ./usegalaxy nginx --extra-vars="MAINTENANCE_MODE=false"
+```
 
 #### Backup database
 From the `prod-usegal-db` host, run:
