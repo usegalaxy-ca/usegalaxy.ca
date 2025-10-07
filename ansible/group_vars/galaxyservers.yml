@@ -81,7 +81,6 @@ galaxy_config:
     admin_users:
       - Jonathan.Laperle@USherbrooke.ca
       - Carol.Gauthier@USherbrooke.ca
-      - Olivier.Fisette@USherbrooke.ca
       - aroudgar@sfu.ca
       - service@admin.com
       - john.davis@jhu.edu
