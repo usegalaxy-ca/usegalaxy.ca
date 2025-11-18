@@ -66,6 +66,8 @@ tools:
           # last line in block must evaluate to a value - which determines whether the TPV if conditional matches or not
           not user or user.email not in admin_users
         fail: Unauthorized. Only admins can execute this tool.
+  toolshed.g2.bx.psu.edu/repos/iuc/kraken2/kraken2/.*:
+    mem: 200
 
 roles:
   training.*:
