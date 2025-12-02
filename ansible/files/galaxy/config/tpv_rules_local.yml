@@ -71,6 +71,8 @@ tools:
   toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/.*:
     cores: min(max(int(input_size * 4), 1), 16)
     mem: min(max(int(input_size * 7), 5.6), 120)
+    env:
+      _JAVA_OPTIONS: -Xmx{int(mem)}G -Xms1G
   toolshed.g2.bx.psu.edu/repos/iuc/falco/falco/.*:
     cores: 6
     mem: 28
