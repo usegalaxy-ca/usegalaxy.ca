@@ -84,8 +84,15 @@ roles:
         - training
 
 destinations:
+  _default_env:
+    abstract: true
+    env:
+      _JAVA_OPTIONS: -Djava.io.tmpdir=$_GALAXY_JOB_TMP_DIR -Xmx{int(mem)}G -Xms256M
+      SINGULARITYENV__JAVA_OPTIONS: $_JAVA_OPTIONS
+
   slurm-training:
     runner: slurm
+    inherits: _default_env
     max_accepted_cores: 32
     max_accepted_mem: 240
     params:
@@ -102,6 +109,7 @@ destinations:
         - training
   slurm:
     runner: slurm
+    inherits: _default_env
     max_accepted_cores: 32
     max_accepted_mem: 1000 # virtually high to catch all, and then downsize to max_mem
     # Clamp resources to what the nodes support.
