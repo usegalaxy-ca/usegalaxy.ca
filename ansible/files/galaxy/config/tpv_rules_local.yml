@@ -76,6 +76,10 @@ tools:
   toolshed.g2.bx.psu.edu/repos/iuc/falco/falco/.*:
     cores: 6
     mem: 28
+  toolshed.g2.bx.psu.edu/repos/iuc/bioext_bam2msa/bioext_bam2msa/.*:
+    env:
+      - execute: ulimit -f 1000000000
+      - execute: ulimit -u 10000
 
 roles:
   training.*:
