@@ -54,6 +54,8 @@ galaxy_job_config:
     - type: environment_total_concurrent_jobs
       id: tpv_dispatcher
       value: 100
+    - type: output_size
+      value: '500GB' # our default quota
   handling:
     assign: ["db-skip-locked"]
   execution:
