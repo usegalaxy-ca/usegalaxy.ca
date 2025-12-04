@@ -89,8 +89,9 @@ destinations:
     env:
       _JAVA_OPTIONS: -Djava.io.tmpdir=$_GALAXY_JOB_TMP_DIR -Xmx{int(mem)}G -Xms256M
       SINGULARITYENV__JAVA_OPTIONS: $_JAVA_OPTIONS
-      - execute: ulimit -f 1048576000  # 500GB, our default quota
-      - execute: ulimit -u 10000
+      execute:
+        - ulimit -f 1048576000  # 500GB, our default quota
+        - ulimit -u 10000
 
   slurm-training:
     runner: slurm
