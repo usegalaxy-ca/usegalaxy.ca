@@ -58,7 +58,7 @@ prod:
         volume_type: volumes-ec
         flavor: c32-240gb
         security_groups: [usegal, usegal-slurm]
-        count: 2
+        count: 3
   volumes:
     db:
       - name: db-volume-zfs
