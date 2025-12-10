@@ -87,7 +87,7 @@ destinations:
       - name: SINGULARITYENV__JAVA_OPTIONS
         value: $_JAVA_OPTIONS
       - execute: ulimit -f 1048576000  # 500GB, our default quota
-      - execute: ulimit -u 10000
+      - execute: ulimit -u 4096
 
   slurm-training:
     runner: slurm
