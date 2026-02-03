@@ -1,9 +1,6 @@
 upstream galaxy {
-	server {{ galaxy_config.gravity.gunicorn.bind }};
-
-	# Or if you serve galaxy at a path like http(s)://fqdn/galaxy
-	# Remember to set galaxy_url_prefix in the galaxy.yml file.
-	# server {{ galaxy_config.gravity.gunicorn.bind }}:/galaxy;
+	server {{ galaxy_config.gravity.gunicorn[0].bind }};
+	server {{ galaxy_config.gravity.gunicorn[1].bind }};
 }
 
 server {

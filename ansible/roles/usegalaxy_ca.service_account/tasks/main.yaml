@@ -1,6 +1,6 @@
 - name: Wait for galaxy server to start
   ansible.builtin.wait_for:
-    path: /mnt/nfs/galaxy/gunicorn.sock
+    path: /mnt/nfs/galaxy/gunicorn0.sock
     timeout: 3600
 
 - name: Register service user
