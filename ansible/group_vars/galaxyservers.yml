@@ -42,6 +42,9 @@ galaxy_job_config:
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
   limits:
+      # Limit on the number of jobs an anonymous user can have active across all environments.
+    - type: anonymous_user_concurrent_jobs
+      value: 1
     -
       # Limit on the number of jobs a user with a registered Galaxy account can have active across all environments.
       type: registered_user_concurrent_jobs
