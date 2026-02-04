@@ -195,10 +195,14 @@ galaxy_config:
     gunicorn:
       - bind: "unix:{{ galaxy_root }}/gunicorn0.sock"
         workers: 2
+        timeout: 600
+        restart_timeout: 7200
         extra_args: '--forwarded-allow-ips="*"'
         preload: true
       - bind: "unix:{{ galaxy_root }}/gunicorn1.sock"
         workers: 2
+        timeout: 600
+        restart_timeout: 7200
         extra_args: '--forwarded-allow-ips="*"'
         preload: true
     celery:
