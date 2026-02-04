@@ -102,11 +102,12 @@ of the NFS server), the NFS server must be recreated with the same IP address, o
 stuck in an infinite retry loop.
 
 Note that this will most likely require a restart of the galaxy instance if there is any downtime.
+To perform a zero-downtime rolling restart, use the `galaxyctl graceful` command.
 
 on the galaxy node:
 
 ```bash
-sudo galaxyctl restart
+sudo galaxyctl graceful
 ```
 
 ## Training

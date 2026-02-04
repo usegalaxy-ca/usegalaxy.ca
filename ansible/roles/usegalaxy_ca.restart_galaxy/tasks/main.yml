@@ -5,7 +5,7 @@
 
 - name: galaxy systemd restart
   command:
-    cmd: galaxyctl restart
+    cmd: galaxyctl graceful
 
 - name: galaxy systemd restart
   systemd:
