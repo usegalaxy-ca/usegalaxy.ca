@@ -45,9 +45,8 @@ galaxy_job_config:
       # Limit on the number of jobs an anonymous user can have active across all environments.
     - type: anonymous_user_concurrent_jobs
       value: 1
-    -
       # Limit on the number of jobs a user with a registered Galaxy account can have active across all environments.
-      type: registered_user_concurrent_jobs
+    - type: registered_user_concurrent_jobs
       value: 6
       # Limit total jobs running on the galaxy server (upload, etc)
     - type: environment_total_concurrent_jobs
