@@ -100,7 +100,7 @@ staging:
       - name: galaxy
         image: ubuntu22
         flavor: p4-15gb
-        security_groups: [usegal, web, usegal-tusd, usegal-slurm]
+        security_groups: [usegal, web, usegal-slurm]
     dbservers:
       - name: db
         image: ubuntu24
@@ -123,6 +123,11 @@ staging:
         image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-squid]
+    tusdservers:
+      - name: tusd
+        image: ubuntu24
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-tusd]
     slurmcontrolservers:
       - name: slurmcontrol
         image: ubuntu22

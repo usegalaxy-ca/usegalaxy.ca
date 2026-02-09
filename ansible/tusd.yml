@@ -1,0 +1,19 @@
+- hosts: tusdservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/galaxyservers.yml
+  vars:
+    tusd_instances:
+      - name: uploads
+        user: "{{ galaxy_user.name }}"
+        group: "{{ galaxy_group.name }}"
+        args:
+          - -host=localhost
+          - "-port={{ galaxy_tusd_port }}"
+          - "-upload-dir={{ galaxy_tus_upload_store }}"
+          - "-hooks-http=https://{{ usegalaxy_domain }}/{{ tusd_location }}"
+          - -hooks-http-forward-headers=Cookie
+  roles:
+    - galaxyproject.tusd
