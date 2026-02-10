@@ -15,6 +15,6 @@
           - "-upload-dir={{ galaxy_tus_upload_store }}"
           - "-hooks-http=https://{{ usegalaxy_domain }}/api/upload/hooks"
           - -hooks-http-forward-headers=X-Api-Key,Cookie
-          - -hooks-enabled-events pre-create
+          - -hooks-enabled-events=pre-create
   roles:
     - galaxyproject.tusd
