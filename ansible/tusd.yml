@@ -16,5 +16,6 @@
           - "-hooks-http=https://{{ usegalaxy_domain }}/api/upload/hooks"
           - -hooks-http-forward-headers=X-Api-Key,Cookie
           - -hooks-enabled-events=pre-create
+          - -behind-proxy
   roles:
     - galaxyproject.tusd
