@@ -11,6 +11,7 @@
         group: "{{ galaxy_group.name }}"
         args:
           - "-port={{ galaxy_tusd_port }}"
+          - "-base-path={{ tusd_location }}"
           - "-upload-dir={{ galaxy_tus_upload_store }}"
           - "-hooks-http=https://{{ usegalaxy_domain }}/api/upload/hooks"
           - -hooks-http-forward-headers=X-Api-Key,Cookie
