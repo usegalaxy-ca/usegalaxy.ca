@@ -30,6 +30,9 @@
     - galaxyproject.gxadmin
     - usegalaxy_ca.backup_pg
 
+- name: tusd
+  import_playbook: tusd.yml
+
 - name: galaxy
   import_playbook: galaxy.yml
 

@@ -5,7 +5,7 @@ prod:
         volume_size: 1000
         volume_type: volumes-ec
         flavor: p8-30gb
-        security_groups: [usegal, web, usegal-tusd, usegal-slurm]
+        security_groups: [usegal, web, usegal-slurm]
     dbservers:
       - name: db
         flavor: p4-7.5gb
@@ -24,6 +24,10 @@ prod:
       - name: squid
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-squid]
+    tusdservers:
+      - name: tusd
+        flavor: p8-15gb
+        security_groups: [usegal, usegal-tusd]
     slurmcontrolservers:
       - name: slurmcontrol
         flavor: p4-7.5gb
@@ -100,7 +104,7 @@ staging:
       - name: galaxy
         image: ubuntu22
         flavor: p4-15gb
-        security_groups: [usegal, web, usegal-tusd, usegal-slurm]
+        security_groups: [usegal, web, usegal-slurm]
     dbservers:
       - name: db
         image: ubuntu24
@@ -123,6 +127,11 @@ staging:
         image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-squid]
+    tusdservers:
+      - name: tusd
+        image: ubuntu24
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-tusd]
     slurmcontrolservers:
       - name: slurmcontrol
         image: ubuntu22

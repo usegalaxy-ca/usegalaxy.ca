@@ -23,7 +23,6 @@
       tags:
         - always
   roles:
-    - galaxyproject.tusd
     - role: galaxyproject.galaxy
       tags:
         - never
