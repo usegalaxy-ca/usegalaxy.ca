@@ -1,5 +1,5 @@
 # This cron job runs every Monday at 06:00
-# It cleans up datasets that have been deleted for more than 14 days
+# It cleans up datasets that have been deleted for more than 30 days
 galaxy_pgcleanup_cron_weekday: "1"
 galaxy_pgcleanup_cron_hour: "06"
 galaxy_pgcleanup_cron_min: "0"
