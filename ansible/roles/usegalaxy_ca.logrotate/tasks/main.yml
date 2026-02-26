@@ -4,6 +4,11 @@
     journal_size: 2G
   when: inventory_hostname is match('staging-')
 
+- name: Create journald directory
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+
 - name: Copy logrotate config
   ansible.builtin.template:
     src: logrotate.conf
