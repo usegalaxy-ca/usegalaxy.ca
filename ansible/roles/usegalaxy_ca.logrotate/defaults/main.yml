@@ -1,2 +1,4 @@
 ---
+journal_rotate: "4"
 journal_size: 10G
+journal_size_staging: 2G

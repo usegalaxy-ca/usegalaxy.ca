@@ -1,7 +1,7 @@
 ---
 - name: Set lower log size limit on staging
   ansible.builtin.set_fact:
-    journal_size: 2G
+    journal_size: "{{ journal_size_staging }}"
   when: inventory_hostname is match('staging-')
 
 - name: Create journald directory
@@ -11,13 +11,13 @@
 
 - name: Copy logrotate config
   ansible.builtin.template:
-    src: logrotate.conf
-    dest: /etc/logrotate.conf
+    src: rsyslog.j2
+    dest: /etc/logrotate.d/rsyslog
 
 - name: Copy journald config
   ansible.builtin.template:
-    src: 00-journal-size.conf
-    dest: /etc/systemd/journald.conf.d/00-journal-size.conf
+    src: 00-journal-size.conf.j2
+    dest: /etc/systemd/journald.conf.d/00-journal-size.conf.j2
 
 - name: Restart logrotate and journald
   ansible.builtin.service:
