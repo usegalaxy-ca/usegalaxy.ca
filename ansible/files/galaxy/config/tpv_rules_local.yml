@@ -94,6 +94,9 @@ tools:
         if: 20 <= input_size < 100
         cores: 16
         mem: 120
+  toolshed.g2.bx.psu.edu/repos/iuc/seqkit_sort/seqkit_sort/.*:
+    cores: 1
+    mem: 7
 
 roles:
   training.*:
