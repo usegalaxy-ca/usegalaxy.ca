@@ -8,4 +8,4 @@
     job: >
       source {{ galaxy_venv_dir }}/bin/activate;
       cd {{ galaxy_server_dir }};
-      {{ galaxy_venv_dir }}/bin/python ./scripts/cleanup_datasets/pgcleanup.py -w 128MB --config-file {{ galaxy_config_file }} --log-dir {{ galaxy_log_dir }} --older-than {{ galaxy_pgcleanup_days }} {{ galaxy_pgcleanup_actions | join(' ') }} 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_datasets.log;
+      {{ galaxy_venv_dir }}/bin/python ./scripts/cleanup_datasets/pgcleanup.py --no-update-time -w 128MB --config-file {{ galaxy_config_file }} --log-dir {{ galaxy_log_dir }} --older-than {{ galaxy_pgcleanup_days }} {{ galaxy_pgcleanup_actions | join(' ') }} 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_datasets.log;
