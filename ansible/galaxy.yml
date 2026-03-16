@@ -23,7 +23,6 @@
       tags:
         - always
   roles:
-    - galaxyproject.tusd
     - role: galaxyproject.galaxy
       tags:
         - never
@@ -49,6 +48,8 @@
     - role: usegalaxy_ca.pgcleanup
       become: true
       become_user: "{{ galaxy_user_name }}"
+      tags:
+        - cleanup
 
   post_tasks:
     - name: fetch edugain idps the first time

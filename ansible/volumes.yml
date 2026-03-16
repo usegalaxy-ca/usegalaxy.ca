@@ -9,6 +9,7 @@
   roles:
     - usegalaxy_ca.volume
     - usegalaxy_ca.nfs_server
+    - usegalaxy_ca.logrotate
 
 - hosts: squidservers
   become: true
@@ -77,6 +78,7 @@
         - always
   roles:
     - usegalaxy_ca.volume
+    - usegalaxy_ca.logrotate
 
 - hosts: galaxyservers
   become: true
@@ -103,6 +105,7 @@
   roles:
     - usegalaxy_ca.nfs_client
     - laperlej.cvmfs
+    - usegalaxy_ca.logrotate
 
 - hosts: monitorservers
   become: true
@@ -128,3 +131,13 @@
     - group_vars/terraform.yml
   roles:
     - usegalaxy_ca.volume
+    - usegalaxy_ca.logrotate
+
+- hosts: tusdservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/galaxyservers.yml
+  roles:
+    - usegalaxy_ca.nfs_client

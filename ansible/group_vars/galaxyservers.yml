@@ -48,11 +48,11 @@ galaxy_job_config:
       value: -1
       # Limit on the number of jobs a user with a registered Galaxy account can have active across all environments.
     - type: registered_user_concurrent_jobs
-      value: 6
+      value: 10
       # Limit total jobs running on the galaxy server (upload, etc)
     - type: environment_total_concurrent_jobs
       id: local_env
-      value: 10
+      value: 30
       # Limit total jobs running on the computes
     - type: environment_total_concurrent_jobs
       id: tpv_dispatcher
@@ -196,18 +196,18 @@ galaxy_config:
     galaxy_user: "{{ galaxy_user_name }}"
     virtualenv: "{{ galaxy_venv_dir }}"
     gunicorn:
-      # listening options
-      # bind: "unix:{{ galaxy_mutable_config_dir }}/gunicorn.sock"
-      bind: "unix:{{ galaxy_root }}/gunicorn.sock"
-      # performance options
-      workers: 2
-      # Other options that will be passed to gunicorn
-      # This permits setting of 'secure' headers like REMOTE_USER (and friends)
-      # https://docs.gunicorn.org/en/stable/settings.html#forwarded-allow-ips
-      extra_args: '--forwarded-allow-ips="*"'
-      # This lets Gunicorn start Galaxy completely before forking which is faster.
-      # https://docs.gunicorn.org/en/stable/settings.html#preload-app
-      preload: true
+      - bind: "unix:{{ galaxy_root }}/gunicorn0.sock"
+        workers: 2
+        timeout: 600
+        restart_timeout: 7200
+        extra_args: '--forwarded-allow-ips="*"'
+        preload: true
+      - bind: "unix:{{ galaxy_root }}/gunicorn1.sock"
+        workers: 2
+        timeout: 600
+        restart_timeout: 7200
+        extra_args: '--forwarded-allow-ips="*"'
+        preload: true
     celery:
       concurrency: 2
       loglevel: DEBUG
@@ -312,9 +312,10 @@ nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
 
 # TUS
 tusd_version: v1.13.0
-galaxy_tusd_host: localhost
+galaxy_tusd_host: "{{ groups['tusdservers'][0] }}"
 galaxy_tusd_port: 1080
 galaxy_tus_upload_store: /mnt/nfs/data/tus
+tusd_base_path: /api/upload/resumable_upload # Setting the tusd base path as the Galaxy upload location prevents tusd from returning the wrong upload URL.
 
 #NFS
 nfs_host: "{{ groups['nfsservers'][0] }}"

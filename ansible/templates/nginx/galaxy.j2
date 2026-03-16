@@ -1,9 +1,6 @@
 upstream galaxy {
-	server {{ galaxy_config.gravity.gunicorn.bind }};
-
-	# Or if you serve galaxy at a path like http(s)://fqdn/galaxy
-	# Remember to set galaxy_url_prefix in the galaxy.yml file.
-	# server {{ galaxy_config.gravity.gunicorn.bind }}:/galaxy;
+	server {{ galaxy_config.gravity.gunicorn[0].bind }};
+	server {{ galaxy_config.gravity.gunicorn[1].bind }};
 }
 
 server {
@@ -72,7 +69,7 @@ server {
 		proxy_set_header Upgrade            $http_upgrade;
 		proxy_set_header Connection         "upgrade";
 		client_max_body_size        0;
-		proxy_pass http://localhost:{{ galaxy_tusd_port }}/files;
+		proxy_pass http://{{ galaxy_tusd_host }}:{{ galaxy_tusd_port }}{{ tusd_base_path }};
 	}
 
 	location /grafana/ {
