@@ -4,6 +4,7 @@
     path: "{{ galaxy_log_dir }}/.old"
     state: directory
   when: "'galaxyservers' in group_names"
+  become_user: "{{ galaxy_user_name }}"
 
 - name: Deploy pgcleanup logrotate config
   ansible.builtin.template:
