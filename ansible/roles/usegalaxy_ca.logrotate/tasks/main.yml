@@ -1,4 +1,10 @@
 ---
+- name: Deploy galaxy logrotate config
+  ansible.builtin.template:
+    src: galaxy.j2
+    dest: /etc/logrotate.d/galaxy
+  when: "'galaxyservers' in group_names"
+
 - name: Set lower log size limit on staging
   ansible.builtin.set_fact:
     journal_size: "{{ journal_size_staging }}"
