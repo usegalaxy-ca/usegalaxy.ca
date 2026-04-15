@@ -189,7 +189,7 @@ galaxy_config:
     smtp_username: "{{ SMTP2GO_USERNAME }}"
     smtp_password: "{{ SMTP2GO_PASSWORD }}"
     email_from: UseGalaxy.ca <no-reply@usegalaxy.ca> # dummy from
-    helpsite_url: http://help.usegalaxy.ca
+    helpsite_url: https://docs.google.com/forms/d/e/1FAIpQLSfPD6Cah_qOzrFOSptWeFBEutawOR4ZAupDy8hQX7LmLPRapA/viewform
 
   gravity:
     process_manager: systemd
