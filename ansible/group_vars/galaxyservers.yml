@@ -40,7 +40,15 @@ galaxy_job_config:
       load: galaxy.jobs.runners.slurm:SlurmJobRunner
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
-      load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
+      load: galaxy.jobs.runners.pulsar:PulsarMQJobRunner
+      amqp_url: "pyamqp://pulsar_au:{{ RABBITMQ_PASSWORD_VHOST }}@localhost:5671/{{ rabbitmq_vhosts[0] }}?ssl=1"
+      amqp_acknowledge: true
+      amqp_ack_republish_time: 1200
+      amqp_consumer_timeout: 2
+      amqp_publish_retry: true
+      amqp_publish_retry_max_retries: 60
+      galaxy_url: "https://{{ inventory_hostname }}"
+      manager: _default_
   limits:
       # Limit on the number of jobs an anonymous user can have active across all environments.
       # no jobs at all. Condition use >= and the query would return 0 on the first job.

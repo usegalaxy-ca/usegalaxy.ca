@@ -122,6 +122,11 @@ staging:
         image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-nfs]
+    pulsarservers:
+      - name: pulsar
+        image: ubuntu24
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-pulsar]
     rabbitmqservers:
       - name: rabbitmq
         image: ubuntu24

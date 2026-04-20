@@ -39,6 +39,9 @@
 - name: rabbitmq
   import_playbook: rabbitmq.yml
 
+- name: pulsar
+  import_playbook: pulsar.yml
+
 - name: monitor
   import_playbook: monitor.yml
 
