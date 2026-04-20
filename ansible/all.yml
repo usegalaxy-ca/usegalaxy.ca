@@ -36,6 +36,9 @@
 - name: galaxy
   import_playbook: galaxy.yml
 
+- name: rabbitmq
+  import_playbook: rabbitmq.yml
+
 - name: monitor
   import_playbook: monitor.yml
 

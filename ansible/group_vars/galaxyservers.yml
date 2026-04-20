@@ -268,8 +268,11 @@ certbot_environment: production
 certbot_well_known_root: /srv/nginx/_well-known_root
 certbot_share_key_users:
   - www-data
+certbot_share_key_ids:
+  - "999:999"
 certbot_post_renewal: |
   systemctl restart nginx || true
+  docker restart rabbit_hole || true
 certbot_domains:
   - "{{ usegalaxy_domain }}"
   - "sentry.{{ usegalaxy_domain }}"

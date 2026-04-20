@@ -122,6 +122,11 @@ staging:
         image: ubuntu24
         flavor: p2-3.75gb
         security_groups: [usegal, usegal-nfs]
+    rabbitmqservers:
+      - name: rabbitmq
+        image: ubuntu24
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-rabbitmq]
     squidservers:
       - name: squid
         image: ubuntu24
