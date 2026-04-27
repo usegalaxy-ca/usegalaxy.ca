@@ -159,7 +159,7 @@ galaxy_config:
 
     # Users login (CILogon OIDC and No login/password)
     show_welcome_with_login: false
-    allow_user_creation: false
+    allow_local_account_creation: false
     require_login: false
     session_duration: 40000
     use_remote_user: false
