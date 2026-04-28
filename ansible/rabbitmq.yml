@@ -1,4 +1,5 @@
-- hosts: rabbitmqservers
+# - hosts: rabbitmqservers
+- hosts: galaxyservers
   become: true
   become_user: root
   vars_files:

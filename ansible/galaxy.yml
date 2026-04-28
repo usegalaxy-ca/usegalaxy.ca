@@ -39,6 +39,8 @@
       become_user: "{{ galaxy_user_name }}"
     - usegalaxy_ca.maintenance
     - galaxyproject.nginx
+    - geerlingguy.docker
+    - usegalaxy_eu.rabbitmqserver
     - usegalaxy_ca.drmaa
     - role: usegalaxy_ca.restart_galaxy
       become: true
