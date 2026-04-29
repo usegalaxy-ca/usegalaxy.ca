@@ -97,6 +97,14 @@ tools:
   toolshed.g2.bx.psu.edu/repos/iuc/seqkit_sort/seqkit_sort/.*:
     cores: 1
     mem: 7
+  .*/bwa/.*:
+    scheduling:
+      require:
+        - pulsar
+  .*/bwa_mem/.*:
+    scheduling:
+      require:
+        - pulsar
 
 roles:
   training.*:
