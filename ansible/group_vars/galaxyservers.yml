@@ -41,7 +41,6 @@ galaxy_job_config:
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarMQJobRunner
-#       amqp_url: "pyamqp://pulsar_au:{{ RABBITMQ_PASSWORD_VHOST }}@{{ groups['rabbitmqservers'][0] }}:5671/{{ rabbitmq_vhosts[0] }}?ssl=1"
       amqp_url: "pyamqp://pulsar_au:{{ RABBITMQ_PASSWORD_VHOST }}@localhost:5671/{{ rabbitmq_vhosts[0] }}?ssl=1"
       amqp_acknowledge: true
       amqp_ack_republish_time: 1200
