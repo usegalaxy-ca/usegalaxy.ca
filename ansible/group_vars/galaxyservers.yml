@@ -47,7 +47,7 @@ galaxy_job_config:
       amqp_consumer_timeout: 2
       amqp_publish_retry: true
       amqp_publish_retry_max_retries: 60
-      galaxy_url: "https://{{ inventory_hostname }}"
+      galaxy_url: "https://{{ usegalaxy_domain }}"
       manager: _default_
   limits:
       # Limit on the number of jobs an anonymous user can have active across all environments.
