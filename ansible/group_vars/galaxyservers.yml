@@ -355,7 +355,7 @@ rabbitmq_vhosts:
   - /pulsar/pulsar_au
 
 rabbitmq_users:
-  - user: admin
+  - user: "{{ RABBITMQ_ADMIN_USERNAME }}"
     password: "{{ RABBITMQ_ADMIN_PASSWORD }}"
     tags: administrator
     vhost: /
