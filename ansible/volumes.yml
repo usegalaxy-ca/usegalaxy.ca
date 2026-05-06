@@ -141,3 +141,12 @@
     - group_vars/galaxyservers.yml
   roles:
     - usegalaxy_ca.nfs_client
+
+- hosts: pulsarservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/cvmfsclient.yml
+  roles:
+    - laperlej.cvmfs
