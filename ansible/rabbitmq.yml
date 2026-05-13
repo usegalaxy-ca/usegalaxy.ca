@@ -10,10 +10,11 @@
         certbot_post_renewal: |
           docker restart rabbit_hole || true
         certbot_domains:
-          - "rabbitmq.{{ usegalaxy_domain }}"
-        nginx_ssl_servers:
+          - "mq.{{ usegalaxy_domain }}"
+        nginx_servers:
           - rabbitmq
+        nginx_ssl_servers: []
   roles:
-    - galaxyproject.nginx
+    - usegalaxy_eu.certbot
     - geerlingguy.docker
     - usegalaxy_eu.rabbitmqserver
