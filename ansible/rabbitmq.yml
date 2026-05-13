@@ -1,0 +1,19 @@
+- hosts: rabbitmqservers
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+    - group_vars/galaxyservers.yml
+  pre_tasks:
+    - name: Override nginx and certbot vars
+      set_fact:
+        certbot_post_renewal: |
+          docker restart rabbit_hole || true
+        certbot_domains:
+          - "rabbitmq.{{ usegalaxy_domain }}"
+        nginx_ssl_servers:
+          - rabbitmq
+  roles:
+    - galaxyproject.nginx
+    - geerlingguy.docker
+    - usegalaxy_eu.rabbitmqserver

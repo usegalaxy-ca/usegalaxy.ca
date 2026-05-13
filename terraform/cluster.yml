@@ -104,7 +104,7 @@ staging:
       - name: galaxy
         image: ubuntu22
         flavor: p4-15gb
-        security_groups: [usegal, web, usegal-slurm, usegal-rabbitmq]
+        security_groups: [usegal, web, usegal-slurm]
     dbservers:
       - name: db
         image: ubuntu24
@@ -127,6 +127,11 @@ staging:
         image: ubuntu22
         flavor: p4-7.5gb
         security_groups: [usegal]
+    rabbitmqservers:
+      - name: rabbitmq
+        image: ubuntu24
+        flavor: p2-3.75gb
+        security_groups: [usegal, usegal-rabbitmq]
     squidservers:
       - name: squid
         image: ubuntu24
@@ -188,3 +193,5 @@ staging:
   floating_ips:
     - ip: 198.168.184.189
       attach_to: galaxy
+    - ip: 198.168.184.162
+      attach_to: rabbitmq
