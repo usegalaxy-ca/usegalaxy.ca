@@ -1,0 +1,33 @@
+- name: Install nginx stream module
+  package:
+    name:
+      - libnginx-mod-stream
+    state: present
+    update_cache: yes
+  become: yes
+  become_user: root
+
+- name: Add stream block to existing nginx config
+  blockinfile:
+    path: /etc/nginx/nginx.conf
+    block: |
+      stream {
+          upstream rabbitmq_ssl {
+              server {{ groups['rabbitmqservers'][0] }}:5671;
+          }
+
+          upstream rabbitmq {
+              server {{ groups['rabbitmqservers'][0] }}:5672;
+          }
+
+          server {
+              listen 5671;
+              proxy_pass rabbitmq_ssl;
+          }
+
+          server {
+              listen 5672;
+              proxy_pass rabbitmq;
+          }
+      }
+  notify: Restart nginx

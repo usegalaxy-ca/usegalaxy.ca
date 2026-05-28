@@ -115,7 +115,7 @@ staging:
         image: ubuntu24
         flavor: p4-15gb
         security_groups:
-          [usegal, usegal-influxdb, usegal-grafana, usegal-sentry]
+          [usegal, usegal-influxdb, usegal-grafana, usegal-rabbitmq, usegal-sentry]
     nfsservers:
       - name: nfs
         fixed_ip: 172.16.59.114
@@ -193,5 +193,3 @@ staging:
   floating_ips:
     - ip: 198.168.184.189
       attach_to: galaxy
-    - ip: 198.168.184.162
-      attach_to: rabbitmq

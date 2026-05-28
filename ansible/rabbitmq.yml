@@ -5,16 +5,14 @@
     - group_vars/secret.yml
     - group_vars/galaxyservers.yml
   pre_tasks:
-    - name: Override nginx and certbot vars
-      set_fact:
-        certbot_post_renewal: |
-          docker restart rabbit_hole || true
-        certbot_domains:
-          - "mq.{{ usegalaxy_domain }}"
-        nginx_servers:
-          - rabbitmq
-        nginx_ssl_servers: []
+    - name: Add cron job for fetching SSL certs
+      cron:
+        name: Fetch SSL cert files from Galaxy
+        job: "rsync -a --delete {{ groups['galaxyservers'][0] }}:{{ item.value }} {{ item.value }}"
+        minute: "{{ certbot_auto_renew_minute }}"
+        hour: "{{ certbot_auto_renew_hour }}"
+        user: "{{ certbot_auto_renew_user }}"
+      loop: "{{ rabbitmq_ssl | dict2items }}"
   roles:
-    - usegalaxy_eu.certbot
     - geerlingguy.docker
     - usegalaxy_eu.rabbitmqserver

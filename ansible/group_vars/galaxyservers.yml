@@ -278,6 +278,7 @@ certbot_share_key_users:
   - www-data
 certbot_post_renewal: |
   systemctl restart nginx || true
+  ssh {{ groups['rabbitmqservers'][0] }} docker restart rabbit_hole || true
 certbot_domains:
   - "{{ usegalaxy_domain }}"
   - "sentry.{{ usegalaxy_domain }}"
@@ -331,6 +332,11 @@ rabbitmq_container:
 rabbitmq_plugins:
   - rabbitmq_management
 
+rabbitmq_ssl:
+  cacertfile: /etc/ssl/certs/fullchain.pem
+  certfile: /etc/ssl/certs/cert.pem
+  keyfile: /etc/ssl/user/privkey-999:999.pem
+
 rabbitmq_config:
   listeners:
     tcp: none
@@ -338,9 +344,9 @@ rabbitmq_config:
     default: 5671
   ssl_options:
     verify: verify_peer
-    cacertfile: /etc/ssl/certs/fullchain.pem
-    certfile: /etc/ssl/certs/cert.pem
-    keyfile: /etc/ssl/user/privkey-999:999.pem
+    cacertfile: "{{ rabbitmq_ssl['cacertfile'] }}"
+    certfile: "{{ rabbitmq_ssl['certfile'] }}"
+    keyfile: "{{ rabbitmq_ssl['keyfile'] }}"
     fail_if_no_peer_cert: 'false'
   management_agent:
     disable_metrics_collector: "false"
