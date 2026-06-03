@@ -115,10 +115,6 @@ tools:
         if: 15 <= input_size < 30
         cores: 16
         mem: 58
-    env:
-      # uncompressing files (gz) needs writable access to /tmp, points it to the local tmp since the container do not mount /tmp from the host.
-      - name: APPTAINER_BINDPATH
-        value: $_GALAXY_JOB_TMP_DIR:/tmp:rw
 
 roles:
   training.*:
@@ -147,7 +143,17 @@ destinations:
       - execute: ulimit -u 4096
     params:
       singularity_enabled: true
-      singularity_volumes: "$galaxy_root:ro,$tool_directory:ro,$working_directory:rw,$job_directory:rw,/mnt/nfs/data/datasets:ro,/mnt/nfs1/data/datasets:ro,/mnt/nfs2/data/datasets:ro,/cvmfs/data.galaxyproject.org:ro,/mnt/nfs/galaxy/var/tool_data:ro"
+      # uncompressing files (gz) needs writable access to /tmp, points it to the local tmp since the container do not mount /tmp from the host.
+      singularity_volumes: "$galaxy_root:ro,
+        $tool_directory:ro,
+        $working_directory:rw,
+        $job_directory:rw,
+        $_GALAXY_JOB_TMP_DIR:/tmp:rw,
+        /mnt/nfs/data/datasets:ro,
+        /mnt/nfs1/data/datasets:ro,
+        /mnt/nfs2/data/datasets:ro,
+        /cvmfs/data.galaxyproject.org:ro,
+        /mnt/nfs/galaxy/var/tool_data:ro"
       tmp_dir: true
 
   slurm-training:
