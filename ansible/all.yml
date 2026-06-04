@@ -29,7 +29,7 @@
     - usegalaxy_ca.gxadmin
     - galaxyproject.gxadmin
     - usegalaxy_ca.backup_pg
-    - usegalaxy_ca.kui
+    - role: usegalaxy_ca.kui
       tags:
         - never
         - kui
