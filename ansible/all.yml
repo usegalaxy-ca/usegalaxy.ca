@@ -30,6 +30,7 @@
     - galaxyproject.gxadmin
     - usegalaxy_ca.backup_pg
     - role: usegalaxy_ca.kui
+      when: inventory_hostname.startswith('prod-') # only set it up on prod
       tags:
         - never
         - kui
