@@ -29,6 +29,10 @@
     - usegalaxy_ca.gxadmin
     - galaxyproject.gxadmin
     - usegalaxy_ca.backup_pg
+    - usegalaxy_ca.kui
+      tags:
+        - never
+        - kui
 
 - name: tusd
   import_playbook: tusd.yml

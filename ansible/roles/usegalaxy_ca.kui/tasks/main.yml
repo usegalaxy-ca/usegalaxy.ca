@@ -1,0 +1,76 @@
+---
+- name: Download Google Cloud SDK repository key
+  ansible.builtin.get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /usr/share/keyrings/cloud.google.gpg
+    mode: "0644"
+
+- name: Add Google Cloud SDK repository
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [signed-by=/usr/share/keyrings/cloud.google.gpg]
+      https://packages.cloud.google.com/apt cloud-sdk main
+    filename: google-cloud-sdk
+    state: present
+
+- name: Install Google Cloud CLI
+  ansible.builtin.apt:
+    name: google-cloud-cli
+    state: present
+    update_cache: true
+
+- name: Download KUI script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/galaxyproject/kui/4e402afbca7d418413a853561de0a5a304cc6305/kui.sh
+    dest: "/home/{{ galaxy_user.name }}/kui.sh"
+    owner: "{{ galaxy_user.name }}"
+    group: "{{ galaxy_group.name }}"
+    mode: '0755'
+    checksum: "sha256:1f2a3c9200c99e82347759fdb954b50c47b70b215b4e2b2a1c2bd062619e1269"
+
+- name: Configure KUI script variables
+  ansible.builtin.lineinfile:
+    path: "/home/{{ galaxy_user.name }}/kui.sh"
+    regexp: '^{{ item.key }}=.*'
+    line: '{{ item.key }}="{{ item.value }}"'
+  loop:
+    - { key: 'USERS_TABLE', value: "{{ user_tables }}" }
+    - { key: 'JOBS_TABLE', value: "{{ jobs_table }}" }
+    - { key: 'USAGE_TABLE', value: "{{ usage_table }}" }
+
+- name: Change Galaxy server hostname
+  ansible.builtin.replace:
+    path: "/home/{{ galaxy_user.name }}/kui.sh"
+    regexp: '^galaxy_server="https://usegalaxy\.org"$'
+    replace: 'galaxy_server="https://{{ usegalaxy_domain }}"'
+
+- name: Set Postgres environment variables
+  ansible.builtin.lineinfile:
+    path: "/home/{{ galaxy_user.name }}/kui.sh"
+    regexp: '^export {{ item.key }}='
+    line: 'export {{ item.key }}={{ item.value }}'
+  loop:
+    - key: PGHOST
+      value: "{{ groups['dbservers'][0] }}"
+    - key: PGUSER
+      value: "{{ galaxy_user_name }}"
+    - key: PGDATABASE
+      value: "{{ galaxy_db_name }}"
+
+- name: Ensure KUI log directory exists
+  ansible.builtin.file:
+    path: "/home/{{ galaxy_user.name }}/kui-logs"
+    state: directory
+    owner: "{{ galaxy_user.name }}"
+    group: "{{ galaxy_group.name }}"
+    mode: "0755"
+
+- name: Set cron job to run KUI script monthly
+  ansible.builtin.cron:
+    name: Run KUI script
+    day: "1"
+    hour: "0"
+    minute: "0"
+    user: "{{ galaxy_user.name }}"
+    job: >-
+      bash $HOME/kui.sh 2>&1 | tee -a "$HOME/kui-logs/kui-run-$(date -d "$(date +\%Y-\%m-01) -1 day" +\%Y\%m).log"
