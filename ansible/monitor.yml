@@ -35,8 +35,8 @@
     - name: Replace deprecated option in Grafana config
       replace:
         path: /etc/grafana/grafana.ini
-        regexp: "\[alerting\]"
-        replace: "\[unified_alerting\]"
+        regexp: \[alerting\]
+        replace: \[unified_alerting\]
     - name: Restart Grafana
       service:
         name: grafana-server
