@@ -77,7 +77,7 @@ galaxy_job_config:
           - "{{ tpv_config_dir }}/tpv_rules_local.yml"
   tools:
     - class: local # these special tools that aren't parameterized for remote execution - expression tools, upload, etc
-      environment: local_env
+      environment: tpv_dispatcher
 
 SENTRY_DSN_URL: "http://{{ GALAXY_SENTRY_DSN }}@{{ groups['monitorservers'][0] }}:9000/2"
 
