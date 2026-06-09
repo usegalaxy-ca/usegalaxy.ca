@@ -7,9 +7,9 @@ tools:
     cores: 1
     mem: cores * 3.8
     rules:
-    - id: require_login
-      if: user is None
-      fail: An account is required to run this tool. Please log in.
+      - id: require_login
+        if: user is None
+        fail: An account is required to run this tool. Please log in.
   __DATA_FETCH__:
     scheduling:
       reject:
