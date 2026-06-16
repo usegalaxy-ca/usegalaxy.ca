@@ -46,9 +46,9 @@
     regexp: '^{{ item.key }}=.*'
     line: '{{ item.key }}="{{ item.value }}"'
   loop:
-    - { key: 'USERS_TABLE', value: "{{ user_tables }}" }
-    - { key: 'JOBS_TABLE', value: "{{ jobs_table }}" }
-    - { key: 'USAGE_TABLE', value: "{{ usage_table }}" }
+    - {key: 'USERS_TABLE', value: "{{ user_tables }}"}
+    - {key: 'JOBS_TABLE', value: "{{ jobs_table }}"}
+    - {key: 'USAGE_TABLE', value: "{{ usage_table }}"}
 
 - name: Change Galaxy server hostname
   ansible.builtin.replace:
