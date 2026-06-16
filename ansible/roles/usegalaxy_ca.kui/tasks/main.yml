@@ -61,6 +61,7 @@
     path: "/home/{{ ansible_user }}/kui.sh"
     regexp: '^export {{ item.key }}='
     line: 'export {{ item.key }}={{ item.value }}'
+    insertbefore: '^export PGDATABASE='
   loop:
     - key: PGHOST
       value: "{{ groups['dbservers'][0] }}"
