@@ -20,6 +20,7 @@
       /tmp/google-cloud-apt-key.gpg
   args:
     creates: /usr/share/keyrings/cloud.google.gpg
+
 - name: Add Google Cloud SDK repository
   become: true
   ansible.builtin.apt_repository:
