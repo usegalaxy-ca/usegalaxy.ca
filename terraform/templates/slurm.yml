@@ -23,3 +23,16 @@ slurm_partitions:
     Default: YES
     MaxTime: UNLIMITED
     Nodes: ${main_nodes}
+  - name: local
+    Default: NO
+    MaxTime: UNLIMITED
+    Nodes: >-
+%{ for group_name, hosts in nodes ~}
+%{ if group_name == "slurmexecservers" ~}
+%{ for host in hosts ~}
+%{ if startswith(host.name, "slurmexec-local") ~}
+      ${host.name},
+%{ endif ~}
+%{ endfor ~}
+%{ endif ~}
+%{ endfor ~}
