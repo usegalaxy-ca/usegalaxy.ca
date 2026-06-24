@@ -152,6 +152,8 @@ galaxy_config:
     # Debugging
     cleanup_job: onsuccess
     allow_user_impersonation: true
+    enable_failed_jobs_working_directory_cleanup: true
+    failed_jobs_working_directory_cleanup_days: 14
     # Tool security
     outputs_to_working_directory: true
     new_user_dataset_access_role_default_private: true # Make datasets private by default
