@@ -98,12 +98,13 @@ galaxy_config:
 
     object_store_config:
       type: distributed
+      global_max_percent_full: 90
       search_for_missing: false
       backends:
         - id: s0
           type: disk
           store_by: uuid
-          weight: 0
+          weight: 1
           files_dir: /mnt/nfs/data/datasets
           name: "Initial object store"
           extra_dirs:
