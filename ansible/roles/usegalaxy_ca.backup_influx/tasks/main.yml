@@ -20,7 +20,7 @@
 
 - name: install backup-rotation cli
   command:
-    cmd: cargo install --git https://github.com/laperlej/backup-rotation.git
+    cmd: cargo install --git https://github.com/usegalaxy-ca/backup-rotation.git
   become_user: influxdb
   become: true
 
