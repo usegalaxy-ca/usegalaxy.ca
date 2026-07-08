@@ -149,7 +149,7 @@ staging:
         volume_type: volumes-ec
         flavor: p1-2gb
         security_groups: [usegal, usegal-slurm]
-        count: 2
+        count: 1
       - name: slurmexec
         image: ubuntu22
         volume_type: volumes-ec
