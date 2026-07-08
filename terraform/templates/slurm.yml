@@ -30,7 +30,7 @@ slurm_partitions:
 %{ for group_name, hosts in nodes ~}
 %{ if group_name == "slurmexecservers" ~}
 %{ for host in hosts ~}
-%{ if startswith(host.name, "slurmexec-local") ~}
+%{ if can(regex("slurmexec-local", host.name)) ~}
       ${host.name},
 %{ endif ~}
 %{ endfor ~}
