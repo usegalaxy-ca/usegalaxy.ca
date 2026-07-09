@@ -2,8 +2,8 @@ prod:
   instances:
     galaxyservers:
       - name: galaxy
-        volume_size: 500
-        volume_type: volumes-ssd
+        volume_size: 1000
+        volume_type: volumes-ec
         flavor: p8-30gb
         security_groups: [usegal, web, usegal-slurm]
     dbservers:
