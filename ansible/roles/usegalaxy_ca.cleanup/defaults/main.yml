@@ -1,0 +1,34 @@
+# Run everyday at 6am
+galaxy_cleanup_cron_hour: "06"
+
+galaxy_pgcleanup_days: 7
+galaxy_tus_retention_days: 7
+galaxy_failed_jobs_retention_days: 14
+
+# TODO: uncomment when scratch is active
+# galaxy_pgcleanup_old_hdas:
+#   - object_store_id: <TODO: name me correctly>
+#     days: 30
+
+# order of action is important!
+galaxy_pgcleanup_actions:
+  - delete_userless_histories
+  - delete_exported_histories
+  - purge_deleted_histories
+  - purge_deleted_hdas
+  - purge_historyless_hdas
+  - purge_error_hdas
+  - purge_hdas_of_purged_histories
+  - delete_datasets
+  - purge_datasets
+
+# construct a flat list of the job working directories, as defined under galaxy_config.galaxy.object_store_config
+# ["/mnt/nfs/data/jobs", "/mnt/nfs1/data/jobs", "/mnt/nfs2/data/jobs"]
+galaxy_job_work_dirs: >-
+  {{ galaxy_config.galaxy.object_store_config.backends
+     | map(attribute='extra_dirs')
+     | default([])
+     | flatten
+     | selectattr('type', 'equalto', 'job_work')
+     | map(attribute='path')
+     | list }}
