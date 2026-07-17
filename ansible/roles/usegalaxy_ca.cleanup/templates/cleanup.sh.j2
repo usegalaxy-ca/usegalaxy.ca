@@ -5,9 +5,11 @@ exec {lockfd}>"$HOME/.galaxy-clean.lock"
 flock -n "$lockfd" || { echo "Cleanup in process. Exiting..."; exit 0; }
 
 # job working directories, remove failed jobs older than 14 days
+# remove job working directory entirely (466), ie /mnt/nfs1/data/jobs/000/466
+# then remove empty parent directory (000) if any, ie /mnt/nfs1/data/jobs/000
 {% for path in galaxy_job_work_dirs %}
-/bin/find {{ path }} -mindepth 3 -maxdepth 3 -type d -mtime +{{ galaxy_failed_jobs_retention_days }} ! -name '.nfs*' -exec rm -rvf {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
-/bin/find {{ path }} -mindepth 1 -maxdepth 2 -depth -type d -empty -exec rmdir -v {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
+/bin/find {{ path }} -mindepth 2 -maxdepth 2 -type d -mtime +{{ galaxy_failed_jobs_retention_days }} ! -name '.nfs*' -exec rm -rvf {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
+/bin/find {{ path }} -mindepth 1 -maxdepth 1 -type d -empty -exec rmdir -v {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
 {% endfor %}
 
 # Remove tus uploads older than 7 days
