@@ -22,13 +22,4 @@ galaxy_pgcleanup_actions:
   - delete_datasets
   - purge_datasets
 
-# construct a flat list of the job working directories, as defined under galaxy_config.galaxy.object_store_config
-# ["/mnt/nfs/data/jobs", "/mnt/nfs1/data/jobs", "/mnt/nfs2/data/jobs"]
-galaxy_job_work_dirs: >-
-  {{ galaxy_config.galaxy.object_store_config.backends
-     | map(attribute='extra_dirs')
-     | default([])
-     | flatten
-     | selectattr('type', 'equalto', 'job_work')
-     | map(attribute='path')
-     | list }}
+galaxy_job_work_dirs: "/mnt/nfs*/data/jobs"

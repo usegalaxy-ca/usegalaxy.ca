@@ -5,12 +5,12 @@ exec {lockfd}>"$HOME/.galaxy-clean.lock"
 flock -n "$lockfd" || { echo "Cleanup in process. Exiting..."; exit 0; }
 
 # job working directories, remove failed jobs older than 14 days
-# remove job working directory entirely (466), ie /mnt/nfs1/data/jobs/000/466
-# then remove empty parent directory (000) if any, ie /mnt/nfs1/data/jobs/000
-{% for path in galaxy_job_work_dirs %}
-/bin/find {{ path }} -mindepth 2 -maxdepth 2 -type d -mtime +{{ galaxy_failed_jobs_retention_days }} ! -name '.nfs*' -exec rm -rvf {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
-/bin/find {{ path }} -mindepth 1 -maxdepth 1 -type d -empty -exec rmdir -v {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
-{% endfor %}
+# remove job working directory entirely (466), ie /mnt/nfs1/data/jobs/000/466/466987
+# then remove empty parent directory (000) if any, ie /mnt/nfs1/data/jobs/000/466 (and 000 eventually)
+# Note: prod uses 3 levels deep, staging still uses a 2 levels deep job working directories.
+{% set depth = galaxy_job_dir_depth[CLUSTER_NAME] %}
+/bin/find {{ galaxy_job_work_dirs }} -mindepth {{ depth }} -maxdepth {{ depth }} -type d -mtime +{{ galaxy_failed_jobs_retention_days }} ! -name '.nfs*' -exec rm -rvf {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
+/bin/find {{ galaxy_job_work_dirs }} -depth -mindepth 1 -maxdepth 2 -type d -empty -exec rmdir -v {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_jobs.log;
 
 # Remove tus uploads older than 7 days
 /bin/find {{ galaxy_tus_upload_store }} -mindepth 1 -maxdepth 1 -mtime +{{ galaxy_tus_retention_days }} ! -name '.nfs*' -exec rm -rvf {} + 2>&1 | tee -a {{ galaxy_log_dir }}/cleanup_tus_upload.log;
