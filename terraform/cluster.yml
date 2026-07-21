@@ -2,8 +2,8 @@ prod:
   instances:
     galaxyservers:
       - name: galaxy
-        volume_size: 1000
-        volume_type: volumes-ec
+        volume_size: 500
+        volume_type: volumes-ssd
         flavor: p8-30gb
         security_groups: [usegal, web, usegal-slurm]
     dbservers:
@@ -34,35 +34,35 @@ prod:
         security_groups: [usegal, usegal-slurm]
     slurmexecservers:
       - name: slurmexec-xs
-        volume_size: 250
+        volume_size: 50
         volume_type: volumes-ec
         flavor: p4-15gb
         security_groups: [usegal, usegal-slurm]
-        count: 10
+        count: 15
       - name: slurmexec-sm
-        volume_size: 250
+        volume_size: 50
         volume_type: volumes-ec
         flavor: c8-30gb
         security_groups: [usegal, usegal-slurm]
-        count: 20
+        count: 25
       - name: slurmexec-md
-        volume_size: 250
+        volume_size: 50
         volume_type: volumes-ec
         flavor: c16-60gb
         security_groups: [usegal, usegal-slurm]
-        count: 10
+        count: 16
       - name: slurmexec-lg
-        volume_size: 1000
+        volume_size: 50
         volume_type: volumes-ec
         flavor: c16-120gb
         security_groups: [usegal, usegal-slurm]
-        count: 4
+        count: 6
       - name: slurmexec-xl
-        volume_size: 1000
+        volume_size: 50
         volume_type: volumes-ec
         flavor: c32-240gb
         security_groups: [usegal, usegal-slurm]
-        count: 3
+        count: 4
   volumes:
     db:
       - name: db-volume-zfs
@@ -143,7 +143,7 @@ staging:
         volume_type: volumes-ec
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-slurm]
-        count: 2
+        count: 1
       - name: slurmfat
         image: ubuntu22
         volume_type: volumes-ec

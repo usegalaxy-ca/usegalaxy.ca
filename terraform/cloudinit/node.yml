@@ -39,7 +39,7 @@ runcmd:
   #firewall rules are handled by openstack
   - ufw allow 1:32767/tcp
   - ufw allow 1:32767/udp
-  - systemctl enable ufw
+  - systemctl enable uf
   #fail2ban
   - printf "[sshd]\nenabled = true\nbanaction = iptables-multiport" > /etc/fail2ban/jail.local
   - systemctl enable fail2ban
