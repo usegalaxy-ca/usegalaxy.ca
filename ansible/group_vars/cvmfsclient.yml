@@ -1,14 +1,14 @@
 cvmfs_role: "client"
 galaxy_cvmfs_repos_enabled: config-repo
 cvmfs_quota_limit: >-
-  {% set root_bytes = (ansible_mounts | selectattr('mount', 'eq', '/') | map(attribute='size_total') | first) %}
-  {% if 'galaxyservers' in group_names %}
+  {%- set root_bytes = (ansible_mounts | selectattr('mount', 'eq', '/') | map(attribute='size_total') | first) -%}
+  {%- if 'galaxyservers' in group_names -%}
     {{ (root_bytes * 0.20 / 1024**2) | int }}
-  {% elif 'slurmexecservers' in group_names %}
+  {%- elif 'slurmexecservers' in group_names -%}
     {{ (root_bytes * 0.60 / 1024**2) | int }}
-  {% else %}
+  {%- else -%}
     10000 #cache size in MB
-  {% endif %}
+  {%- endif -%}
 cvmfs_http_proxies:
   - "{{ groups['squidservers'][0] }}:3128"
   - DIRECT
