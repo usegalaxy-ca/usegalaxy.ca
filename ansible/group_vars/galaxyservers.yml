@@ -357,3 +357,7 @@ nginx_user:
 nginx_group:
   name: www-data
   gid: 33
+
+galaxy_job_dir_depth:
+  prod: 3
+  staging: 2
