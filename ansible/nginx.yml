@@ -7,4 +7,5 @@
     - group_vars/slurm.yml
     - group_vars/cvmfsclient.yml
   roles:
+    - galaxyproject.tiaas2 # defines tiaas_nginx_routes
     - galaxyproject.nginx
