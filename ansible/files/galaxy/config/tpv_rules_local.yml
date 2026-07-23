@@ -203,7 +203,7 @@ destinations:
     runner: slurm
     inherits: _default_env
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=24:00:00 --partition=local
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=24:00:00 --partition=local,main
     scheduling:
       require:
         - local
