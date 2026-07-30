@@ -15,6 +15,7 @@ galaxy_mutable_config_dir: "{{ galaxy_mutable_data_dir }}/config"
 galaxy_cache_dir: "{{ galaxy_mutable_data_dir }}/cache"
 galaxy_local_tools_dir: "{{ galaxy_root }}/local_tools"
 galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
+galaxy_log_dir: "{{ galaxy_mutable_data_dir }}/log"
 
 nginx_srv: /srv/nginx
 tpv_mutable_dir: /mnt/nfs/galaxy/var/total_perspective_vortex
@@ -23,7 +24,7 @@ galaxy_extra_privsep_dirs:
   - "{{ tpv_mutable_dir }}"
 tpv_privsep: true
 
-galaxy_commit_id: release_24.1
+galaxy_commit_id: release_26.0
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
 miniconda_version: 24.1.2
@@ -41,18 +42,23 @@ galaxy_job_config:
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
   limits:
-    -
+      # Limit on the number of jobs an anonymous user can have active across all environments.
+      # no jobs at all. Condition use >= and the query would return 0 on the first job.
+    - type: anonymous_user_concurrent_jobs
+      value: -1
       # Limit on the number of jobs a user with a registered Galaxy account can have active across all environments.
-      type: registered_user_concurrent_jobs
-      value: 6
+    - type: registered_user_concurrent_jobs
+      value: 10
       # Limit total jobs running on the galaxy server (upload, etc)
     - type: environment_total_concurrent_jobs
       id: local_env
-      value: 10
+      value: 30
       # Limit total jobs running on the computes
     - type: environment_total_concurrent_jobs
       id: tpv_dispatcher
       value: 100
+    - type: output_size
+      value: '500GB' # our default quota
   handling:
     assign: ["db-skip-locked"]
   execution:
@@ -71,28 +77,57 @@ galaxy_job_config:
           - "{{ tpv_config_dir }}/tpv_rules_local.yml"
   tools:
     - class: local # these special tools that aren't parameterized for remote execution - expression tools, upload, etc
-      environment: local_env
+      environment: tpv_dispatcher
 
 SENTRY_DSN_URL: "http://{{ GALAXY_SENTRY_DSN }}@{{ groups['monitorservers'][0] }}:9000/2"
 
 galaxy_config:
   galaxy:
     admin_users:
-      - Jonathan.Laperle@USherbrooke.ca
       - Carol.Gauthier@USherbrooke.ca
-      - Olivier.Fisette@USherbrooke.ca
       - aroudgar@sfu.ca
       - service@admin.com
       - john.davis@jhu.edu
       - charles.coulombe@calculquebec.ca
+      - Jerome.Fortin3@USherbrooke.ca
     database_connection: "postgresql://{{ galaxy_user_name }}:{{ galaxy_postgres_password }}@{{ groups['dbservers'][0] }}:5432/{{ galaxy_db_name }}"
     database_engine_option_pool_size: 10
     database_engine_option_max_overflow: 20
-    file_path: /mnt/nfs/data/datasets
-    job_working_directory: /mnt/nfs/data/jobs
-    # file_path: /data/datasets
-    # job_working_directory: /data/jobs
     object_store_store_by: uuid
+
+    object_store_config:
+      type: distributed
+      global_max_percent_full: 90
+      search_for_missing: false
+      backends:
+        - id: s0
+          type: disk
+          store_by: uuid
+          weight: 1
+          files_dir: /mnt/nfs/data/datasets
+          name: "Initial object store"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs/data/jobs
+        - id: s1
+          type: disk
+          store_by: uuid
+          weight: 1
+          files_dir: /mnt/nfs1/data/datasets
+          name: "New object store 1"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs1/data/jobs
+        - id: s2
+          type: disk
+          store_by: uuid
+          weight: 1
+          files_dir: /mnt/nfs2/data/datasets
+          name: "New object store 2"
+          extra_dirs:
+            - type: job_work
+              path: /mnt/nfs2/data/jobs
+
     id_secret: "{{ vault_id_secret }}"
     job_config: "{{ galaxy_job_config }}" # Use the variable we defined above
     # SQL Performance
@@ -120,11 +155,12 @@ galaxy_config:
     # Tool security
     outputs_to_working_directory: true
     new_user_dataset_access_role_default_private: true # Make datasets private by default
+    load_tool_shed_datatypes: false
 
     # Users login (CILogon OIDC and No login/password)
     show_welcome_with_login: false
-    allow_user_creation: false
-    require_login: true
+    allow_local_account_creation: false
+    require_login: false
     session_duration: 40000
     use_remote_user: false
     auth_config_file: "{{ galaxy_config_dir }}/auth_conf.xml"
@@ -148,6 +184,12 @@ galaxy_config:
     # Pulsar
     user_preferences_extra_conf_path: "{{ galaxy_config_dir }}/user_preferences_extra_conf.yml"
     pulsar_action_path: "{{ galaxy_config_dir }}/pulsar_action.yml"
+    # Email
+    smtp_server: mail.smtp2go.com
+    smtp_username: "{{ SMTP2GO_USERNAME }}"
+    smtp_password: "{{ SMTP2GO_PASSWORD }}"
+    email_from: UseGalaxy.ca <no-reply@usegalaxy.ca> # dummy from
+    helpsite_url: https://docs.google.com/forms/d/e/1FAIpQLSfPD6Cah_qOzrFOSptWeFBEutawOR4ZAupDy8hQX7LmLPRapA/viewform
 
   gravity:
     process_manager: systemd
@@ -155,18 +197,18 @@ galaxy_config:
     galaxy_user: "{{ galaxy_user_name }}"
     virtualenv: "{{ galaxy_venv_dir }}"
     gunicorn:
-      # listening options
-      # bind: "unix:{{ galaxy_mutable_config_dir }}/gunicorn.sock"
-      bind: "unix:{{ galaxy_root }}/gunicorn.sock"
-      # performance options
-      workers: 2
-      # Other options that will be passed to gunicorn
-      # This permits setting of 'secure' headers like REMOTE_USER (and friends)
-      # https://docs.gunicorn.org/en/stable/settings.html#forwarded-allow-ips
-      extra_args: '--forwarded-allow-ips="*"'
-      # This lets Gunicorn start Galaxy completely before forking which is faster.
-      # https://docs.gunicorn.org/en/stable/settings.html#preload-app
-      preload: true
+      - bind: "unix:{{ galaxy_root }}/gunicorn0.sock"
+        workers: 2
+        timeout: 600
+        restart_timeout: 7200
+        extra_args: '--forwarded-allow-ips="*"'
+        preload: true
+      - bind: "unix:{{ galaxy_root }}/gunicorn1.sock"
+        workers: 2
+        timeout: 600
+        restart_timeout: 7200
+        extra_args: '--forwarded-allow-ips="*"'
+        preload: true
     celery:
       concurrency: 2
       loglevel: DEBUG
@@ -271,14 +313,22 @@ nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
 
 # TUS
 tusd_version: v1.13.0
-galaxy_tusd_host: localhost
+galaxy_tusd_host: "{{ groups['tusdservers'][0] }}"
 galaxy_tusd_port: 1080
 galaxy_tus_upload_store: /mnt/nfs/data/tus
+tusd_base_path: /api/upload/resumable_upload # Setting the tusd base path as the Galaxy upload location prevents tusd from returning the wrong upload URL.
 
 #NFS
 nfs_host: "{{ groups['nfsservers'][0] }}"
-nfs_host_folder: /mnt/volume
-nfs_mnt_folder: /mnt/nfs
+nfs_host_folders:
+  - /mnt/volume
+  - /mnt/volume1
+  - /mnt/volume2
+nfs_mnt_folders:
+  - /mnt/nfs
+  - /mnt/nfs1
+  - /mnt/nfs2
+
 
 # Telegraf
 telegraf_plugins_extra:
@@ -306,3 +356,7 @@ nginx_user:
 nginx_group:
   name: www-data
   gid: 33
+
+galaxy_job_dir_depth:
+  prod: 3
+  staging: 2

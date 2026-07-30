@@ -1,16 +1,13 @@
-# usegalaxy.ca
+![galaxy_canada_logo.png](https://starthere.usegalaxy.ca/images/Galaxy_Canada_Logo.png)
 
-## Summary
+The main Canadian public Galaxy server.
 
-... To be completed one day ... 
+Galaxy is an open source web-based platform for accessible, reproducible and transparent computational research and data intensive analysis. It is used by researchers across the globe and sits on free public compute and storage infrastructures.
 
+This repository host the UseGalaxy.ca ansible playbooks.
 
-License
--------
+## About UseGalaxy.ca
+https://starthere.usegalaxy.ca/about.html
 
-[Academic Free License ("AFL") v. 3.0][afl]
-
-
-
-
-[afl]: http://opensource.org/licenses/AFL-3.0
+## License
+[Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0)

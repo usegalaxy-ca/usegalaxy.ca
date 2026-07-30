@@ -1,13 +1,8 @@
-# - name: galaxy systemd restart
-#   systemd:
-#     name: galaxy.target
-#     state: restarted
-
-- name: galaxy systemd restart
+- name: galaxy galaxyctl graceful restart
   command:
-    cmd: galaxyctl restart
+    cmd: galaxyctl graceful
 
-- name: galaxy systemd restart
+- name: galaxy nginx restart
   systemd:
     name: nginx
     state: restarted

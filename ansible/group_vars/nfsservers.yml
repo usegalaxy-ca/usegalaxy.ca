@@ -1,6 +1,8 @@
 ---
 nfs_exports:
   - /mnt/volume *(rw,root_squash,async,no_subtree_check)
+  - /mnt/volume1 *(rw,root_squash,async,no_subtree_check)
+  - /mnt/volume2 *(rw,root_squash,async,no_subtree_check)
 
 #TSM
 tsm_user: usegalaxy-nfs

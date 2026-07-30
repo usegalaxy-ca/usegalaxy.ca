@@ -1,0 +1,23 @@
+# https://yamllint.readthedocs.io/en/stable/configuration.html#default-configuration
+extends: default
+
+yaml-files:
+  - '*.yaml'
+  - '*.yml'
+  - '.yamllint'
+
+# https://yamllint.readthedocs.io/en/stable/rules.html
+rules:
+  line-length: disable
+
+  document-start: disable
+
+  comments:
+    require-starting-space: false
+    min-spaces-from-content: 1
+
+  truthy:
+    allowed-values: ['true', 'false', 'yes', 'no']
+
+ignore:
+  - terraform/*

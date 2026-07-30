@@ -6,6 +6,10 @@ tools:
     abstract: true
     cores: 1
     mem: cores * 3.8
+    rules:
+      - id: require_login
+        if: user is None
+        fail: An account is required to run this tool. Please log in.
   __DATA_FETCH__:
     scheduling:
       reject:
@@ -66,6 +70,55 @@ tools:
           # last line in block must evaluate to a value - which determines whether the TPV if conditional matches or not
           not user or user.email not in admin_users
         fail: Unauthorized. Only admins can execute this tool.
+  toolshed.g2.bx.psu.edu/repos/iuc/kraken2/kraken2/.*:
+    mem: 200
+  toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/.*:
+    cores: min(max(int(input_size * 4), 1), 16)
+    mem: min(max(int(input_size * 7), 5.6), 120)
+  toolshed.g2.bx.psu.edu/repos/bgruening/sylph_profile/sylph_profile/.*:
+    cores: 4
+    mem: 16
+  toolshed.g2.bx.psu.edu/repos/iuc/bwa_mem2/bwa_mem2/.*:
+    cores: 32
+    mem: 240
+    rules:
+      - id: bwa_mem2_small_input_rule
+        if: input_size < 0.1
+        cores: 2
+        mem: 5.6
+      - id: bwa_mem2_medium_input_rule
+        if: 0.1 <= input_size < 1
+        cores: 4
+        mem: 14
+      - id: bwa_mem2_large_input_rule
+        if: 1 <= input_size < 20
+        cores: 8
+        mem: 28
+      - id: bwa_mem2_pretty_large_input_rule
+        if: 20 <= input_size < 100
+        cores: 16
+        mem: 120
+  toolshed.g2.bx.psu.edu/repos/iuc/seqkit_sort/seqkit_sort/.*:
+    cores: 1
+    mem: 7
+  toolshed.g2.bx.psu.edu/repos/iuc/bedtools/bedtools_sortbed/.*:
+    mem: 30
+  toolshed.g2.bx.psu.edu/repos/iuc/hisat2/hisat2/.*:
+    cores: 16
+    mem: 120
+    rules:
+      - id: hisat2_small_input_rule
+        if: input_size < 0.5
+        cores: 2
+        mem: 5.6
+      - id: hisat2_medium_input_rule
+        if: 0.5 <= input_size < 15
+        cores: 8
+        mem: 28
+      - id: hisat2_large_input_rule
+        if: 15 <= input_size < 30
+        cores: 16
+        mem: 58
 
 roles:
   training.*:
@@ -73,79 +126,60 @@ roles:
       prefer:
         - training
 
-#users:
-#  default:
-#    rules:
-#      - id: user_has_own_pulsar_rule
-#        if: user and user.preferences.get('extra_user_preferences')
-#        scheduling:
-#          prefer:
-#            - pulsar
-
 destinations:
-#  pulsar:
-#    runner: pulsar_runner
-#    max_accepted_cores: 16
-#    max_accepted_mem: 180
-#    params:
-#      # user.preferences = {
-#      #   'extra_user_preferences': '{
-#      #     "accp|pulsar_host": "<URL>",
-#      #     "accp|pulsar_api_key": "<API_KEY>"
-#      #   }'
-#      # }
-#      url: "{user.preferences.get('extra_user_preferences').split('\"')[3]}"
-#      private_token: "{user.preferences.get('extra_user_preferences').split('\"')[7]}"
-#      file_action_config: /mnt/nfs/galaxy/config/pulsar_action.yml
-#      singularity_enabled: true
-#      singularity_default_container_id: docker://quay.io/galaxyproject/galaxy-min:24.2.3
-#      singularity_volumes: "/tmp:rw,$job_directory:rw,/cvmfs/data.galaxyproject.org:ro"
-#      dependency_resolution: remote
-#      outputs_to_working_directory: false
-#      rewrite_parameters: true
-#      container_resolvers:
-#        - type: explicit_singularity
-#        - type: mulled_singularity
-#    env:
-#      # This is for adding Galaxy to the path when using the default container
-#      - name: SINGULARITYENV_PYTHONPATH
-#        value: /galaxy/server/lib
-#    scheduling:
-#      require:
-#        - pulsar
+  _default_env:
+    abstract: true
+    env:
+      # Ensuring a consistent collation environment is good for reproducibility.
+      - name: LC_ALL
+        value: C
+      # The cache directory holds the docker containers that get converted
+      - name: SINGULARITY_CACHEDIR
+        value: /tmp/singularity
+      # Singularity uses a temporary directory to build the squashfs filesystem
+      - name: APPTAINER_TMPDIR
+        value: /tmp
+      - name: _JAVA_OPTIONS
+        value: -Djava.io.tmpdir=$_GALAXY_JOB_TMP_DIR -Xmx{int(mem)}G -Xms256M
+      - name: SINGULARITYENV__JAVA_OPTIONS
+        value: $_JAVA_OPTIONS
+      - execute: ulimit -f 1048576000  # 500GB, our default quota
+      - execute: ulimit -u 4096
+    params:
+      singularity_enabled: true
+      # uncompressing files (gz) needs writable access to /tmp, points it to the local tmp since the container do not mount /tmp from the host.
+      singularity_volumes: "$galaxy_root:ro,
+        $tool_directory:ro,
+        $working_directory:rw,
+        $job_directory:rw,
+        $_GALAXY_JOB_TMP_DIR:/tmp:rw,
+        /mnt/nfs/data/datasets:ro,
+        /mnt/nfs1/data/datasets:ro,
+        /mnt/nfs2/data/datasets:ro,
+        /cvmfs/data.galaxyproject.org:ro,
+        /mnt/nfs/galaxy/var/tool_data:ro"
+      tmp_dir: true
+
   slurm-training:
     runner: slurm
+    inherits: _default_env
     max_accepted_cores: 32
     max_accepted_mem: 240
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=training
-      singularity_enabled: true
-      singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
-    env:
-      LC_ALL: C
-      SINGULARITY_CACHEDIR: /tmp/singularity
-      APPTAINER_TMPDIR: /tmp
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=48:00:00 --partition=training
     scheduling:
       require:
         - training
   slurm:
     runner: slurm
+    inherits: _default_env
     max_accepted_cores: 32
     max_accepted_mem: 1000 # virtually high to catch all, and then downsize to max_mem
     # Clamp resources to what the nodes support.
     max_cores: 32
     max_mem: 220
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --partition=training #set to main for autumn season
-      singularity_enabled: true
-      singularity_volumes: "$defaults,/cvmfs/data.galaxyproject.org:ro"
-    env:
-      # Ensuring a consistent collation environment is good for reproducibility.
-      LC_ALL: C
-      # The cache directory holds the docker containers that get converted
-      SINGULARITY_CACHEDIR: /tmp/singularity
-      # Singularity uses a temporary directory to build the squashfs filesystem
-      APPTAINER_TMPDIR: /tmp
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=168:00:00 --partition=main #set to main for autumn season
     scheduling:
       reject:
         - training

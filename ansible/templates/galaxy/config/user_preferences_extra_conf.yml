@@ -6,11 +6,11 @@ preferences:
       - name: username
         label: Username
         type: text
-        required: False
+        required: false
       - name: password
         label: Password
-        type:  password
-        required: False
+        type: password
+        required: false
 #    description: ACCP (Alliance Cloud Connect Pilot) Settings
 #    inputs:
 #      - name: pulsar_host

@@ -102,11 +102,12 @@ of the NFS server), the NFS server must be recreated with the same IP address, o
 stuck in an infinite retry loop.
 
 Note that this will most likely require a restart of the galaxy instance if there is any downtime.
+To perform a zero-downtime rolling restart, use the `galaxyctl graceful` command.
 
 on the galaxy node:
 
 ```bash
-sudo galaxyctl restart
+sudo galaxyctl graceful
 ```
 
 ## Training
@@ -143,3 +144,48 @@ The table user_preference for each user will look like this:
 ```
 
 user_preferences can be accessed by TPV for job routing(see current TPV config).
+
+## Galaxy
+### Upgrade to new release
+For complementary information, see 
+https://training.galaxyproject.org/training-material/topics/admin/tutorials/upgrading/tutorial.html
+
+### Maintenance mode
+Turn on maintenance mode, from the `ansible` directory:
+```bash
+sed -i -e 's/MAINTENANCE_MODE: false/MAINTENANCE_MODE: true/' group_vars/all.yml
+./usegalaxy --skip-checks galaxy
+```
+or
+```bash
+doppler run -- ./usegalaxy nginx --extra-vars="MAINTENANCE_MODE=true"
+doppler run -- ./usegalaxy nginx --extra-vars="MAINTENANCE_MODE=false"
+```
+
+#### Backup database
+From the `prod-usegal-db` host, run:
+```bash
+today=$(date +%Y-%m-%d)
+pg_dump -U galaxy -d galaxy -h prod-usegal-db -f prod-${today}.bak && gzip prod-${today}.bak
+```
+
+### Stop the galaxy
+From the `prod-usegal-galaxy` host, run:
+```bash
+sudo galaxyctl stop
+```
+
+### Upgrade
+Change the release number. Then run the playbook
+```bash
+# reset maintenance mode
+sed -i -e 's/MAINTENANCE_MODE: true/MAINTENANCE_MODE: false/' group_vars/all.yml
+
+# set the release number, ie
+sed -i -e 's/galaxy_commit_id:.*/galaxy_commit_id: release_24.2/' group_vars/galaxyservers.yml
+
+# validate current state!
+git status # or git diff
+
+# run the upgrade
+./usegalaxy galaxy -v |& tee release_XY.log

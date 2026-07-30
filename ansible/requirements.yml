@@ -1,17 +1,17 @@
 roles:
   # Galaxy
   - src: galaxyproject.galaxy
-    version: 0.10.14
+    version: 0.10.25
   - src: galaxyproject.miniconda
     version: 0.3.1
   #Postgres
   - src: galaxyproject.postgresql
-    version: 1.1.2
+    version: 1.1.8
   - src: galaxyproject.postgresql_objects
-    version: 1.2.0
+    version: 1.2.1
   #NGINX
   - src: galaxyproject.nginx
-    version: 0.7.1
+    version: 1.0.2
   - src: usegalaxy_eu.certbot
     version: 0.1.11
   #CVMFS
@@ -20,7 +20,7 @@ roles:
     version: main
   # TUS (uploads)
   - name: galaxyproject.tusd
-    version: 0.0.1
+    version: 0.0.2
   # Singularity/Apptainer
   - src: usegalaxy_eu.apptainer
     version: 0.0.1
@@ -28,10 +28,10 @@ roles:
   - src: galaxyproject.repos
     version: 0.0.3
   - src: galaxyproject.slurm
-    version: 1.0.2
+    version: 1.0.5
   # GxAdmin
   - src: galaxyproject.gxadmin
-    version: 0.0.12
+    version: 0.0.14
   # InfluxDB
   - src: usegalaxy_eu.influxdb
     version: v6.0.7
@@ -48,7 +48,7 @@ roles:
     version: main
   # TPV Linting
   - name: usegalaxy_eu.tpv_auto_lint
-    version: 0.4.3
+    version: 0.4.5
 
 collections:
   # Ansible Posix
