@@ -3,6 +3,7 @@ import base64
 import logging
 import psycopg2
 import bioblend.galaxy
+from datetime import datetime,timedelta
 
 logging.basicConfig(
     format='%(asctime)s:%(levelname)s:%(message)s',
@@ -68,35 +69,38 @@ except:
     exit()
 
 ###################################################################################
-# Fetch the CILogon non expired session tokens in galaxy DB
+# Fetch the oidc tokens
+
+now_minus_1w = datetime.now() - timedelta(hours=168)
+
 cursor = conn.cursor()
-cursor.execute("SELECT galaxy_user.email,custos_authnz_token.id_token FROM galaxy_user,custos_authnz_token WHERE custos_authnz_token.expiration_time > NOW() AND galaxy_user.id=custos_authnz_token.user_id")
-custos_authnz_tokens = cursor.fetchall()
+cursor.execute("SELECT galaxy_user.email,galaxy_user.create_time,oidc_user_authnz_tokens.extra_data FROM galaxy_user,oidc_user_authnz_tokens WHERE galaxy_user.id=oidc_user_authnz_tokens.user_id AND galaxy_user.create_time > '"+str(now_minus_1w)+"'" )
+datas = cursor.fetchall()
 cursor.close()
 
-# Loop over the tokens and Fetch detailed info at CILogon for each
+# Loop over the oicd tokens
+for data in datas:
 
-for token in custos_authnz_tokens:
+    user_email=data[0]
+    user_create_time=data[1]
+    token_extra_data=data[2]
 
-    # Extract user session information and galaxy user id
-    galaxy_user_email=token[0]
-    parts = token[1].split('.')
-    user_session_infos = json.loads(base64.b64decode(parts[1] + '=='))
+    data_dict=json.loads(token_extra_data.tobytes().decode("utf-8"))
+    id_token_parts= data_dict['id_token'].split('.')
+    id_token_infos=json.loads(base64.b64decode(id_token_parts[1] + '=='))
 
-    # Get galaxy user info from email in the Session 
-    API_galaxy_user_infos=gal.users.get_users(f_email=galaxy_user_email)
+    # Get galaxy user info from email in the Session
+    API_galaxy_user_infos=gal.users.get_users(f_email=user_email)
 
     # Get infos of IDP used to authenticate
     user_session_idp=None
     for idp in idps:
-        if idp[0]['entityid'] == user_session_infos['idp']:
+        if idp[0]['entityid'] == id_token_infos['idp']:
             user_session_idp=idp[0]
 
-    if user_session_idp is None:
-        # print("IDP not in Edugain list. User not in Edugain network of insitutions.")
-        # Terminate the user account ?
-        continue
-
+    # Add user to the appropriate allocation group according to the idp location
+    # Canadian Users Allocation Group or EduGain Users Allocation group
+    # Do nothing if user not in any of these (Gets the default allocation)
     try:
         if user_session_idp['code'] == 'CAF':
             # Add user to the CanadianUsers Group
@@ -110,18 +114,6 @@ for token in custos_authnz_tokens:
                 logging.info("User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
     except Exception as err:
         logging.exception("")
-
-# Maintain unique constraint manually until 24.2 is released
-cursor = conn.cursor()
-cursor.execute("""
-DELETE FROM user_group_association
-WHERE (group_id, user_id, create_time) NOT IN (
-    SELECT group_id, user_id, min(create_time)
-    FROM user_group_association
-    GROUP BY (user_id, group_id)
-);
-""")
-cursor.close()
 
 # Closing db connection
 conn.close()
