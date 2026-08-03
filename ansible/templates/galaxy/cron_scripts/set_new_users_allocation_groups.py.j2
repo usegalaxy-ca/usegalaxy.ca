@@ -102,16 +102,17 @@ for data in datas:
     # Canadian Users Allocation Group or EduGain Users Allocation group
     # Do nothing if user not in any of these (Gets the default allocation)
     try:
-        if user_session_idp['code'] == 'CAF':
-            # Add user to the CanadianUsers Group
-            added_user=gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
-            if added_user not in CUAG_initial_users:
-                logging.info("User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
-        else:
-            # Add user to the EdugainUsers Group
-            added_user=gal.groups.add_group_user(EdugainUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
-            if added_user not in EUAG_initial_users:
-                logging.info("User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
+        if user_session_idp is not None:
+            if user_session_idp['code'] == 'CAF':
+                # Add user to the CanadianUsers Group
+                added_user=gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+                if added_user not in CUAG_initial_users:
+                    logging.info("User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
+            else:
+                # Add user to the EdugainUsers Group
+                added_user=gal.groups.add_group_user(EdugainUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+                if added_user not in EUAG_initial_users:
+                    logging.info("User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
     except Exception as err:
         logging.exception("")
 
