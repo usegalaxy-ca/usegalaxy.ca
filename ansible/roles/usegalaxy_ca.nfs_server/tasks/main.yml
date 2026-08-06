@@ -112,7 +112,7 @@
         swap_needed: "{{ ansible_swaptotal_mb | int == 0 }}"
 
     - name: Create swap file
-      command: fallocate -l 4G /swapfile
+      command: "fallocate -l {{ nfs_swap_size_gb }}G /swapfile"
       args:
         creates: /swapfile
       when: swap_needed

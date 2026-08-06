@@ -1,5 +1,6 @@
 ---
 nfs_swap_enabled: false
+nfs_swap_size_gb: 4
 
 nfs_exports:
   - /mnt/volume *(rw,root_squash,async,no_subtree_check)
