@@ -1,4 +1,6 @@
 ---
+nfs_swap_enabled: false
+
 nfs_exports:
   - /mnt/volume *(rw,root_squash,async,no_subtree_check)
   - /mnt/volume1 *(rw,root_squash,async,no_subtree_check)
