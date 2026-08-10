@@ -110,6 +110,19 @@ on the galaxy node:
 sudo galaxyctl graceful
 ```
 
+### Swap
+
+The `usegalaxy_ca.nfs_server` role can optionally provision a swapfile on an NFS
+server, to give the kernel headroom to degrade gracefully instead of OOM-killing
+processes (or worse) under a memory spike.
+
+This is controlled by two variables, set in `group_vars/nfsservers.yml`:
+
+- `nfs_swap_enabled` — `false` by default. Enable per-host by setting it to `true`
+  in that host's `host_vars/<hostname>.yml` file — see
+  `host_vars/staging-usegal-nfs.yml` for an example.
+- `nfs_swap_size_gb` — swapfile size in GB, defaults to `4`.
+
 ## Training
 
 In terraform/modules/openstack/ansible.tf change "main_nodes" to include all nodes that are *not* reserved for training. The following code for example will reverse all nodes with index 0 for training.
