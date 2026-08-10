@@ -126,7 +126,7 @@ staging:
       - name: pulsar
         image: ubuntu22
         flavor: p4-7.5gb
-        security_groups: [usegal]
+        security_groups: [usegal, usegal-slurm]
     squidservers:
       - name: squid
         image: ubuntu24
