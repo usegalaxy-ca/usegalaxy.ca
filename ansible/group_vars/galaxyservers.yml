@@ -41,7 +41,7 @@ galaxy_job_config:
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
       load: galaxy.jobs.runners.pulsar:PulsarMQJobRunner
-      amqp_url: "pyamqp://{{ RABBITMQ_USERNAME_VHOST }}:{{ RABBITMQ_PASSWORD_VHOST }}@localhost:5671/{{ rabbitmq_users[1]['vhost'] }}?ssl=1"
+      amqp_url: "pyamqp://{{ RABBITMQ_USERNAME_VHOST }}:{{ RABBITMQ_PASSWORD_VHOST }}@localhost:5671/{{ rabbitmq_vhosts[0] }}?ssl=1"
       amqp_acknowledge: true
       amqp_ack_republish_time: 1200
       amqp_consumer_timeout: 2
@@ -350,6 +350,9 @@ rabbitmq_config:
   management:
     disable_stats: 'false'
   consumer_timeout: 21600000 # 6 hours in milliseconds
+
+rabbitmq_vhosts:
+  - "{{ rabbitmq_users[1]['vhost'] }}"
 
 rabbitmq_users:
   - user: "{{ RABBITMQ_ADMIN_USERNAME }}"
