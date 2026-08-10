@@ -32,11 +32,7 @@ pulsar_yaml_config:
   persistence_directory: "{{ pulsar_persistence_dir }}"
   tool_dependency_dir: "{{ pulsar_dependencies_dir }}"
   # The following are the settings for the pulsar server to contact the message queue with related timeouts etc.
-<<<<<<< HEAD
-  message_queue_url: "pyamqp://pulsar_ca:{{ RABBITMQ_PASSWORD_VHOST }}@{{ galaxy_server_hostname }}:5671//pulsar/pulsar_ca?ssl=1"
-=======
   message_queue_url: "pyamqp://{{ RABBITMQ_USERNAME_VHOST }}:{{ RABBITMQ_PASSWORD_VHOST }}@{{ galaxy_server_hostname }}:5671/{{ rabbitmq_vhosts[0] }}?ssl=1"
->>>>>>> feature/local-pulsar
   min_polling_interval: 0.5
   amqp_publish_retry: true
   amqp_publish_retry_max_retries: 5
