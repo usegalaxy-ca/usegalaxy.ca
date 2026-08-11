@@ -51,7 +51,7 @@ pulsar_yaml_config:
   managers:
     _default_:
       type: queued_drmaa
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=168:00:00 --partition=main #set to main for autumn season
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task=1 --mem=4096 --time=168:00:00 --partition=main
 
 # Pulsar should use the same job metrics plugin as Galaxy. This will automatically set `job_metrics_config_file` in
 # `pulsar_yaml_config` and create `{{ pulsar_config_dir }}/job_metrics_conf.yml`.
