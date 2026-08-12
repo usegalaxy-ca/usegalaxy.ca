@@ -193,14 +193,9 @@ destinations:
         - training
   pulsar:
     runner: pulsar_runner
-    inherits: _default_env
-    max_accepted_cores: 32
-    max_accepted_mem: 1000 # virtually high to catch all, and then downsize to max_mem
-    # Clamp resources to what the nodes support.
-    max_cores: 32
-    max_mem: 220
+    inherits: slurm
     params:
-      default_file_action: remote_transfer
+      default_file_action: none
       dependency_resolution: remote
       jobs_directory: /mnt/pulsar/files/staging
       persistence_directory: /mnt/pulsar/files/persisted_data
