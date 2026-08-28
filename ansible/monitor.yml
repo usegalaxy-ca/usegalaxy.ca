@@ -14,6 +14,7 @@
             "python3-pip",
             "python3-venv",
             "python3-setuptools",
+            "python3-influxdb",
           ]
       tags:
         - always
@@ -31,6 +32,17 @@
     - cloudalchemy.grafana
     - laperlej.sentry_selfhosted
     - usegalaxy_ca.backup_influx
+  post_tasks:
+    - name: Configure 30-day retention policy on InfluxDB
+      community.general.influxdb_retention_policy:
+        database: "telegraf"
+        policy_name: 'autogen'
+        duration: "{{ influxdb_retention_duration }}"
+        replication: 1
+        default: true
+        hostname: "127.0.0.1"
+        port: 8086
+        state: present
 
 - hosts: all
   become: true
