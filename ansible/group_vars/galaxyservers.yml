@@ -339,6 +339,12 @@ telegraf_plugins_extra:
       - metric_separator = "."
       - allowed_pending_messages = 10000
 
+# TIaaS setup
+tiaas_dir: /opt/tiaas
+tiaas_admin_user: admins
+tiaas_admin_pass: changemelater
+tiaas_galaxy_stylesheet: "{{ galaxy_server_dir }}/static/dist/base.css"
+
 #Users
 galaxy_user:
   name: "{{ galaxy_user_name }}"
