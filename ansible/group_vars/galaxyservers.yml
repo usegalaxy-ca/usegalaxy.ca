@@ -26,6 +26,7 @@ tpv_privsep: true
 
 galaxy_commit_id: release_26.1
 galaxy_force_checkout: true
+galaxy_gravity_graceful_start_if_stopped: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
 miniconda_version: 24.1.2
 miniconda_channels: ["conda-forge", "defaults"]
