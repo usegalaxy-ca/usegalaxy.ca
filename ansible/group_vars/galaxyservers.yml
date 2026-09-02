@@ -40,7 +40,15 @@ galaxy_job_config:
       load: galaxy.jobs.runners.slurm:SlurmJobRunner
       drmaa_library_path: /usr/lib/slurm-drmaa/lib/libdrmaa.so.1
     pulsar_runner:
-      load: galaxy.jobs.runners.pulsar:PulsarRESTJobRunner
+      load: galaxy.jobs.runners.pulsar:PulsarMQJobRunner
+      amqp_url: "pyamqp://{{ RABBITMQ_USERNAME_VHOST }}:{{ RABBITMQ_PASSWORD_VHOST }}@localhost:5671/{{ rabbitmq_vhosts[0] }}?ssl=1"
+      amqp_acknowledge: true
+      amqp_ack_republish_time: 1200
+      amqp_consumer_timeout: 2
+      amqp_publish_retry: true
+      amqp_publish_retry_max_retries: 60
+      galaxy_url: "https://{{ usegalaxy_domain }}"
+      manager: _default_
   limits:
       # Limit on the number of jobs an anonymous user can have active across all environments.
       # no jobs at all. Condition use >= and the query would return 0 on the first job.
@@ -268,8 +276,11 @@ certbot_environment: production
 certbot_well_known_root: /srv/nginx/_well-known_root
 certbot_share_key_users:
   - www-data
+certbot_share_key_ids:
+  - "999:999"
 certbot_post_renewal: |
   systemctl restart nginx || true
+  docker restart rabbit_hole || true
 certbot_domains:
   - "{{ usegalaxy_domain }}"
   - "sentry.{{ usegalaxy_domain }}"
@@ -310,6 +321,47 @@ nginx_conf_http:
 nginx_ssl_role: usegalaxy_eu.certbot
 nginx_conf_ssl_certificate: /etc/ssl/certs/fullchain.pem
 nginx_conf_ssl_certificate_key: /etc/ssl/user/privkey-www-data.pem
+
+# Install pip docker package for ansible
+pip_install_packages:
+  - name: docker
+# RabbitMQ
+rabbitmq_container:
+  name: rabbit_hole
+  image: rabbitmq:3.11-management
+  hostname: "{{ inventory_hostname }}"
+
+rabbitmq_plugins:
+  - rabbitmq_management
+
+rabbitmq_config:
+  listeners:
+    tcp: none
+  ssl_listeners:
+    default: 5671
+  ssl_options:
+    verify: verify_peer
+    cacertfile: /etc/ssl/certs/fullchain.pem
+    certfile: /etc/ssl/certs/cert.pem
+    keyfile: /etc/ssl/user/privkey-999:999.pem
+    fail_if_no_peer_cert: 'false'
+  management_agent:
+    disable_metrics_collector: "false"
+  management:
+    disable_stats: 'false'
+  consumer_timeout: 21600000 # 6 hours in milliseconds
+
+rabbitmq_vhosts:
+  - "{{ rabbitmq_users[1]['vhost'] }}"
+
+rabbitmq_users:
+  - user: "{{ RABBITMQ_ADMIN_USERNAME }}"
+    password: "{{ RABBITMQ_ADMIN_PASSWORD }}"
+    tags: administrator
+    vhost: /
+  - user: "{{ RABBITMQ_USERNAME_VHOST }}"
+    password: "{{ RABBITMQ_PASSWORD_VHOST }}"
+    vhost: "/pulsar/{{ RABBITMQ_USERNAME_VHOST }}"
 
 # TUS
 tusd_version: v1.13.0

@@ -36,6 +36,9 @@
 - name: galaxy
   import_playbook: galaxy.yml
 
+- name: pulsar
+  import_playbook: pulsar.yml
+
 - name: monitor
   import_playbook: monitor.yml
 

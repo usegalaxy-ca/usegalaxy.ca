@@ -104,7 +104,7 @@ staging:
       - name: galaxy
         image: ubuntu22
         flavor: p4-15gb
-        security_groups: [usegal, web, usegal-slurm]
+        security_groups: [usegal, web, usegal-slurm, usegal-rabbitmq]
     dbservers:
       - name: db
         image: ubuntu24
@@ -122,6 +122,11 @@ staging:
         image: ubuntu24
         flavor: p4-7.5gb
         security_groups: [usegal, usegal-nfs]
+    pulsarservers:
+      - name: pulsar
+        image: ubuntu22
+        flavor: p4-7.5gb
+        security_groups: [usegal, usegal-slurm]
     squidservers:
       - name: squid
         image: ubuntu24
