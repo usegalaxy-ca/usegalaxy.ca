@@ -55,9 +55,6 @@
     - galaxyproject.tiaas2
     - galaxyproject.nginx
     - usegalaxy_ca.drmaa
-    - role: usegalaxy_ca.restart_galaxy
-      become: true
-      become_user: root
     - role: usegalaxy_ca.service_account
       become: false
     - role: usegalaxy_ca.cleanup
@@ -67,6 +64,10 @@
         - cleanup
 
   post_tasks:
+    - name: galaxy nginx restart
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
     - name: restrict permissions on galaxy vault config
       ansible.builtin.file:
         path: "{{ galaxy_config.galaxy.vault_config_file }}"
