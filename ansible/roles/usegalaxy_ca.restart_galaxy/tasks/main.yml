@@ -1,8 +1,0 @@
-- name: galaxy galaxyctl graceful restart
-  command:
-    cmd: galaxyctl graceful
-
-- name: galaxy nginx restart
-  systemd:
-    name: nginx
-    state: restarted
