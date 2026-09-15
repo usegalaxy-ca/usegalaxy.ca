@@ -38,6 +38,7 @@
       become: true
       become_user: "{{ galaxy_user_name }}"
     - usegalaxy_ca.maintenance
+    - galaxyproject.tiaas2
     - galaxyproject.nginx
     - usegalaxy_ca.drmaa
     - role: usegalaxy_ca.restart_galaxy
