@@ -1,0 +1,3 @@
+user_tables: "users-ca"
+jobs_table: "jobs-ca"
+usage_table: "usage-ca"
