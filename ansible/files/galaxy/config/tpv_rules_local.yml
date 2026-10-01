@@ -127,6 +127,10 @@ tools:
     scheduling:
       require:
         - pulsar
+  secure_hash_message_digest:
+    scheduling:
+      require:
+        - pulsar
 
 roles:
   training.*:
@@ -191,9 +195,9 @@ destinations:
     scheduling:
       reject:
         - training
-
   pulsar:
     runner: pulsar_runner
+    inherits: slurm
     params:
       default_file_action: remote_transfer
       dependency_resolution: remote
