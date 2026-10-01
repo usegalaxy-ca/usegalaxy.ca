@@ -1,4 +1,4 @@
-galaxy_server_hostname: "{{ groups['galaxyservers'][0] }}" # Important!!!
+galaxy_server_hostname: "{{ usegalaxy_domain }}" # Important!!!
 # Put your Galaxy server's fully qualified domain name (FQDN) (or the FQDN of the RabbitMQ server) above.
 
 pulsar_root: /mnt/pulsar
