@@ -24,7 +24,7 @@ galaxy_extra_privsep_dirs:
   - "{{ tpv_mutable_dir }}"
 tpv_privsep: true
 
-galaxy_commit_id: release_26.0
+galaxy_commit_id: release_26.1
 galaxy_force_checkout: true
 miniconda_prefix: "{{ galaxy_tool_dependency_dir }}/_conda"
 miniconda_version: 24.1.2
@@ -200,13 +200,13 @@ galaxy_config:
       - bind: "unix:{{ galaxy_root }}/gunicorn0.sock"
         workers: 2
         timeout: 600
-        restart_timeout: 7200
+        restart_timeout: 10800
         extra_args: '--forwarded-allow-ips="*"'
         preload: true
       - bind: "unix:{{ galaxy_root }}/gunicorn1.sock"
         workers: 2
         timeout: 600
-        restart_timeout: 7200
+        restart_timeout: 10800
         extra_args: '--forwarded-allow-ips="*"'
         preload: true
     celery:
