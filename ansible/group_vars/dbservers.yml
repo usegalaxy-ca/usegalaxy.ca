@@ -3,9 +3,13 @@ postgresql_objects_users:
   - name: "{{ galaxy_user_name }}"
     password: "{{ galaxy_postgres_password }}"
   - name: telegraf
+  - name: tiaas
+    password: changemelater # must match tiaas_galaxy_db_pass in galaxyservers.yml
 postgresql_objects_databases:
   - name: "{{ galaxy_db_name }}"
     owner: "{{ galaxy_user_name }}"
+  - name: tiaas # TIaaS internal DB, must match tiaas_tiaas_db_name in galaxyservers.yml
+    owner: tiaas
 postgresql_objects_privileges:
   - database: galaxy
     roles: telegraf
