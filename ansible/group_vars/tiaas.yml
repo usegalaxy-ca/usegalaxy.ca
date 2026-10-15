@@ -39,4 +39,4 @@ tiaas_disassociate_training_roles:
 
 # UI Display settings
 tiaas_show_advertising: false
-tiaas_retain_contact_consent: false
+tiaas_retain_contact_require_consent: false
