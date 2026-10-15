@@ -1,0 +1,42 @@
+---
+# TIaaS setup
+tiaas_dir: /opt/tiaas
+tiaas_user: tiaas
+tiaas_group: tiaas
+tiaas_admin_user: admin
+tiaas_admin_pass: "{{ tiaas_admin_password }}"
+tiaas_galaxy_stylesheet: "{{ galaxy_server_dir }}/static/dist/base.css"
+
+# Galaxy Core DB Access (PostgreSQL) - same host/port/db as galaxy_config.galaxy.database_connection
+tiaas_galaxy_db_host: "{{ groups['dbservers'][0] }}"
+tiaas_galaxy_db_port: 5432
+tiaas_galaxy_db_name: "{{ galaxy_db_name }}"
+tiaas_galaxy_db_user: tiaas
+tiaas_galaxy_db_pass: "{{ tiaas_postgres_password }}"
+
+# TIaaS Internal DB (PostgreSQL on dbservers)
+tiaas_tiaas_use_sqlite: false
+tiaas_tiaas_db_host: "{{ tiaas_galaxy_db_host }}"
+tiaas_tiaas_db_port: "{{ tiaas_galaxy_db_port }}"
+tiaas_tiaas_db_name: tiaas
+tiaas_tiaas_db_user: "{{ tiaas_galaxy_db_user }}"
+tiaas_tiaas_db_pass: "{{ tiaas_galaxy_db_pass }}"
+
+# Decodes Galaxy encoded IDs in status URLs
+tiaas_galaxy_idsecret: "{{ vault_id_secret }}"
+
+# Basic metadata
+tiaas_info:
+  owner: "UseGalaxy.ca"
+  owner_email: "help@usegalaxy.ca"
+  owner_site: "https://{{ usegalaxy_domain }}/"
+  domain: "{{ usegalaxy_domain }}"
+
+# Automated training role expiry cron job
+tiaas_disassociate_training_roles:
+  hour: 0
+  minute: 0
+
+# UI Display settings
+tiaas_show_advertising: false
+tiaas_retain_contact_consent: false
