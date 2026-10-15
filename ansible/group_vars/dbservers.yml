@@ -4,7 +4,7 @@ postgresql_objects_users:
     password: "{{ galaxy_postgres_password }}"
   - name: telegraf
   - name: tiaas
-    password: changemelater # must match tiaas_galaxy_db_pass in galaxyservers.yml
+    password: "{{ tiaas_postgres_password }}"
 postgresql_objects_databases:
   - name: "{{ galaxy_db_name }}"
     owner: "{{ galaxy_user_name }}"
