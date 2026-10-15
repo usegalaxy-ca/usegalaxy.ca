@@ -28,7 +28,7 @@ tiaas_galaxy_idsecret: "{{ vault_id_secret }}"
 # Basic metadata
 tiaas_info:
   owner: "UseGalaxy.ca"
-  owner_email: "help@usegalaxy.ca"
+  owner_email: "support@{{ usegalaxy_domain }}"
   owner_site: "https://{{ usegalaxy_domain }}/"
   domain: "{{ usegalaxy_domain }}"
 
