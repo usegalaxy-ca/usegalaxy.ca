@@ -119,6 +119,18 @@ tools:
         if: 15 <= input_size < 30
         cores: 16
         mem: 58
+  .*/bwa/.*:
+    scheduling:
+      require:
+        - pulsar
+  .*/bwa_mem/.*:
+    scheduling:
+      require:
+        - pulsar
+  secure_hash_message_digest:
+    scheduling:
+      require:
+        - pulsar
 
 roles:
   training.*:
@@ -183,3 +195,18 @@ destinations:
     scheduling:
       reject:
         - training
+  pulsar:
+    runner: pulsar_runner
+    inherits: slurm
+    params:
+      default_file_action: remote_transfer
+      dependency_resolution: remote
+      jobs_directory: /mnt/pulsar/files/staging
+      persistence_directory: /mnt/pulsar/files/persisted_data
+      remote_metadata: false
+      rewrite_parameters: true
+      transport: curl
+      outputs_to_working_directory: false
+    scheduling:
+      require:
+        - pulsar
