@@ -6,5 +6,7 @@
     - group_vars/secret.yml
     - group_vars/slurm.yml
     - group_vars/cvmfsclient.yml
+    - group_vars/tiaas.yml
   roles:
+    - galaxyproject.tiaas2 # defines tiaas_nginx_routes
     - galaxyproject.nginx
