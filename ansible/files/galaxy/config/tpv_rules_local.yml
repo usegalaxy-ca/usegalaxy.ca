@@ -10,10 +10,21 @@ tools:
       - id: require_login
         if: user is None
         fail: An account is required to run this tool. Please log in.
-  __DATA_FETCH__:
+  _local_abstract_tool:
+    asbtract: true
     scheduling:
+      require:
+        - local
       reject:
         - pulsar
+
+  # Local tools
+  __.*__:
+    inherits: _local_abstract_tool
+  upload1:
+    inherits: _local_abstract_tool
+
+  # Compute tools
   toolshed.g2.bx.psu.edu/repos/galaxyp/diann/diann/.*:
     cores: 16
     mem: 110
@@ -170,6 +181,8 @@ destinations:
     scheduling:
       require:
         - training
+      accept:
+        - local
   slurm:
     runner: slurm
     inherits: _default_env
@@ -183,3 +196,14 @@ destinations:
     scheduling:
       reject:
         - training
+      accept:
+        - local
+
+  slurm-local:
+    runner: slurm
+    inherits: _default_env
+    params:
+      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=24:00:00 --partition=local,main
+    scheduling:
+      require:
+        - local
