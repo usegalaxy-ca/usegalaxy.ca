@@ -14,6 +14,8 @@ galaxy_failed_jobs_retention_days: 14
 galaxy_pgcleanup_actions:
   - delete_userless_histories
   - delete_exported_histories
+  # this is less for GDPR purposes and more for allowing users to reregister with the same account later
+  - purge_deleted_users_gdpr
   - purge_deleted_histories
   - purge_deleted_hdas
   - purge_historyless_hdas
