@@ -3,6 +3,17 @@
 # times out while the node is stalled marks the link failed; without this the
 # address expires with the lease (24h) and the node drops off the network.
 # Neutron addresses are fixed per port, so ignoring the lease is safe.
+- name: Find netplan-generated network file
+  ansible.builtin.stat:
+    path: "/run/systemd/network/10-netplan-{{ network_interface }}.network"
+  register: network_file
+
+# A drop-in for a missing file is silently ignored.
+- name: Check network file exists
+  ansible.builtin.assert:
+    that: network_file.stat.exists
+    fail_msg: "/run/systemd/network/10-netplan-{{ network_interface }}.network not found; drop-in would be ignored"
+
 - name: Create networkd drop-in directory
   ansible.builtin.file:
     path: "/etc/systemd/network/10-netplan-{{ network_interface }}.network.d"
