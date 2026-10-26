@@ -19,6 +19,8 @@
     path: "/etc/systemd/network/10-netplan-{{ network_interface }}.network.d"
     state: directory
 
+# "yes" rather than "dhcp": the value was renamed to "dynamic" in systemd 257,
+# "yes" implies it on every version.
 - name: Keep DHCP address regardless of lease
   ansible.builtin.copy:
     content: |
