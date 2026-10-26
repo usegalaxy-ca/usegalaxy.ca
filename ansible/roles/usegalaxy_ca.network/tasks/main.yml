@@ -1,0 +1,17 @@
+---
+# Keep the DHCP address if networkd gives up on the link. A DHCP renewal that
+# times out while the node is stalled marks the link failed; without this the
+# address expires with the lease (24h) and the node drops off the network.
+# Neutron addresses are fixed per port, so ignoring the lease is safe.
+- name: Create networkd drop-in directory
+  ansible.builtin.file:
+    path: "/etc/systemd/network/10-netplan-{{ network_interface }}.network.d"
+    state: directory
+
+- name: Keep DHCP address regardless of lease
+  ansible.builtin.copy:
+    content: |
+      [Network]
+      KeepConfiguration=yes
+    dest: "/etc/systemd/network/10-netplan-{{ network_interface }}.network.d/50-keep-configuration.conf"
+  notify: reconfigure network
