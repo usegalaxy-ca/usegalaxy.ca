@@ -119,4 +119,7 @@ server {
 	location /training-material/ {
 		proxy_pass https://training.galaxyproject.org/training-material/;
 	}
+
+	# TIaaS
+	{{ tiaas_nginx_routes }}
 }

@@ -7,6 +7,7 @@
     - group_vars/secret.yml
     - group_vars/slurm.yml
     - group_vars/cvmfsclient.yml
+    - group_vars/tiaas.yml
   pre_tasks:
     - name: install dependencies
       package:
@@ -38,6 +39,7 @@
       become: true
       become_user: "{{ galaxy_user_name }}"
     - usegalaxy_ca.maintenance
+    - galaxyproject.tiaas2
     - galaxyproject.nginx
     - usegalaxy_ca.drmaa
     - role: usegalaxy_ca.restart_galaxy
