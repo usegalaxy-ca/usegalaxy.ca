@@ -1,4 +1,7 @@
 ---
+- name: network
+  import_playbook: network.yml
+
 - name: volumes
   import_playbook: volumes.yml
 
