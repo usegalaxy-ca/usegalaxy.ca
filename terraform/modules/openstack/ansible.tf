@@ -19,21 +19,24 @@ locals {
 }
 
 locals {
+    # Slurm RealMemory (MB) per flavor. Exec-node values are set below physical RAM
+    # (free -m) to reserve memory for the OS: jobs are cgroup-limited to their
+    # requests, so the sum of requests must leave room for system processes.
     flavor_mem =  {
         "p1-1gb": 1000,
         "p1-2gb": 2000,
         "p2-3.75gb": 3750,
-        "p4-7.5gb": 7400,
+        "p4-7.5gb": 6400,     # physical 7433 (staging slurmexec)
         "p8-15gb": 14000,
-        "p4-15gb": 14000,
-        "c8-30gb": 30000,
-        "p8-30gb": 30000,
+        "p4-15gb": 13500,     # physical 14981
+        "c8-30gb": 28672,     # physical 30076; = 28 GB, keeps TPV mem: 28 on sm
+        "p8-30gb": 28672,     # physical 30076 (staging slurmfat)
         "p16-60gb": 60000,
-        "c16-60gb": 60000,
+        "c16-60gb": 58000,    # physical 60266
         "c8-90gb": 90000,
         "c16-90gb": 90000,
-        "c16-120gb": 120000,
-        "c32-240gb": 240000,
+        "c16-120gb": 116000,  # physical 120746
+        "c32-240gb": 233000,  # physical 241606
     }
 }
 
