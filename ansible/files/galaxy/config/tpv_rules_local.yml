@@ -140,7 +140,7 @@ destinations:
       - name: APPTAINER_TMPDIR
         value: /tmp
       - name: _JAVA_OPTIONS
-        value: -Djava.io.tmpdir=$_GALAXY_JOB_TMP_DIR -Xmx{int(mem)}G -Xms256M
+        value: -Djava.io.tmpdir=$_GALAXY_JOB_TMP_DIR -Xmx{max(int(mem * 0.85), 1)}G -Xms256M
       - name: SINGULARITYENV__JAVA_OPTIONS
         value: $_JAVA_OPTIONS
       - execute: ulimit -f 1048576000  # 500GB, our default quota
