@@ -32,6 +32,20 @@ tiaas_info:
   owner_site: "https://{{ usegalaxy_domain }}/"
   domain: "{{ usegalaxy_domain }}"
 
+tiaas_send_email_to: "{{ tiaas_info.owner_email }}"
+tiaas_send_email_from: "UseGalaxy.ca <no-reply@{{ usegalaxy_domain }}>"
+tiaas_send_email_to_requester: false
+
+# Email and Django settings appended to config/local_settings.py
+tiaas_other_config: |
+  EMAIL_HOST = "mail.smtp2go.com"
+  EMAIL_PORT = 587
+  EMAIL_HOST_USER = "{{ SMTP2GO_USERNAME }}"
+  EMAIL_HOST_PASSWORD = "{{ SMTP2GO_PASSWORD }}"
+  EMAIL_USE_TLS = True
+  EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+  EMAIL_TIMEOUT = 60
+
 # Automated training role expiry cron job
 tiaas_disassociate_training_roles:
   hour: 0
