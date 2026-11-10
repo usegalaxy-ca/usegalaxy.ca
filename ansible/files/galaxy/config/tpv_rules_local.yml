@@ -157,6 +157,7 @@ destinations:
         /mnt/nfs1/data/datasets:ro,
         /mnt/nfs2/data/datasets:ro,
         /cvmfs/data.galaxyproject.org:ro,
+        /cvmfs/idc.galaxyproject.org:ro,
         /mnt/nfs/galaxy/var/tool_data:ro"
       tmp_dir: true
 
