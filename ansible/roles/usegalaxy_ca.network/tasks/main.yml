@@ -18,6 +18,7 @@
   ansible.builtin.file:
     path: "/etc/systemd/network/10-netplan-{{ network_interface }}.network.d"
     state: directory
+    mode: "0755"
 
 # "yes" rather than "dhcp": the value was renamed to "dynamic" in systemd 257,
 # "yes" implies it on every version.
@@ -27,4 +28,5 @@
       [Network]
       KeepConfiguration=yes
     dest: "/etc/systemd/network/10-netplan-{{ network_interface }}.network.d/50-keep-configuration.conf"
+    mode: "0644"
   notify: reconfigure network
