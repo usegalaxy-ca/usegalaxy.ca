@@ -1,4 +1,11 @@
 ---
+- hosts: all
+  become: true
+  become_user: root
+  roles:
+    - role: usegalaxy_ca.network
+      tags: network
+
 - name: volumes
   import_playbook: volumes.yml
 
