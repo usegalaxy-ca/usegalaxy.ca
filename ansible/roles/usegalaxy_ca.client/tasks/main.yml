@@ -24,4 +24,5 @@
   environment:
     PATH: "{{ galaxy_venv_dir }}/bin:{{ ansible_env.PATH }}"
     VIRTUAL_ENV: "{{ galaxy_venv_dir }}"
+    COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
   when: patch_login_form.changed or patch_external_login.changed

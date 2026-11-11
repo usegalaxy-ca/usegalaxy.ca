@@ -19,3 +19,4 @@
 # only revisions 6ea73833cf67 and f5ea3ce9b9b0 of tool_name3
 tools:
   - name: alphafold2
+  - name: whisper

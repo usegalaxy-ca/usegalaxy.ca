@@ -1,0 +1,15 @@
+- name: Install cleanup script
+  template:
+    src: cleanup.sh.j2
+    dest: /opt/cleanup.sh
+    mode: '0755'
+    owner: "{{ galaxy_privsep_user }}"
+    group: "{{ galaxy_privsep_user }}"
+
+- name: Add cron job for cleanup in galaxy
+  cron:
+    name: "galaxy_cleanup"
+    user: galaxy
+    hour: "{{ galaxy_cleanup_cron_hour }}"
+    minute: 0
+    job: bash /opt/cleanup.sh 2>&1 | tee {{ galaxy_log_dir }}/cleanup_daily-$(date +\%F).log;

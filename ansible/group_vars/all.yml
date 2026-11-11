@@ -22,6 +22,9 @@ slurm_config:
   SelectTypeParameters: CR_CPU_Memory # Allocate individual cores/memory instead of entire node
   ReturnToService: 2
   SchedulerParameters: nohold_on_prolog_fail
+  # Enforce job memory/cores via cgroup.conf (cgroup v1, see usegalaxy_ca.slurm)
+  TaskPlugin: task/cgroup,task/affinity
+  ProctrackType: proctrack/cgroup
   # AccountingStorageHost: "{{ groups['slurmcontrolservers'][0] }}"
   # AccountingStorageType: "accounting_storage/slurmdbd"
   # AccountingStorageUser: "slurm"

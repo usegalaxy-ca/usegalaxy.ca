@@ -25,14 +25,19 @@
   loop: "{{ volumes[inventory_hostname] | list }}"
   when: item.fstype != 'zfs'
 
+- name: Get currently imported ZFS pools
+  command: zpool list -H -o name
+  register: imported_pools
+  changed_when: false
+
 - name: Import ZFS zpool
   command: "zpool import -f pool{{ idx }}"
-  args:
-    creates: "{{ item.mount_point }}"
   loop: "{{ volumes[inventory_hostname] | list }}"
   loop_control:
     index_var: idx
-  when: item.fstype == 'zfs'
+  when: item.fstype == 'zfs' and ('pool' ~ idx) not in imported_pools.stdout_lines
+  # A pool that was never created (fresh node) also fails to import; that's expected
+  # here and handled by the "Setup ZFS zpool" task below, so don't let it fail the play.
   ignore_errors: yes
 
 - name: Setup ZFS zpool
