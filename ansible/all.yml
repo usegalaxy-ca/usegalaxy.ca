@@ -1,4 +1,7 @@
 ---
+- name: fail2ban
+  import_playbook: fail2ban.yml
+
 - name: volumes
   import_playbook: volumes.yml
 

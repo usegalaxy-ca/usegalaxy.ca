@@ -1,0 +1,25 @@
+---
+# Whitelist the management node in fail2ban on all hosts, so failed logins
+# from it (all admin and ansible ssh traffic) can't get it banned.
+# Uses a jail.d drop-in; jail.local is written by cloud-init at first boot.
+- hosts: all
+  become: true
+  become_user: root
+  tasks:
+    - name: never ban the management node
+      ansible.builtin.copy:
+        dest: /etc/fail2ban/jail.d/90-ignore-management.local
+        content: |
+          # Managed by Ansible (fail2ban.yml)
+          [DEFAULT]
+          ignoreip = 127.0.0.1/8 ::1 {{ fail2ban_ignoreip }}
+        owner: root
+        group: root
+        mode: "0644"
+      notify: reload fail2ban
+
+  handlers:
+    - name: reload fail2ban
+      ansible.builtin.service:
+        name: fail2ban
+        state: reloaded
