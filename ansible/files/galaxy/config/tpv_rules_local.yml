@@ -80,7 +80,7 @@ tools:
     mem: 16
   toolshed.g2.bx.psu.edu/repos/iuc/bwa_mem2/bwa_mem2/.*:
     cores: 32
-    mem: 240
+    mem: 220
     rules:
       - id: bwa_mem2_small_input_rule
         if: input_size < 0.1
@@ -118,7 +118,7 @@ tools:
       - id: hisat2_large_input_rule
         if: 15 <= input_size < 30
         cores: 16
-        mem: 58
+        mem: 56  # fits md (RealMemory 58000)
 
 roles:
   training.*:
@@ -165,7 +165,7 @@ destinations:
     runner: slurm
     inherits: _default_env
     max_accepted_cores: 32
-    max_accepted_mem: 240
+    max_accepted_mem: 220
     params:
       native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=48:00:00 --partition=training
     scheduling:
@@ -180,7 +180,18 @@ destinations:
     max_cores: 32
     max_mem: 220
     params:
-      native_specification: --nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(mem*1024)} --time=168:00:00 --partition=main #set to main for autumn season
+      # On OOM (memory_limit_reached) the job is resubmitted with --mem doubled, capped at max_mem:
+      # 1x, 2x, 4x. SCALING_FACTOR is this attempt's multiplier; job.destination_params holds the
+      # previous attempt's params (no SCALING_FACTOR on the first attempt -> 1). Applies to every
+      # tool, including those with a fixed mem.
+      SCALING_FACTOR: "{2 * int(job.destination_params.get('SCALING_FACTOR', 1)) if job.destination_params else 1}"
+      native_specification: "--nodes=1 --ntasks=1 --cpus-per-task={cores} --mem={round(min(mem * (2 * int(job.destination_params.get('SCALING_FACTOR', 1)) if job.destination_params else 1), 220) * 1024)} --time=168:00:00 --partition=main"  # set to main for autumn season
+    resubmit:
+      with_more_mem_on_failure:
+        # Retry only while doubling still adds memory below the 220 cap (mem = base, already clamped):
+        # 80 -> 160 -> 220; 110/200 -> 220; 220 -> no retry.
+        condition: "memory_limit_reached and attempt <= {0 if mem >= 220 else (1 if mem * 2 >= 220 else 2)}"
+        destination: tpv_dispatcher
     scheduling:
       reject:
         - training
