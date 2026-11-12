@@ -1,0 +1,26 @@
+---
+- name: System maintenance (update, upgrade, reboot)
+  hosts: "{{ target | default('all') }}"
+  become: true
+  become_user: root
+  serial: "{{ serial_count | default('100%') }}"
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 0
+
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+
+    - name: Reboot the node and wait for reconnection
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible maintenance playbook"
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 2
+        post_reboot_delay: 15
+        test_command: whoami
