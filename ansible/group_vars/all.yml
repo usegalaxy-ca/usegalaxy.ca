@@ -25,10 +25,10 @@ slurm_config:
   # Enforce job memory/cores via cgroup.conf (cgroup v1, see usegalaxy_ca.slurm)
   TaskPlugin: task/cgroup,task/affinity
   ProctrackType: proctrack/cgroup
+  JobAcctGatherType: jobacct_gather/cgroup
   # AccountingStorageHost: "{{ groups['slurmcontrolservers'][0] }}"
   # AccountingStorageType: "accounting_storage/slurmdbd"
   # AccountingStorageUser: "slurm"
-  #JobAcctGatherType: "jobacct_gather/linux"
 
 slurm_cgroup_config:
   CgroupMountpoint: "/sys/fs/cgroup"
