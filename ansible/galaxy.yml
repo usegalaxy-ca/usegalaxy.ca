@@ -40,9 +40,6 @@
     - usegalaxy_ca.maintenance
     - galaxyproject.nginx
     - usegalaxy_ca.drmaa
-    - role: usegalaxy_ca.restart_galaxy
-      become: true
-      become_user: root
     - role: usegalaxy_ca.service_account
       become: false
     - role: usegalaxy_ca.cleanup
@@ -52,6 +49,10 @@
         - cleanup
 
   post_tasks:
+    - name: galaxy nginx restart
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
     - name: fetch edugain idps the first time
       command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
       become: true
