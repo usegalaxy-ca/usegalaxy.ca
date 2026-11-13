@@ -38,24 +38,24 @@ conn = psycopg2.connect(
 gal = bioblend.galaxy.GalaxyInstance(galaxy_url, galaxy_admin_api_key, verify=True)
 
 all_groups=gal.groups.get_groups()
-CanadanUsersAllocationGroup_API_id=None
+CanadianUsersAllocationGroup_API_id=None
 EdugainUsersAllocationGroup_API_id=None
 
 for group in all_groups:
     if group['name'] == group_name_canadian_users_allocation:
-        CanadanUsersAllocationGroup_API_id = group['id']
+        CanadianUsersAllocationGroup_API_id = group['id']
     if group['name'] == group_name_edugain_users_allocation:
         EdugainUsersAllocationGroup_API_id = group['id']
 
-if CanadanUsersAllocationGroup_API_id is None:
+if CanadianUsersAllocationGroup_API_id is None:
     new_g = gal.groups.create_group(group_name_canadian_users_allocation)
-    CanadanUsersAllocationGroup_API_id=new_g[0]['id']
+    CanadianUsersAllocationGroup_API_id=new_g[0]['id']
 
 if EdugainUsersAllocationGroup_API_id is None:
     new_g = gal.groups.create_group(group_name_edugain_users_allocation)
     EdugainUsersAllocationGroup_API_id=new_g[0]['id']
 
-CUAG_initial_users=gal.groups.get_group_users(CanadanUsersAllocationGroup_API_id)
+CUAG_initial_users=gal.groups.get_group_users(CanadianUsersAllocationGroup_API_id)
 EUAG_initial_users=gal.groups.get_group_users(EdugainUsersAllocationGroup_API_id)
 
 ###################################################################################
@@ -105,7 +105,7 @@ for data in datas:
         if user_session_idp is not None:
             if user_session_idp['code'] == 'CAF':
                 # Add user to the CanadianUsers Group
-                added_user=gal.groups.add_group_user(CanadanUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
+                added_user=gal.groups.add_group_user(CanadianUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
                 if added_user not in CUAG_initial_users:
                     logging.info("User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
             else:
@@ -118,5 +118,3 @@ for data in datas:
 
 # Closing db connection
 conn.close()
-
-
