@@ -5,6 +5,7 @@ tiaas_user: tiaas
 tiaas_group: tiaas
 tiaas_admin_user: admin
 tiaas_admin_pass: "{{ tiaas_admin_password }}"
+tiaas_secret_key: "{{ TIAAS_SECRET_KEY }}"
 tiaas_galaxy_stylesheet: "{{ galaxy_server_dir }}/static/dist/base.css"
 
 # Galaxy Core DB Access (PostgreSQL) - same host/port/db as galaxy_config.galaxy.database_connection
