@@ -49,6 +49,9 @@ roles:
   # TPV Linting
   - name: usegalaxy_eu.tpv_auto_lint
     version: 0.4.5
+  # Training Infrastructure as a Service (TIaaS)
+  - src: galaxyproject.tiaas2
+    version: 2.2.4
 
 collections:
   # Ansible Posix

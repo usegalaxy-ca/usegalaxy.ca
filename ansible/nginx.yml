@@ -6,5 +6,8 @@
     - group_vars/secret.yml
     - group_vars/slurm.yml
     - group_vars/cvmfsclient.yml
+    - group_vars/tiaas.yml
   roles:
+    - role: galaxyproject.tiaas2 # loads tiaas_nginx_routes from defaults without running deployment tasks
+      when: false
     - galaxyproject.nginx
