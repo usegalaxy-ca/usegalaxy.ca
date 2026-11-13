@@ -4,7 +4,7 @@ postgresql_objects_users:
     password: "{{ galaxy_postgres_password }}"
   - name: telegraf
   - name: tiaas
-    password: "{{ tiaas_postgres_password }}"
+    password: "{{ TIAAS_POSTGRES_PASSWORD }}"
 postgresql_objects_databases:
   - name: "{{ galaxy_db_name }}"
     owner: "{{ galaxy_user_name }}"
