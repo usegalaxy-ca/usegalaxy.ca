@@ -8,5 +8,6 @@
     - group_vars/cvmfsclient.yml
     - group_vars/tiaas.yml
   roles:
-    - galaxyproject.tiaas2 # defines tiaas_nginx_routes
+    - role: galaxyproject.tiaas2 # loads tiaas_nginx_routes from defaults without running deployment tasks
+      when: false
     - galaxyproject.nginx
