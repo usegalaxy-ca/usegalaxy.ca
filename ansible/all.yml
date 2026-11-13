@@ -36,6 +36,19 @@
 - name: galaxy
   import_playbook: galaxy.yml
 
+# Apply TIaaS table/sequence grants AFTER galaxy.yml initializes Galaxy's DB schema
+# running these in the earlier dbservers play fails on fresh deployments with missing relations.
+- hosts: dbservers
+  become: true
+  become_user: postgres
+  vars_files:
+    - group_vars/secret.yml
+  roles:
+    - role: galaxyproject.postgresql_objects
+      postgresql_objects_users: []
+      postgresql_objects_databases: []
+      postgresql_objects_privileges: "{{ tiaas_postgresql_objects_privileges }}"
+
 - name: monitor
   import_playbook: monitor.yml
 
