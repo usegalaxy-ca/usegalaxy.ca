@@ -33,7 +33,7 @@ slurm_cgroup_config:
   ConstrainCores: yes
   TaskAffinity: no
   ConstrainRAMSpace: yes
-  ConstrainSwapSpace: no
+  ConstrainSwapSpace: yes
   ConstrainDevices: no
   AllowedRamSpace: 100
   AllowedSwapSpace: 0
