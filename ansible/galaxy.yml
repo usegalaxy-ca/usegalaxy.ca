@@ -59,6 +59,6 @@
     - name: set cron jobs
       ansible.builtin.cron:
         name: "cron jobs to adjust allocations group for canadian users"
-        minute: "*/5"
+        minute: "*/30"
         user: pgalaxy
         job: "bash {{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
