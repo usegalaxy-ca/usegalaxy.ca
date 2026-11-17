@@ -49,10 +49,8 @@ galaxy_job_metrics_plugins:
   - type: core
   - type: cpuinfo
   - type: meminfo
-  - type: uname
   - type: env
   - type: cgroup
-  - type: hostname
 
 # Telegraf
 telegraf_agent_package_state: latest
