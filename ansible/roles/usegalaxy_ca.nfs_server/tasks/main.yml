@@ -80,7 +80,7 @@
     owner: galaxy
     group: galaxy
     state: directory
-    mode: 0775
+    mode: "2775"
   with_items:
     - /mnt/volume/galaxy/var/total_perspective_vortex
     - /mnt/volume/galaxy/var/log
