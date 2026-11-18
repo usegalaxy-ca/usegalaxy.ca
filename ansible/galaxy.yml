@@ -52,6 +52,14 @@
         - cleanup
 
   post_tasks:
+    - name: restrict permissions on allocation groups cron script
+      ansible.builtin.file:
+        path: "{{ galaxy_server_dir }}/cron/set_new_users_allocation_groups.py"
+        owner: "{{ galaxy_privsep_user }}"
+        group: "{{ galaxy_privsep_user }}"
+        mode: "0600"
+      become: true
+      become_user: "{{ galaxy_privsep_user }}"
     - name: fetch edugain idps the first time
       command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
       become: true
