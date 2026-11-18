@@ -1,120 +1,243 @@
-import json
+"""Assign newly registered Galaxy OIDC users to allocation groups based on EduGAIN IDP.
+
+Workflow:
+1. Query PostgreSQL for active users created within the last 7 days who have an OIDC
+   token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
+   `CanadianUsersAllocationGroup` or `EdugainUsersAllocationGroup`.
+2. Exit immediately (without reading `edugain_idps.json` or calling the Galaxy API)
+   if no unassigned users are found.
+3. Load and index `edugain_idps.json` by `entityid` for O(1) lookup.
+4. For each unassigned user, Base64URL-decode the JWT `id_token` payload and match its
+   `idp` claim against the EduGAIN registry:
+   - `code == "CAF"` (Canadian Access Federation) -> `CanadianUsersAllocationGroup`
+   - Any other EduGAIN IDP -> `EdugainUsersAllocationGroup`
+   - Non-EduGAIN / missing `idp` -> skipped (keeps default Galaxy allocation).
+5. Lazily initialize the Galaxy BioBlend client and assign matched users via the API.
+"""
+
 import base64
+from contextlib import closing
+from datetime import datetime, timedelta, timezone
+import json
 import logging
-import psycopg2
+from pathlib import Path
+import sys
+
 import bioblend.galaxy
-from datetime import datetime,timedelta
+import psycopg2
 
 logging.basicConfig(
-    format='%(asctime)s:%(levelname)s:%(message)s',
-    level=logging.INFO)
-
-
-###################################################################################  
-
-edugain_idps_file = "{{ galaxy_root }}/var/usegalaxy.ca/edugain_idps.json"
-
-galaxy_url = "https://{{ usegalaxy_domain }}"
-
-galaxy_admin_api_key = "{{ GALAXY_ADMIN_API_KEY }}"
-
-galaxy_db_host="{{ groups['dbservers'][0] }}"
-galaxy_db_name="{{ galaxy_db_name }}"
-galaxy_db_user="{{ galaxy_user_name }}"
-galaxy_db_password="{{ galaxy_postgres_password }}"
-
-group_name_canadian_users_allocation="CanadianUsersAllocationGroup"
-group_name_edugain_users_allocation="EdugainUsersAllocationGroup"
-
-
-##################################################################################
-# Establishing the connection to the database
-conn = psycopg2.connect(
-   database=galaxy_db_name, user=galaxy_db_user, password=galaxy_db_password, host=galaxy_db_host, port= '5432'
+    format="%(asctime)s:%(levelname)s:%(message)s",
+    level=logging.INFO,
 )
 
-##################################################################################
-# Connect to the Galaxy via the API
-gal = bioblend.galaxy.GalaxyInstance(galaxy_url, galaxy_admin_api_key, verify=True)
-
-all_groups=gal.groups.get_groups()
-CanadianUsersAllocationGroup_API_id=None
-EdugainUsersAllocationGroup_API_id=None
-
-for group in all_groups:
-    if group['name'] == group_name_canadian_users_allocation:
-        CanadianUsersAllocationGroup_API_id = group['id']
-    if group['name'] == group_name_edugain_users_allocation:
-        EdugainUsersAllocationGroup_API_id = group['id']
-
-if CanadianUsersAllocationGroup_API_id is None:
-    new_g = gal.groups.create_group(group_name_canadian_users_allocation)
-    CanadianUsersAllocationGroup_API_id=new_g[0]['id']
-
-if EdugainUsersAllocationGroup_API_id is None:
-    new_g = gal.groups.create_group(group_name_edugain_users_allocation)
-    EdugainUsersAllocationGroup_API_id=new_g[0]['id']
-
-CUAG_initial_users=gal.groups.get_group_users(CanadianUsersAllocationGroup_API_id)
-EUAG_initial_users=gal.groups.get_group_users(EdugainUsersAllocationGroup_API_id)
 
 ###################################################################################
-# Open edugain idps JSON file and store in an array
-# For details on Edugain IDPs info definition: https://technical.edugain.org/api.php
-
-f = open(edugain_idps_file)
-try:
-    idps = json.load(f)
-except:
-    exit()
-
+# Configuration (templated by Ansible)
 ###################################################################################
-# Fetch the oidc tokens
 
-now_minus_1w = datetime.now() - timedelta(hours=168)
+EDUGAIN_IDPS_FILE = Path("{{ galaxy_root }}/var/usegalaxy.ca/edugain_idps.json")
 
-cursor = conn.cursor()
-cursor.execute("SELECT galaxy_user.email,galaxy_user.create_time,oidc_user_authnz_tokens.extra_data FROM galaxy_user,oidc_user_authnz_tokens WHERE galaxy_user.id=oidc_user_authnz_tokens.user_id AND galaxy_user.create_time > '"+str(now_minus_1w)+"'" )
-datas = cursor.fetchall()
-cursor.close()
+GALAXY_URL = "https://{{ usegalaxy_domain }}"
+GALAXY_ADMIN_API_KEY = "{{ GALAXY_ADMIN_API_KEY }}"
 
-# Loop over the oicd tokens
-for data in datas:
+GALAXY_DB_HOST = "{{ groups['dbservers'][0] }}"
+GALAXY_DB_NAME = "{{ galaxy_db_name }}"
+GALAXY_DB_USER = "{{ galaxy_user_name }}"
+GALAXY_DB_PASSWORD = "{{ galaxy_postgres_password }}"
 
-    user_email=data[0]
-    user_create_time=data[1]
-    token_extra_data=data[2]
+GROUP_NAME_CANADIAN_USERS_ALLOCATION = "CanadianUsersAllocationGroup"
+GROUP_NAME_EDUGAIN_USERS_ALLOCATION = "EdugainUsersAllocationGroup"
 
-    data_dict=json.loads(token_extra_data.tobytes().decode("utf-8"))
-    id_token_parts= data_dict['id_token'].split('.')
-    id_token_infos=json.loads(base64.b64decode(id_token_parts[1] + '=='))
+# 7-day lookback acts as a recovery safety net if cron, the Galaxy API, or the
+# EduGAIN IDP file is temporarily unavailable. Already-assigned users are filtered
+# out in SQL (`NOT EXISTS`), so they are not re-processed on subsequent cron runs.
+LOOKBACK_WINDOW = timedelta(days=7)
 
-    # Get galaxy user info from email in the Session
-    API_galaxy_user_infos=gal.users.get_users(f_email=user_email)
+# Select only the most recent non-null OIDC token (`DISTINCT ON (u.id) ... ORDER BY u.id, t.id DESC`)
+# for active users created after the UTC cutoff who do not already belong to either
+# allocation group.
+UNASSIGNED_USERS_QUERY = """
+SELECT DISTINCT ON (u.id)
+    u.email,
+    t.extra_data
+FROM galaxy_user u
+JOIN oidc_user_authnz_tokens t ON u.id = t.user_id
+WHERE u.create_time > %s
+  AND NOT u.deleted
+  AND t.extra_data IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM user_group_association uga
+      JOIN galaxy_group g ON g.id = uga.group_id
+      WHERE uga.user_id = u.id
+        AND NOT g.deleted
+        AND g.name IN (%s, %s)
+  )
+ORDER BY u.id, t.id DESC
+"""
 
-    # Get infos of IDP used to authenticate
-    user_session_idp=None
-    for idp in idps:
-        if idp[0]['entityid'] == id_token_infos['idp']:
-            user_session_idp=idp[0]
 
-    # Add user to the appropriate allocation group according to the idp location
-    # Canadian Users Allocation Group or EduGain Users Allocation group
-    # Do nothing if user not in any of these (Gets the default allocation)
+def decode_id_token_payload(extra_data):
+    """Extract and Base64URL-decode the JWT payload from `oidc_user_authnz_tokens.extra_data`.
+
+    Handles `extra_data` whether psycopg2 returns it as a `memoryview` (BYTEA), `bytes`,
+    `str` (TEXT), or `dict` (JSON/JSONB), and uses `urlsafe_b64decode` with modulo-4
+    padding as required by RFC 7515 (JWT Base64URL encoding uses `-` and `_`).
+    Returns an empty dict if `id_token` is absent or malformed.
+    """
+    if extra_data is None:
+        return {}
+    if isinstance(extra_data, memoryview):
+        data_dict = json.loads(extra_data.tobytes().decode("utf-8"))
+    elif isinstance(extra_data, bytes):
+        data_dict = json.loads(extra_data.decode("utf-8"))
+    elif isinstance(extra_data, str):
+        data_dict = json.loads(extra_data)
+    elif isinstance(extra_data, dict):
+        data_dict = extra_data
+    else:
+        return {}
+
+    if not isinstance(data_dict, dict):
+        return {}
+
+    id_token = data_dict.get("id_token")
+    if not isinstance(id_token, str) or "." not in id_token:
+        return {}
+
+    parts = id_token.split(".")
+    if len(parts) < 2:
+        return {}
+
+    # JWT segments omit Base64 '=' padding and use URL-safe alphabet ('-' and '_').
+    payload_b64 = parts[1]
+    padded = payload_b64 + "=" * (-len(payload_b64) % 4)
+    payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
+    return payload if isinstance(payload, dict) else {}
+
+
+def ensure_allocation_groups(gal):
+    """Return Galaxy API IDs for the Canadian and EduGAIN allocation groups, creating them if absent."""
+    groups_by_name = {group["name"]: group["id"] for group in gal.groups.get_groups()}
+
+    canadian_gid = groups_by_name.get(GROUP_NAME_CANADIAN_USERS_ALLOCATION)
+    if canadian_gid is None:
+        canadian_gid = gal.groups.create_group(GROUP_NAME_CANADIAN_USERS_ALLOCATION)[0]["id"]
+
+    edugain_gid = groups_by_name.get(GROUP_NAME_EDUGAIN_USERS_ALLOCATION)
+    if edugain_gid is None:
+        edugain_gid = gal.groups.create_group(GROUP_NAME_EDUGAIN_USERS_ALLOCATION)[0]["id"]
+
+    return canadian_gid, edugain_gid
+
+
+def main():
+    ###################################################################################
+    # 1. Fetch OIDC tokens for recent users not yet assigned to an allocation group.
+    #    Galaxy stores `galaxy_user.create_time` as a naive UTC timestamp (`TIMESTAMP WITHOUT TIME ZONE`),
+    #    so compute a naive UTC cutoff and pass all parameters via `%s` placeholders.
+    cutoff_utc = datetime.now(timezone.utc).replace(tzinfo=None) - LOOKBACK_WINDOW
+
+    with closing(
+        psycopg2.connect(
+            database=GALAXY_DB_NAME,
+            user=GALAXY_DB_USER,
+            password=GALAXY_DB_PASSWORD,
+            host=GALAXY_DB_HOST,
+            port="5432",
+        )
+    ) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                UNASSIGNED_USERS_QUERY,
+                (
+                    cutoff_utc,
+                    GROUP_NAME_CANADIAN_USERS_ALLOCATION,
+                    GROUP_NAME_EDUGAIN_USERS_ALLOCATION,
+                ),
+            )
+            rows = cursor.fetchall()
+
+    # Fast path: exit before reading `edugain_idps.json` or calling the Galaxy API
+    # when there are no unassigned users in the lookback window.
+    if not rows:
+        return 0
+
+    ###################################################################################
+    # 2. Load EduGAIN IDPs JSON file and pre-index by `entityid` for O(1) lookup.
+    #    For details on EduGAIN IDPs info definition: https://technical.edugain.org/api.php
     try:
-        if user_session_idp is not None:
-            if user_session_idp['code'] == 'CAF':
-                # Add user to the CanadianUsers Group
-                added_user=gal.groups.add_group_user(CanadianUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
-                if added_user not in CUAG_initial_users:
-                    logging.info("User "+added_user['email'].split("@")[0]+" is added to the Canadian Users allocation group")
-            else:
-                # Add user to the EdugainUsers Group
-                added_user=gal.groups.add_group_user(EdugainUsersAllocationGroup_API_id,API_galaxy_user_infos[0]['id'])
-                if added_user not in EUAG_initial_users:
-                    logging.info("User "+added_user['email'].split("@")[0]+" is added to the Edugain Users allocation group")
-    except Exception as err:
-        logging.exception("")
+        with EDUGAIN_IDPS_FILE.open(encoding="utf-8") as f:
+            raw_idps = json.load(f)
+    except Exception:
+        logging.exception("Failed to load EduGAIN IDPs from %s", EDUGAIN_IDPS_FILE)
+        return 1
 
-# Closing db connection
-conn.close()
+    idp_by_entity = {
+        idp[0]["entityid"]: idp[0]
+        for idp in raw_idps
+        if idp and isinstance(idp[0], dict) and "entityid" in idp[0]
+    }
+
+    ###################################################################################
+    # 3. Inspect each unassigned user's token and lazily connect to the Galaxy API
+    #    only when at least one user matches an EduGAIN IDP.
+    gal = None
+    canadian_gid = None
+    edugain_gid = None
+
+    for user_email, token_extra_data in rows:
+        try:
+            # Parse JWT and check EduGAIN membership in memory before making any API call.
+            # Users who authenticated via non-EduGAIN providers (e.g. ORCID, Google, GitHub)
+            # may lack an `idp` claim or not appear in `idp_by_entity`; skip them cleanly.
+            id_token_infos = decode_id_token_payload(token_extra_data)
+            idp_entity_id = id_token_infos.get("idp")
+            if not idp_entity_id:
+                continue
+
+            user_session_idp = idp_by_entity.get(idp_entity_id)
+            if user_session_idp is None:
+                continue
+
+            # Lazily initialize the Galaxy API client and group IDs on first EduGAIN match.
+            if gal is None:
+                gal = bioblend.galaxy.GalaxyInstance(GALAXY_URL, GALAXY_ADMIN_API_KEY, verify=True)
+                canadian_gid, edugain_gid = ensure_allocation_groups(gal)
+
+            # Look up the user's encoded Galaxy API ID. Because Galaxy's `/api/users?f_email=...`
+            # performs a substring (`LIKE %...%`) search, filter for an exact email match.
+            candidates = gal.users.get_users(f_email=user_email)
+            matched_user = next(
+                (u for u in candidates if u.get("email", "").lower() == user_email.lower()),
+                None,
+            )
+            if matched_user is None:
+                logging.warning("No exact Galaxy user match found for %s", user_email)
+                continue
+
+            # Assign Canadian Access Federation (`CAF`) users to the Canadian group,
+            # and all other EduGAIN federation users to the EduGAIN group.
+            if user_session_idp.get("code") == "CAF":
+                target_gid = canadian_gid
+                group_label = "Canadian Users"
+            else:
+                target_gid = edugain_gid
+                group_label = "Edugain Users"
+
+            gal.groups.add_group_user(target_gid, matched_user["id"])
+            logging.info(
+                "User %s is added to the %s allocation group",
+                user_email.split("@")[0],
+                group_label,
+            )
+        except Exception:
+            # Isolate per-user errors so a single malformed record cannot block the batch.
+            logging.exception("Failed to process allocation group for user %s", user_email)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
