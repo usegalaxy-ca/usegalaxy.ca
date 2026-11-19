@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 0007
 
 exec {lockfd}>"$HOME/.set_new_users_allocation_groups.lock"
 flock -n "$lockfd" || exit 0
 
-"{{ galaxy_venv_dir }}/bin/python3" "{{ galaxy_server_dir }}/cron/set_new_users_allocation_groups.py" >> "{{ galaxy_log_dir }}/set_new_users_allocation_groups.log" 2>&1
-
+timeout --kill-after=30s 600s "{{ galaxy_venv_dir }}/bin/python3" "{{ galaxy_server_dir }}/cron/set_new_users_allocation_groups.py" >> "{{ galaxy_log_dir }}/set_new_users_allocation_groups.log" 2>&1
