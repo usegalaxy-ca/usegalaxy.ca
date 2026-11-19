@@ -53,6 +53,8 @@ GALAXY_DB_HOST = "{{ groups['dbservers'][0] }}"
 GALAXY_DB_NAME = "{{ galaxy_db_name }}"
 GALAXY_DB_USER = "{{ galaxy_user_name }}"
 GALAXY_DB_PASSWORD = "{{ galaxy_postgres_password }}"
+GALAXY_DB_CONNECT_TIMEOUT = 10
+GALAXY_DB_STATEMENT_TIMEOUT_MS = 15000
 
 GROUP_NAME_CANADIAN_USERS_ALLOCATION = "CanadianUsersAllocationGroup"
 GROUP_NAME_EDUGAIN_USERS_ALLOCATION = "EdugainUsersAllocationGroup"
@@ -153,25 +155,35 @@ def main():
     #    so compute a naive UTC cutoff and pass all parameters via `%s` placeholders.
     cutoff_utc = datetime.now(timezone.utc).replace(tzinfo=None) - LOOKBACK_WINDOW
 
-    with closing(
-        psycopg2.connect(
-            database=GALAXY_DB_NAME,
-            user=GALAXY_DB_USER,
-            password=GALAXY_DB_PASSWORD,
-            host=GALAXY_DB_HOST,
-            port="5432",
-        )
-    ) as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(
-                UNASSIGNED_USERS_QUERY,
-                (
-                    cutoff_utc,
-                    GROUP_NAME_CANADIAN_USERS_ALLOCATION,
-                    GROUP_NAME_EDUGAIN_USERS_ALLOCATION,
+    try:
+        with closing(
+            psycopg2.connect(
+                database=GALAXY_DB_NAME,
+                user=GALAXY_DB_USER,
+                password=GALAXY_DB_PASSWORD,
+                host=GALAXY_DB_HOST,
+                port=5432,
+                connect_timeout=GALAXY_DB_CONNECT_TIMEOUT,
+                options=(
+                    f"-c statement_timeout={GALAXY_DB_STATEMENT_TIMEOUT_MS} "
+                    "-c default_transaction_read_only=on"
                 ),
             )
-            rows = cursor.fetchall()
+        ) as conn:
+            conn.set_session(readonly=True, autocommit=True)
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    UNASSIGNED_USERS_QUERY,
+                    (
+                        cutoff_utc,
+                        GROUP_NAME_CANADIAN_USERS_ALLOCATION,
+                        GROUP_NAME_EDUGAIN_USERS_ALLOCATION,
+                    ),
+                )
+                rows = cursor.fetchall()
+    except psycopg2.Error as exc:
+        logging.error("PostgreSQL query failed: %s", _summarize_error(exc))
+        return 1
 
     # Fast path: exit before decoding tokens, reading `edugain_idps.json`, or calling
     # the Galaxy API when there are no unassigned users in the lookback window.
