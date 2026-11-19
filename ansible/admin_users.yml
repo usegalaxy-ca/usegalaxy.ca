@@ -1,0 +1,188 @@
+---
+# Personal admin accounts (ssh + passwordless sudo) on cluster hosts, so
+# admins don't have to share the cluster account. Opt-in: not part of all.yml.
+#
+# Users come from the Doppler secret ADMIN_USERS (kept out of the public repo),
+# a YAML or JSON list:
+#   - name: jdoe
+#     uid: 1100                 # fixed after creation; the play refuses a different uid for an existing account
+#     comment: "Jane Doe"       # optional
+#     ssh_keys:                 # key(s) used to ssh in from usegal-management
+#       - "ssh-ed25519 AAAA... jdoe-management"
+#     red_prod_prompt: true     # optional; red user@host in the prompt on prod-* hosts
+#
+# --check only works for users that already exist on the host; for a new user
+# it fails at the authorized keys task (the user isn't created in check mode).
+#
+# This playbook only adds and updates users. To remove one:
+#   1. drop them from ADMIN_USERS and rerun this playbook (cuts ssh access on
+#      hosts that restrict AllowUsers - all cloud-init nodes). This can't remove
+#      the last admin (the list must not be empty); do step 2 directly.
+#   2. delete the account by hand, from ansible/:
+#        doppler run -- .venv/bin/ansible all -m command -a 'id jdoe' -o
+#        doppler run -- .venv/bin/ansible all -b -m file -a 'path=/etc/sudoers.d/90-jdoe state=absent'
+#        doppler run -- .venv/bin/ansible all -b -m user -a 'name=jdoe state=absent remove=yes'
+- hosts: all
+  become: true
+  become_user: root
+  vars_files:
+    - group_vars/secret.yml
+  vars:
+    # Never manage these, whatever ADMIN_USERS says.
+    admin_users_reserved: "{{ ['root', 'ubuntu', 'galaxy', 'pgalaxy', 'postgres', 'slurm', 'munge', 'nobody', ansible_user, OS_USERNAME, CLUSTER_NAME] | select | list }}"
+  tasks:
+    # Without Doppler the list is empty and the AllowUsers drop-in below
+    # would be rewritten without any admin users, locking them all out.
+    - name: check ADMIN_USERS is set (run via doppler)
+      ansible.builtin.assert:
+        that: lookup('env', 'ADMIN_USERS') | length > 0
+        fail_msg: "ADMIN_USERS is not set - run with ./usegalaxy admin_users or doppler run -- ansible-playbook"
+      run_once: true
+
+    # Same lockout via a set-but-empty list ('[]').
+    - name: check ADMIN_USERS is a non-empty list with unique names and uids
+      ansible.builtin.assert:
+        that:
+          - admin_users is sequence and admin_users is not string and admin_users is not mapping
+          - admin_users | length > 0
+          - admin_users | map(attribute='name') | unique | length == admin_users | length
+          - admin_users | map(attribute='uid') | map('int') | unique | length == admin_users | length
+        fail_msg: "ADMIN_USERS must be a non-empty list, no duplicate names or uids"
+      run_once: true
+
+    # The name ends up in /etc/sudoers.d/90-<name>; sudo ignores files with
+    # a '.' or ending in '~', so restrict names to plain login names.
+    - name: validate ADMIN_USERS entries
+      ansible.builtin.assert:
+        that:
+          - item.name is string and item.name is match('^[a-z_][a-z0-9_-]{0,31}$')
+          - item.name not in admin_users_reserved
+          - item.uid | int >= 1000 and item.uid | int < 60000
+          - item.ssh_keys is sequence and item.ssh_keys is not string and item.ssh_keys | length > 0
+        fail_msg: "invalid ADMIN_USERS entry: {{ item.name | default('(no name)') }}"
+        quiet: true
+      loop: "{{ admin_users }}"
+      loop_control:
+        label: "{{ item.name | default('(no name)') }}"
+      run_once: true
+
+    # An entry naming an account that already exists for another reason (a
+    # service account, someone else's login) would otherwise get its keys
+    # replaced and sudo added. Accounts we manage have /etc/sudoers.d/90-<name>.
+    - name: look up existing accounts
+      ansible.builtin.getent:
+        database: passwd
+
+    - name: check sudoers files of existing accounts
+      ansible.builtin.stat:
+        path: "/etc/sudoers.d/90-{{ item.name }}"
+      loop: "{{ admin_users | selectattr('name', 'in', ansible_facts.getent_passwd) | list }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: admin_users_existing
+
+    - name: refuse to take over accounts not managed here, or change their uid
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - ansible_facts.getent_passwd[item.item.name][1] | int == item.item.uid | int
+        fail_msg: "{{ item.item.name }} already exists here (uid {{ ansible_facts.getent_passwd[item.item.name][1] }}) but has no /etc/sudoers.d/90-{{ item.item.name }} or a different uid - refusing to change it"
+        quiet: true
+      loop: "{{ admin_users_existing.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    - name: create admin users
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        uid: "{{ item.uid }}"
+        comment: "{{ item.comment | default(omit) }}"
+        shell: /bin/bash
+        groups: systemd-journal
+        append: true
+      loop: "{{ admin_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # Right after creating the user: the sudoers file marks the account as
+    # managed here, so a failure in a later task doesn't leave an account the
+    # takeover check above would refuse on the next run.
+    - name: passwordless sudo
+      ansible.builtin.copy:
+        dest: "/etc/sudoers.d/90-{{ item.name }}"
+        content: "{{ item.name }} ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
+        validate: visudo -cf %s
+      loop: "{{ admin_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: set authorized keys (exclusive)
+      ansible.posix.authorized_key:
+        user: "{{ item.name }}"
+        key: "{{ item.ssh_keys | join('\n') }}"
+        exclusive: true
+      loop: "{{ admin_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # Decided at login from the hostname, so the block is the same on every host.
+    - name: red user@host in the prompt on prod hosts (opt-in)
+      ansible.builtin.blockinfile:
+        path: "/home/{{ item.name }}/.bashrc"
+        create: true
+        owner: "{{ item.name }}"
+        group: "{{ item.name }}"
+        mode: "0644"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK: admin_users prod prompt"
+        block: |
+          case "$(hostname)" in
+              prod-*) PS1="${PS1//01;32m/01;31m}" ;;
+          esac
+        state: "{{ 'present' if item.red_prod_prompt | default(false) | bool else 'absent' }}"
+      loop: "{{ admin_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # cloud-init restricts ssh with `AllowUsers <cluster account>` in
+    # sshd_config. AllowUsers directives accumulate, so a drop-in extends
+    # that list. Only add it where AllowUsers is already in effect, so we
+    # never turn an unrestricted sshd into a restricted one. An existing
+    # drop-in is always kept up to date, even if AllowUsers went away elsewhere,
+    # so dropping a user from ADMIN_USERS still revokes their ssh access.
+    # `sshd -T` prints the effective config (sshd_config plus all drop-ins), and
+    # fails if the current config is invalid, so we never add to a broken one.
+    - name: read effective sshd config
+      ansible.builtin.command: sshd -T
+      register: sshd_effective
+      changed_when: false
+      check_mode: false  # read-only; otherwise --check skips it and previews the wrong thing
+
+    - name: check for an existing admin users drop-in
+      ansible.builtin.stat:
+        path: /etc/ssh/sshd_config.d/90-admin-users.conf
+      register: sshd_admin_dropin
+
+    # Validates the drop-in on its own; the full config is checked on reload
+    # (Ubuntu's ssh.service runs `sshd -t` before HUP and keeps the old config on error).
+    - name: allow admin users to ssh in
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/90-admin-users.conf
+        content: |
+          # Managed by Ansible (admin_users.yml)
+          AllowUsers {{ ([ansible_user] + admin_users | map(attribute='name') | list) | join(' ') }}
+        owner: root
+        group: root
+        mode: "0644"
+        validate: sshd -t -f %s
+      when: sshd_effective.stdout_lines | select('match', '(?i)allowusers ') | list | length > 0
+            or sshd_admin_dropin.stat.exists
+      notify: reload ssh
+
+  handlers:
+    - name: reload ssh
+      ansible.builtin.service:
+        name: ssh
+        state: reloaded
