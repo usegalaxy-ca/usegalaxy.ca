@@ -74,14 +74,14 @@ SELECT DISTINCT ON (u.id)
 FROM galaxy_user u
 JOIN oidc_user_authnz_tokens t ON u.id = t.user_id
 WHERE u.create_time > %s
-  AND NOT u.deleted
+  AND u.deleted IS NOT TRUE
   AND t.extra_data IS NOT NULL
   AND NOT EXISTS (
       SELECT 1
       FROM user_group_association uga
       JOIN galaxy_group g ON g.id = uga.group_id
       WHERE uga.user_id = u.id
-        AND NOT g.deleted
+        AND g.deleted IS NOT TRUE
         AND g.name IN (%s, %s)
   )
 ORDER BY u.id, t.id DESC
@@ -98,32 +98,38 @@ def decode_id_token_payload(extra_data):
     """
     if extra_data is None:
         return {}
-    if isinstance(extra_data, memoryview):
-        data_dict = json.loads(extra_data.tobytes().decode("utf-8"))
-    elif isinstance(extra_data, bytes):
-        data_dict = json.loads(extra_data.decode("utf-8"))
-    elif isinstance(extra_data, str):
-        data_dict = json.loads(extra_data)
-    elif isinstance(extra_data, dict):
-        data_dict = extra_data
-    else:
+    try:
+        if isinstance(extra_data, (bytes, bytearray, memoryview)):
+            data_dict = json.loads(bytes(extra_data).decode("utf-8"))
+        elif isinstance(extra_data, str):
+            data_dict = json.loads(extra_data)
+        elif isinstance(extra_data, dict):
+            data_dict = extra_data
+        else:
+            return {}
+    except (UnicodeDecodeError, json.JSONDecodeError):
         return {}
 
     if not isinstance(data_dict, dict):
         return {}
 
     id_token = data_dict.get("id_token")
-    if not isinstance(id_token, str) or "." not in id_token:
+    if not isinstance(id_token, str):
         return {}
 
     parts = id_token.split(".")
-    if len(parts) < 2:
+    if len(parts) < 2 or not parts[1]:
         return {}
 
     # JWT segments omit Base64 '=' padding and use URL-safe alphabet ('-' and '_').
     payload_b64 = parts[1]
+    if len(payload_b64) % 4 == 1:
+        return {}
     padded = payload_b64 + "=" * (-len(payload_b64) % 4)
-    payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
+    try:
+        payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        return {}
     return payload if isinstance(payload, dict) else {}
 
 
