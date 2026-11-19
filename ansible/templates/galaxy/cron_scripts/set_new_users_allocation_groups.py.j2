@@ -4,15 +4,17 @@ Workflow:
 1. Query PostgreSQL for active users created within the last 7 days who have an OIDC
    token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
    `CanadianUsersAllocationGroup` or `EdugainUsersAllocationGroup`.
-2. Exit immediately (without reading `edugain_idps.json` or calling the Galaxy API)
-   if no unassigned users are found.
-3. Load and index `edugain_idps.json` by `entityid` for O(1) lookup.
-4. For each unassigned user, Base64URL-decode the JWT `id_token` payload and match its
-   `idp` claim against the EduGAIN registry:
+2. Base64URL-decode each user's JWT `id_token` payload in memory and extract its `idp`
+   claim; exit immediately (without reading `edugain_idps.json` or calling the Galaxy
+   API) if no users have an `idp` claim.
+3. Load and index `edugain_idps.json` by `entityid` for O(1) lookup, and match users
+   against the EduGAIN registry:
    - `code == "CAF"` (Canadian Access Federation) -> `CanadianUsersAllocationGroup`
    - Any other EduGAIN IDP -> `EdugainUsersAllocationGroup`
-   - Non-EduGAIN / missing `idp` -> skipped (keeps default Galaxy allocation).
-5. Lazily initialize the Galaxy BioBlend client and assign matched users via the API.
+   - Non-EduGAIN -> skipped (keeps default Galaxy allocation).
+   Exit immediately without calling the Galaxy API if no users match.
+4. Initialize the Galaxy BioBlend client and allocation groups once (failing fast if
+   Galaxy is unreachable or in maintenance mode), then assign matched users via the API.
 """
 
 import base64
@@ -25,11 +27,16 @@ import sys
 
 import bioblend.galaxy
 import psycopg2
+import requests
 
 logging.basicConfig(
     format="%(asctime)s:%(levelname)s:%(message)s",
     level=logging.INFO,
+    force=True,
 )
+# BioBlend logs raw multi-line HTTP/HTML responses via its own logger before raising
+# ConnectionError; silence it so errors are logged once in summarized form below.
+logging.getLogger("bioblend").setLevel(logging.CRITICAL)
 
 
 ###################################################################################
@@ -40,6 +47,7 @@ EDUGAIN_IDPS_FILE = Path("{{ galaxy_root }}/var/usegalaxy.ca/edugain_idps.json")
 
 GALAXY_URL = "https://{{ usegalaxy_domain }}"
 GALAXY_ADMIN_API_KEY = "{{ GALAXY_ADMIN_API_KEY }}"
+GALAXY_API_TIMEOUT = 30
 
 GALAXY_DB_HOST = "{{ groups['dbservers'][0] }}"
 GALAXY_DB_NAME = "{{ galaxy_db_name }}"
@@ -117,6 +125,12 @@ def decode_id_token_payload(extra_data):
     return payload if isinstance(payload, dict) else {}
 
 
+def _summarize_error(exc, max_len=200):
+    """Collapse whitespace and truncate verbose HTTP/HTML error bodies for compact logging."""
+    msg = " ".join(str(exc).split())
+    return f"{msg[:max_len]}..." if len(msg) > max_len else msg
+
+
 def ensure_allocation_groups(gal):
     """Return Galaxy API IDs for the Canadian and EduGAIN allocation groups, creating them if absent."""
     groups_by_name = {group["name"]: group["id"] for group in gal.groups.get_groups()}
@@ -159,13 +173,31 @@ def main():
             )
             rows = cursor.fetchall()
 
-    # Fast path: exit before reading `edugain_idps.json` or calling the Galaxy API
-    # when there are no unassigned users in the lookback window.
+    # Fast path: exit before decoding tokens, reading `edugain_idps.json`, or calling
+    # the Galaxy API when there are no unassigned users in the lookback window.
     if not rows:
         return 0
 
     ###################################################################################
-    # 2. Load EduGAIN IDPs JSON file and pre-index by `entityid` for O(1) lookup.
+    # 2. Decode JWT payloads in memory before touching NFS `edugain_idps.json` or the
+    #    Galaxy API. Users lacking an `idp` claim are skipped cleanly.
+    users_with_idp = []
+    for user_email, token_extra_data in rows:
+        try:
+            id_token_infos = decode_id_token_payload(token_extra_data)
+        except Exception:
+            logging.exception("Failed to decode OIDC token for user %s", user_email.split("@")[0])
+            continue
+        idp_entity_id = id_token_infos.get("idp")
+        if idp_entity_id:
+            users_with_idp.append((user_email, idp_entity_id))
+
+    if not users_with_idp:
+        return 0
+
+    ###################################################################################
+    # 3. Load EduGAIN IDPs JSON file, pre-index by `entityid` for O(1) lookup, and
+    #    filter to users belonging to an EduGAIN IDP before calling the Galaxy API.
     #    For details on EduGAIN IDPs info definition: https://technical.edugain.org/api.php
     try:
         with EDUGAIN_IDPS_FILE.open(encoding="utf-8") as f:
@@ -174,47 +206,55 @@ def main():
         logging.exception("Failed to load EduGAIN IDPs from %s", EDUGAIN_IDPS_FILE)
         return 1
 
+    if not isinstance(raw_idps, list):
+        logging.error("Unexpected EduGAIN IDPs format in %s: expected list", EDUGAIN_IDPS_FILE)
+        return 1
+
     idp_by_entity = {
         idp[0]["entityid"]: idp[0]
         for idp in raw_idps
-        if idp and isinstance(idp[0], dict) and "entityid" in idp[0]
+        if isinstance(idp, list) and idp and isinstance(idp[0], dict) and "entityid" in idp[0]
     }
+    if not idp_by_entity:
+        logging.error("EduGAIN IDPs file %s contained no valid IDP entries", EDUGAIN_IDPS_FILE)
+        return 1
+
+    # Users who authenticated via non-EduGAIN providers (e.g. ORCID, Google, GitHub)
+    # will not appear in `idp_by_entity`; skip them cleanly.
+    assignments = [
+        (user_email, idp_by_entity[idp_entity_id])
+        for user_email, idp_entity_id in users_with_idp
+        if idp_entity_id in idp_by_entity
+    ]
+    if not assignments:
+        return 0
 
     ###################################################################################
-    # 3. Inspect each unassigned user's token and lazily connect to the Galaxy API
-    #    only when at least one user matches an EduGAIN IDP.
-    gal = None
-    canadian_gid = None
-    edugain_gid = None
+    # 4. Initialize the Galaxy API client and allocation group IDs once; fail fast if
+    #    Galaxy is unavailable (maintenance mode, restart, or network outage).
+    gal = bioblend.galaxy.GalaxyInstance(GALAXY_URL, GALAXY_ADMIN_API_KEY, verify=True)
+    gal.timeout = GALAXY_API_TIMEOUT
+    gal.max_get_attempts = 2
+    gal.get_retry_delay = 2
 
-    for user_email, token_extra_data in rows:
+    try:
+        canadian_gid, edugain_gid = ensure_allocation_groups(gal)
+    except (bioblend.ConnectionError, requests.RequestException) as exc:
+        logging.warning("Galaxy API unavailable; aborting run: %s", _summarize_error(exc))
+        return 1
+
+    had_errors = False
+    for user_email, user_session_idp in assignments:
         try:
-            # Parse JWT and check EduGAIN membership in memory before making any API call.
-            # Users who authenticated via non-EduGAIN providers (e.g. ORCID, Google, GitHub)
-            # may lack an `idp` claim or not appear in `idp_by_entity`; skip them cleanly.
-            id_token_infos = decode_id_token_payload(token_extra_data)
-            idp_entity_id = id_token_infos.get("idp")
-            if not idp_entity_id:
-                continue
-
-            user_session_idp = idp_by_entity.get(idp_entity_id)
-            if user_session_idp is None:
-                continue
-
-            # Lazily initialize the Galaxy API client and group IDs on first EduGAIN match.
-            if gal is None:
-                gal = bioblend.galaxy.GalaxyInstance(GALAXY_URL, GALAXY_ADMIN_API_KEY, verify=True)
-                canadian_gid, edugain_gid = ensure_allocation_groups(gal)
-
             # Look up the user's encoded Galaxy API ID. Because Galaxy's `/api/users?f_email=...`
             # performs a substring (`LIKE %...%`) search, filter for an exact email match.
             candidates = gal.users.get_users(f_email=user_email)
             matched_user = next(
-                (u for u in candidates if u.get("email", "").lower() == user_email.lower()),
+                (u for u in candidates if (u.get("email") or "").lower() == user_email.lower()),
                 None,
             )
             if matched_user is None:
-                logging.warning("No exact Galaxy user match found for %s", user_email)
+                logging.warning("No exact Galaxy user match found for %s", user_email.split("@")[0])
                 continue
 
             # Assign Canadian Access Federation (`CAF`) users to the Canadian group,
@@ -232,11 +272,33 @@ def main():
                 user_email.split("@")[0],
                 group_label,
             )
+        except requests.RequestException as exc:
+            logging.warning(
+                "Galaxy API unreachable; aborting remaining users: %s",
+                _summarize_error(exc),
+            )
+            return 1
+        except bioblend.ConnectionError as exc:
+            status_code = getattr(exc, "status_code", None)
+            if status_code is None or status_code in (502, 503, 504):
+                logging.warning(
+                    "Galaxy API unavailable (status=%s); aborting remaining users: %s",
+                    status_code,
+                    _summarize_error(exc),
+                )
+                return 1
+            had_errors = True
+            logging.error(
+                "Failed to assign allocation group for user %s: %s",
+                user_email.split("@")[0],
+                _summarize_error(exc),
+            )
         except Exception:
-            # Isolate per-user errors so a single malformed record cannot block the batch.
-            logging.exception("Failed to process allocation group for user %s", user_email)
+            # Isolate unexpected per-user errors so a single record cannot block the batch.
+            had_errors = True
+            logging.exception("Failed to process allocation group for user %s", user_email.split("@")[0])
 
-    return 0
+    return 1 if had_errors else 0
 
 
 if __name__ == "__main__":
