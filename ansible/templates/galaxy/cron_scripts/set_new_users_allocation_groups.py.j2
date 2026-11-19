@@ -4,9 +4,10 @@ Workflow:
 1. Query PostgreSQL for active users created within the last 7 days who have an OIDC
    token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
    `CanadianUsersAllocationGroup` or `EdugainUsersAllocationGroup`.
-2. Base64URL-decode each user's JWT `id_token` payload in memory and extract its `idp`
-   claim; exit immediately (without reading `edugain_idps.json` or calling the Galaxy
-   API) if no users have an `idp` claim.
+2. Base64URL-decode each user's JWT `id_token` payload in memory, verify that its `iss`
+   claim matches `https://cilogon.org`, and extract its `idp` claim; exit immediately
+   (without reading `edugain_idps.json` or calling the Galaxy API) if no users have an
+   `idp` claim.
 3. Load and index `edugain_idps.json` by `entityid` for O(1) lookup, and match users
    against the EduGAIN registry:
    - `code == "CAF"` (Canadian Access Federation) -> `CanadianUsersAllocationGroup`
@@ -58,6 +59,7 @@ GALAXY_DB_STATEMENT_TIMEOUT_MS = 15000
 
 GROUP_NAME_CANADIAN_USERS_ALLOCATION = "CanadianUsersAllocationGroup"
 GROUP_NAME_EDUGAIN_USERS_ALLOCATION = "EdugainUsersAllocationGroup"
+CILOGON_ISSUER = "https://cilogon.org"
 
 # 7-day lookback acts as a recovery safety net if cron, the Galaxy API, or the
 # EduGAIN IDP file is temporarily unavailable. Already-assigned users are filtered
@@ -198,7 +200,7 @@ def main():
 
     ###################################################################################
     # 2. Decode JWT payloads in memory before touching NFS `edugain_idps.json` or the
-    #    Galaxy API. Users lacking an `idp` claim are skipped cleanly.
+    #    Galaxy API. Skip non-CILogon tokens (with a warning) and users lacking an `idp` claim.
     users_with_idp = []
     for user_email, token_extra_data in rows:
         try:
@@ -206,8 +208,18 @@ def main():
         except Exception:
             logging.exception("Failed to decode OIDC token for user %s", user_email.split("@")[0])
             continue
+        if not id_token_infos:
+            continue
+        issuer = id_token_infos.get("iss")
+        if issuer != CILOGON_ISSUER:
+            logging.warning(
+                "Skipping user %s with unexpected OIDC issuer %r",
+                user_email.split("@")[0],
+                issuer,
+            )
+            continue
         idp_entity_id = id_token_infos.get("idp")
-        if idp_entity_id:
+        if isinstance(idp_entity_id, str) and idp_entity_id:
             users_with_idp.append((user_email, idp_entity_id))
 
     if not users_with_idp:
