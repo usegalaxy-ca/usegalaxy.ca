@@ -1,0 +1,57 @@
+---
+# TIaaS setup
+tiaas_dir: /opt/tiaas
+tiaas_user: tiaas
+tiaas_group: tiaas
+tiaas_admin_user: admin
+tiaas_admin_pass: "{{ TIAAS_ADMIN_PASSWORD }}"
+tiaas_secret_key: "{{ TIAAS_SECRET_KEY }}"
+tiaas_galaxy_stylesheet: "{{ galaxy_server_dir }}/static/dist/base.css"
+
+# Galaxy Core DB Access (PostgreSQL) - same host/port/db as galaxy_config.galaxy.database_connection
+tiaas_galaxy_db_host: "{{ groups['dbservers'][0] }}"
+tiaas_galaxy_db_port: 5432
+tiaas_galaxy_db_name: "{{ galaxy_db_name }}"
+tiaas_galaxy_db_user: tiaas
+tiaas_galaxy_db_pass: "{{ TIAAS_POSTGRES_PASSWORD }}"
+
+# TIaaS Internal DB (PostgreSQL on dbservers)
+tiaas_tiaas_use_sqlite: false
+tiaas_tiaas_db_host: "{{ tiaas_galaxy_db_host }}"
+tiaas_tiaas_db_port: "{{ tiaas_galaxy_db_port }}"
+tiaas_tiaas_db_name: tiaas
+tiaas_tiaas_db_user: "{{ tiaas_galaxy_db_user }}"
+tiaas_tiaas_db_pass: "{{ tiaas_galaxy_db_pass }}"
+
+# Decodes Galaxy encoded IDs in status URLs
+tiaas_galaxy_idsecret: "{{ vault_id_secret }}"
+
+# Basic metadata
+tiaas_info:
+  owner: "UseGalaxy.ca"
+  owner_email: "support@genap.ca"
+  owner_site: "https://{{ usegalaxy_domain }}/"
+  domain: "{{ usegalaxy_domain }}"
+
+tiaas_send_email_to: "{{ tiaas_info.owner_email }}"
+tiaas_send_email_from: "UseGalaxy.ca <no-reply@{{ usegalaxy_domain }}>"
+tiaas_send_email_to_requester: false
+
+# Email and Django settings appended to config/local_settings.py
+tiaas_other_config: |
+  EMAIL_HOST = "mail.smtp2go.com"
+  EMAIL_PORT = 587
+  EMAIL_HOST_USER = "{{ SMTP2GO_USERNAME }}"
+  EMAIL_HOST_PASSWORD = "{{ SMTP2GO_PASSWORD }}"
+  EMAIL_USE_TLS = True
+  EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+  EMAIL_TIMEOUT = 60
+
+# Automated training role expiry cron job
+tiaas_disassociate_training_roles:
+  hour: 0
+  minute: 0
+
+# UI Display settings
+tiaas_show_advertising: false
+tiaas_retain_contact_require_consent: false
