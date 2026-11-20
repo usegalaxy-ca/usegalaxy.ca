@@ -5,12 +5,14 @@ Workflow:
    token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
    `CanadianUsersAllocationGroup` or `EdugainUsersAllocationGroup`.
 2. Base64URL-decode each user's JWT `id_token` payload in memory, verify that its `iss`
-   claim matches `https://cilogon.org`, and extract its `idp` claim; exit immediately
-   (without reading `edugain_idps.json` or calling the Galaxy API) if no users have an
-   `idp` claim.
-3. Load and index `edugain_idps.json` by `entityid` for O(1) lookup, and match users
-   against the EduGAIN registry:
-   - `code == "CAF"` (Canadian Access Federation) -> `CanadianUsersAllocationGroup`
+   claim matches `https://cilogon.org`, and extract its `idp` and `email` claims; exit
+   immediately (without reading `edugain_idps.json` or calling the Galaxy API) if no
+   users have an `idp` claim.
+3. Load `edugain_idps.json`, index entries by `entityid` (O(1) lookup) and CAF IdP
+   domain `scopes`, and match users:
+   - EduGAIN `code == "CAF"` (Canadian Access Federation) -> `CanadianUsersAllocationGroup`
+   - Microsoft CILogon IdP whose JWT `email` domain (or parent domain, e.g.
+     `mail.utoronto.ca` -> `utoronto.ca`) matches a CAF IdP scope -> `CanadianUsersAllocationGroup`
    - Any other EduGAIN IDP -> `EdugainUsersAllocationGroup`
    - Non-EduGAIN -> skipped (keeps default Galaxy allocation).
    Exit immediately without calling the Galaxy API if no users match.
@@ -24,6 +26,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import logging
 from pathlib import Path
+import re
 import sys
 
 import bioblend.galaxy
@@ -60,6 +63,17 @@ GALAXY_DB_STATEMENT_TIMEOUT_MS = 15000
 GROUP_NAME_CANADIAN_USERS_ALLOCATION = "CanadianUsersAllocationGroup"
 GROUP_NAME_EDUGAIN_USERS_ALLOCATION = "EdugainUsersAllocationGroup"
 CILOGON_ISSUER = "https://cilogon.org"
+# Microsoft IdP URIs emitted by CILogon (include both schemes in case CILogon migrates to https).
+MICROSOFT_IDP_ENTITY_IDS = frozenset(
+    {
+        "http://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    }
+)
+# EduGAIN `roles` bitmask bit for IDPSSODescriptor (catches both 4=IdP and 5=IdP+AA).
+EDUGAIN_IDP_ROLE_BIT = 4
+# Accept only plain multi-label DNS domains (rejects regex scopes and bare TLDs).
+VALID_SCOPE_RE = re.compile(r"^[a-z0-9-]+(?:\.[a-z0-9-]+)+$")
 
 # 7-day lookback acts as a recovery safety net if cron, the Galaxy API, or the
 # EduGAIN IDP file is temporarily unavailable. Already-assigned users are filtered
@@ -141,6 +155,53 @@ def _summarize_error(exc, max_len=200):
     return f"{msg[:max_len]}..." if len(msg) > max_len else msg
 
 
+def build_caf_scopes(raw_idps):
+    """Extract normalized CAF IdP domain scopes from EduGAIN `list_entities` JSON.
+
+    EduGAIN encodes entity roles as a bitmask (`roles & 4` = IDPSSODescriptor, including
+    `5` = IdP + AttributeAuthorityDescriptor) and joins multiple SAML scopes with `==`.
+    """
+    caf_scopes = set()
+    for entry in raw_idps:
+        if not (isinstance(entry, list) and entry and isinstance(entry[0], dict)):
+            continue
+        idp = entry[0]
+        if idp.get("code") != "CAF":
+            continue
+        try:
+            roles = int(idp.get("roles") or 0)
+        except (TypeError, ValueError):
+            continue
+        if not (roles & EDUGAIN_IDP_ROLE_BIT):
+            continue
+        scopes_str = idp.get("scopes")
+        if not isinstance(scopes_str, str) or not scopes_str:
+            continue
+        for raw_scope in re.split(r"==|\s+", scopes_str):
+            scope = raw_scope.strip().lower().rstrip(".")
+            if VALID_SCOPE_RE.match(scope):
+                caf_scopes.add(scope)
+    return caf_scopes
+
+
+def matches_domain_scope(email, scopes):
+    """Return True if `email`'s domain or a parent domain (at least 2 labels) is in `scopes`.
+
+    Example: `user@mail.utoronto.ca` checks `mail.utoronto.ca`, then `utoronto.ca`,
+    stopping before the bare TLD `ca`.
+    """
+    if not isinstance(email, str) or "@" not in email:
+        return False
+    domain = email.rsplit("@", 1)[1].strip().lower().rstrip(".")
+    if not VALID_SCOPE_RE.match(domain):
+        return False
+    labels = domain.split(".")
+    for i in range(len(labels) - 1):
+        if ".".join(labels[i:]) in scopes:
+            return True
+    return False
+
+
 def ensure_allocation_groups(gal):
     """Return Galaxy API IDs for the Canadian and EduGAIN allocation groups, creating them if absent."""
     groups_by_name = {group["name"]: group["id"] for group in gal.groups.get_groups()}
@@ -220,14 +281,14 @@ def main():
             continue
         idp_entity_id = id_token_infos.get("idp")
         if isinstance(idp_entity_id, str) and idp_entity_id:
-            users_with_idp.append((user_email, idp_entity_id))
+            users_with_idp.append((user_email, idp_entity_id, id_token_infos.get("email")))
 
     if not users_with_idp:
         return 0
 
     ###################################################################################
-    # 3. Load EduGAIN IDPs JSON file, pre-index by `entityid` for O(1) lookup, and
-    #    filter to users belonging to an EduGAIN IDP before calling the Galaxy API.
+    # 3. Load EduGAIN IDPs JSON file, pre-index by `entityid` and CAF IdP `scopes` for
+    #    O(1) lookup, and filter to matched users before calling the Galaxy API.
     #    For details on EduGAIN IDPs info definition: https://technical.edugain.org/api.php
     try:
         with EDUGAIN_IDPS_FILE.open(encoding="utf-8") as f:
@@ -249,13 +310,31 @@ def main():
         logging.error("EduGAIN IDPs file %s contained no valid IDP entries", EDUGAIN_IDPS_FILE)
         return 1
 
-    # Users who authenticated via non-EduGAIN providers (e.g. ORCID, Google, GitHub)
-    # will not appear in `idp_by_entity`; skip them cleanly.
-    assignments = [
-        (user_email, idp_by_entity[idp_entity_id])
-        for user_email, idp_entity_id in users_with_idp
-        if idp_entity_id in idp_by_entity
-    ]
+    caf_scopes = build_caf_scopes(raw_idps)
+    if not caf_scopes:
+        logging.warning("No valid CAF scopes found in %s; Microsoft fallback disabled", EDUGAIN_IDPS_FILE)
+
+    # Match users by EduGAIN entityID first. For Microsoft CILogon logins (not in
+    # EduGAIN), fall back to matching the JWT-asserted email domain against CAF IdP
+    # scopes (e.g. `mail.utoronto.ca` -> `utoronto.ca`, `courrier.uqam.ca` -> `uqam.ca`).
+    # Other non-EduGAIN providers (e.g. ORCID, Google, GitHub) are skipped cleanly.
+    assignments = []
+    for user_email, idp_entity_id, token_email in users_with_idp:
+        idp_entry = idp_by_entity.get(idp_entity_id)
+        if idp_entry is not None:
+            if idp_entry.get("code") == "CAF":
+                assignments.append(
+                    (user_email, GROUP_NAME_CANADIAN_USERS_ALLOCATION, "Canadian Users", "EduGAIN CAF IdP")
+                )
+            else:
+                assignments.append(
+                    (user_email, GROUP_NAME_EDUGAIN_USERS_ALLOCATION, "Edugain Users", "EduGAIN IdP")
+                )
+        elif idp_entity_id in MICROSOFT_IDP_ENTITY_IDS and matches_domain_scope(token_email, caf_scopes):
+            assignments.append(
+                (user_email, GROUP_NAME_CANADIAN_USERS_ALLOCATION, "Canadian Users", "Microsoft IdP + CAF email scope")
+            )
+
     if not assignments:
         return 0
 
@@ -273,8 +352,13 @@ def main():
         logging.warning("Galaxy API unavailable; aborting run: %s", _summarize_error(exc))
         return 1
 
+    group_ids = {
+        GROUP_NAME_CANADIAN_USERS_ALLOCATION: canadian_gid,
+        GROUP_NAME_EDUGAIN_USERS_ALLOCATION: edugain_gid,
+    }
+
     had_errors = False
-    for user_email, user_session_idp in assignments:
+    for user_email, target_group_name, group_label, match_source in assignments:
         try:
             # Look up the user's encoded Galaxy API ID. Because Galaxy's `/api/users?f_email=...`
             # performs a substring (`LIKE %...%`) search, filter for an exact email match.
@@ -287,20 +371,12 @@ def main():
                 logging.warning("No exact Galaxy user match found for %s", user_email.split("@")[0])
                 continue
 
-            # Assign Canadian Access Federation (`CAF`) users to the Canadian group,
-            # and all other EduGAIN federation users to the EduGAIN group.
-            if user_session_idp.get("code") == "CAF":
-                target_gid = canadian_gid
-                group_label = "Canadian Users"
-            else:
-                target_gid = edugain_gid
-                group_label = "Edugain Users"
-
-            gal.groups.add_group_user(target_gid, matched_user["id"])
+            gal.groups.add_group_user(group_ids[target_group_name], matched_user["id"])
             logging.info(
-                "User %s is added to the %s allocation group",
+                "User %s is added to the %s allocation group (%s)",
                 user_email.split("@")[0],
                 group_label,
+                match_source,
             )
         except requests.RequestException as exc:
             logging.warning(
