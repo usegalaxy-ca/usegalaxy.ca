@@ -404,6 +404,9 @@ def main():
     # 2. For Microsoft CILogon logins (whose `idp` is Microsoft's OAuth URI, not in EduGAIN),
     #    fall back to matching the JWT-asserted `email` domain against CAF IdP `scopes`
     #    (e.g. `mail.utoronto.ca` -> `utoronto.ca`, `courrier.uqam.ca` -> `uqam.ca`).
+    #    Note: CILogon does not emit `email_verified` or Entra `xms_edov` claims for
+    #    Microsoft logins. Trusting `id_token["email"]` here is an accepted trade-off
+    #    since this script only assigns the Canadian quota group (not data access).
     # Non-matching logins (Google, ORCID, GitHub, consumer Microsoft accounts like
     # `@hotmail.ca`/`@outlook.ca`) stay silent on purpose: because unassigned users remain
     # in the 7-day SQL window for 336 runs (48 runs/day), logging them would flood the log.
