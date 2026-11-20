@@ -1,23 +1,35 @@
 """Assign newly registered Galaxy OIDC users to allocation groups based on EduGAIN IDP.
 
+Allocation examples:
+- `alice@usherbrooke.ca` via Université de Sherbrooke (CAF SAML IdP in EduGAIN):
+  -> `CanadianUsersAllocationGroup` (matched by `entityid`, `code == "CAF"`).
+- `bob@mail.utoronto.ca` or `carol@courrier.uqam.ca` via Microsoft on CILogon:
+  -> `CanadianUsersAllocationGroup` (Microsoft IdP fallback matches parent domain
+     `utoronto.ca` / `uqam.ca` against CAF IdP `scopes` in `edugain_idps.json`).
+- `dave@stanford.edu` via Stanford University (InCommon SAML IdP in EduGAIN):
+  -> `EdugainUsersAllocationGroup` (matched by `entityid`, `code != "CAF"`).
+- `eve@hotmail.ca` via Microsoft, `frank@gmail.com` via Google, or ORCID/GitHub logins:
+  -> skipped silently (keeps Galaxy's default allocation; not added to either group).
+
 Workflow:
-1. Query PostgreSQL for active users created within the last 7 days who have an OIDC
-   token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
+1. Query PostgreSQL (read-only) for active users created within the last 7 days who have
+   an OIDC token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
    `CanadianUsersAllocationGroup` or `EdugainUsersAllocationGroup`.
 2. Base64URL-decode each user's JWT `id_token` payload in memory, verify that its `iss`
    claim matches `https://cilogon.org`, and extract its `idp` and `email` claims; exit
    immediately (without reading `edugain_idps.json` or calling the Galaxy API) if no
-   users have an `idp` claim.
+   users have a valid `idp` claim.
 3. Load `edugain_idps.json`, index entries by `entityid` (O(1) lookup) and CAF IdP
-   domain `scopes`, and match users:
-   - EduGAIN `code == "CAF"` (Canadian Access Federation) -> `CanadianUsersAllocationGroup`
-   - Microsoft CILogon IdP whose JWT `email` domain (or parent domain, e.g.
-     `mail.utoronto.ca` -> `utoronto.ca`) matches a CAF IdP scope -> `CanadianUsersAllocationGroup`
-   - Any other EduGAIN IDP -> `EdugainUsersAllocationGroup`
-   - Non-EduGAIN -> skipped (keeps default Galaxy allocation).
-   Exit immediately without calling the Galaxy API if no users match.
+   domain `scopes`, and classify users into target allocation groups. Exit immediately
+   without calling the Galaxy API if no users match.
 4. Initialize the Galaxy BioBlend client and allocation groups once (failing fast if
-   Galaxy is unreachable or in maintenance mode), then assign matched users via the API.
+   Galaxy is unreachable, unauthorized, or in maintenance mode), then assign matched
+   users via the API.
+
+Exit codes:
+- `0`: Run completed cleanly (including fast-path exits when no users need assignment).
+- `1`: PostgreSQL failure, invalid/missing `edugain_idps.json`, Galaxy API outage or
+       auth failure, or one or more per-user assignment errors.
 """
 
 import base64
@@ -47,32 +59,47 @@ logging.getLogger("bioblend").setLevel(logging.CRITICAL)
 # Configuration (templated by Ansible)
 ###################################################################################
 
+# Local NFS copy of EduGAIN's `action=list_entities` JSON feed, refreshed by
+# `/opt/fetch-edugain-idps.bash`.
 EDUGAIN_IDPS_FILE = Path("{{ galaxy_root }}/var/usegalaxy.ca/edugain_idps.json")
 
+# Galaxy REST API settings (only contacted in Stage 4 when matched users exist).
 GALAXY_URL = "https://{{ usegalaxy_domain }}"
 GALAXY_ADMIN_API_KEY = "{{ GALAXY_ADMIN_API_KEY }}"
-GALAXY_API_TIMEOUT = 30
+GALAXY_API_TIMEOUT = 30  # Per-request HTTP timeout in seconds.
 
+# Galaxy PostgreSQL settings (always opened with read-only session + statement timeout).
 GALAXY_DB_HOST = "{{ groups['dbservers'][0] }}"
 GALAXY_DB_NAME = "{{ galaxy_db_name }}"
 GALAXY_DB_USER = "{{ galaxy_user_name }}"
 GALAXY_DB_PASSWORD = "{{ galaxy_postgres_password }}"
-GALAXY_DB_CONNECT_TIMEOUT = 10
-GALAXY_DB_STATEMENT_TIMEOUT_MS = 15000
+GALAXY_DB_CONNECT_TIMEOUT = 10        # TCP/auth connection timeout in seconds.
+GALAXY_DB_STATEMENT_TIMEOUT_MS = 15000  # Server-side query timeout in milliseconds.
 
+# Galaxy group names that control Canadian vs. international EduGAIN quota allocations.
 GROUP_NAME_CANADIAN_USERS_ALLOCATION = "CanadianUsersAllocationGroup"
 GROUP_NAME_EDUGAIN_USERS_ALLOCATION = "EdugainUsersAllocationGroup"
+
+# Expected OIDC JWT `iss` (issuer) claim for CILogon tokens; guards against tokens
+# minted by any other OIDC provider if more providers are enabled in Galaxy later.
 CILOGON_ISSUER = "https://cilogon.org"
-# Microsoft IdP URIs emitted by CILogon (include both schemes in case CILogon migrates to https).
+
+# Microsoft IdP URIs emitted by CILogon in `id_token["idp"]`. Production currently emits
+# the `http://` form; keep `https://` as well in case CILogon migrates schemes later.
 MICROSOFT_IDP_ENTITY_IDS = frozenset(
     {
         "http://login.microsoftonline.com/common/oauth2/v2.0/authorize",
         "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
     }
 )
-# EduGAIN `roles` bitmask bit for IDPSSODescriptor (catches both 4=IdP and 5=IdP+AA).
+
+# EduGAIN `roles` bitmask: 4 = IDPSSODescriptor, 2 = SPSSODescriptor,
+# 1 = AttributeAuthorityDescriptor. Checking `roles & 4` captures both pure IdPs (`4`)
+# and IdP+AA entities (`5`, e.g. U of T, UdeS, UWO, SFU, ULaval, UdeM) while skipping SPs.
 EDUGAIN_IDP_ROLE_BIT = 4
-# Accept only plain multi-label DNS domains (rejects regex scopes and bare TLDs).
+
+# Strict multi-label DNS domain regex (requires at least two dot-separated labels).
+# Rejects SAML regex scopes (`shibmd:Scope regexp="true"`), malformed strings, and bare TLDs.
 VALID_SCOPE_RE = re.compile(r"^[a-z0-9-]+(?:\.[a-z0-9-]+)+$")
 
 # 7-day lookback acts as a recovery safety net if cron, the Galaxy API, or the
@@ -80,9 +107,11 @@ VALID_SCOPE_RE = re.compile(r"^[a-z0-9-]+(?:\.[a-z0-9-]+)+$")
 # out in SQL (`NOT EXISTS`), so they are not re-processed on subsequent cron runs.
 LOOKBACK_WINDOW = timedelta(days=7)
 
-# Select only the most recent non-null OIDC token (`DISTINCT ON (u.id) ... ORDER BY u.id, t.id DESC`)
-# for active users created after the UTC cutoff who do not already belong to either
-# allocation group.
+# Select only the most recent non-null OIDC token per active user
+# (`DISTINCT ON (u.id) ... ORDER BY u.id, t.id DESC`) created after the UTC cutoff
+# who does not already belong to either allocation group.
+# Uses `IS NOT TRUE` (instead of `NOT ...`) so rows where `deleted IS NULL` are not
+# silently dropped by SQL three-valued logic.
 UNASSIGNED_USERS_QUERY = """
 SELECT DISTINCT ON (u.id)
     u.email,
@@ -107,15 +136,18 @@ ORDER BY u.id, t.id DESC
 def decode_id_token_payload(extra_data, user_label=None):
     """Extract and Base64URL-decode the JWT payload from `oidc_user_authnz_tokens.extra_data`.
 
-    Handles `extra_data` whether psycopg2 returns it as a `memoryview` (BYTEA), `bytes`,
-    `str` (TEXT), or `dict` (JSON/JSONB), and uses `urlsafe_b64decode` with modulo-4
-    padding as required by RFC 7515 (JWT Base64URL encoding uses `-` and `_`).
+    Galaxy's SQLAlchemy `JSONType` column stores `extra_data` as `BYTEA` on PostgreSQL
+    (returned by psycopg2 as `memoryview`), though other schemas/drivers may yield `bytes`,
+    `str` (`TEXT`), or `dict` (`JSON`/`JSONB`). Decodes the JWT payload segment using
+    RFC 7515 Base64URL (`urlsafe_b64decode`) with modulo-4 `=` padding.
+
     Returns an empty dict if `id_token` is absent or malformed. When `user_label` is
-    provided, logs a warning for malformed `extra_data`/`id_token` (while staying silent
-    when `id_token` is simply absent).
+    provided, logs a warning for malformed `extra_data`/`id_token` while remaining silent
+    when `id_token` is simply absent (`None`).
     """
     if extra_data is None:
         return {}
+    # Step 1: Parse outer `extra_data` JSON object from whichever Python type psycopg2 returned.
     try:
         if isinstance(extra_data, (bytes, bytearray, memoryview)):
             data_dict = json.loads(bytes(extra_data).decode("utf-8"))
@@ -137,6 +169,8 @@ def decode_id_token_payload(extra_data, user_label=None):
             logging.warning("Skipping user %s with non-object OIDC extra_data", user_label)
         return {}
 
+    # Step 2: Extract `id_token` JWT string (`header.payload.signature`). Absent `id_token`
+    # is treated as normal (no warning); wrong type or broken structure logs a warning.
     id_token = data_dict.get("id_token")
     if id_token is None:
         return {}
@@ -151,7 +185,9 @@ def decode_id_token_payload(extra_data, user_label=None):
             logging.warning("Skipping user %s with malformed OIDC id_token structure", user_label)
         return {}
 
-    # JWT segments omit Base64 '=' padding and use URL-safe alphabet ('-' and '_').
+    # Step 3: Base64URL-decode the payload segment (`parts[1]`). JWT segments omit '='
+    # padding and use '-'/'_' instead of '+'/'/'. A length congruent to 1 mod 4 is
+    # mathematically invalid Base64 and would raise binascii.Error.
     payload_b64 = parts[1]
     if len(payload_b64) % 4 == 1:
         if user_label is not None:
@@ -180,8 +216,11 @@ def _summarize_error(exc, max_len=200):
 def build_caf_scopes(raw_idps):
     """Extract normalized CAF IdP domain scopes from EduGAIN `list_entities` JSON.
 
-    EduGAIN encodes entity roles as a bitmask (`roles & 4` = IDPSSODescriptor, including
-    `5` = IdP + AttributeAuthorityDescriptor) and joins multiple SAML scopes with `==`.
+    Each element in `raw_idps` is a 1-element list wrapping an entity dict. For Canadian
+    Access Federation (`code == "CAF"`) Identity Providers (`roles & 4`, which matches
+    both `4`=IdP and `5`=IdP+AttributeAuthority), EduGAIN joins multiple SAML `shibmd:Scope`
+    domains with `==` (e.g. `ens.uqam.ca==uqam.ca`). Only plain multi-label DNS domains
+    passing `VALID_SCOPE_RE` are included.
     """
     caf_scopes = set()
     for entry in raw_idps:
@@ -209,8 +248,12 @@ def build_caf_scopes(raw_idps):
 def matches_domain_scope(email, scopes):
     """Return True if `email`'s domain or a parent domain (at least 2 labels) is in `scopes`.
 
-    Example: `user@mail.utoronto.ca` checks `mail.utoronto.ca`, then `utoronto.ca`,
-    stopping before the bare TLD `ca`.
+    Walking DNS labels instead of `str.endswith()` prevents suffix collisions and bare-TLD
+    matches:
+    - `user@mail.utoronto.ca` checks `mail.utoronto.ca`, then `utoronto.ca` -> True.
+    - `user@courrier.uqam.ca` checks `courrier.uqam.ca`, then `uqam.ca` -> True.
+    - `user@evilutoronto.ca` checks `evilutoronto.ca` -> False.
+    - `user@hotmail.ca` checks `hotmail.ca` and stops before bare TLD `ca` -> False.
     """
     if not isinstance(email, str) or "@" not in email:
         return False
@@ -225,7 +268,11 @@ def matches_domain_scope(email, scopes):
 
 
 def ensure_allocation_groups(gal):
-    """Return Galaxy API IDs for the Canadian and EduGAIN allocation groups, creating them if absent."""
+    """Return Galaxy API IDs for the Canadian and EduGAIN allocation groups, creating them if absent.
+
+    Called once per run (only when matched users exist) so we avoid repeated group lookups
+    or group-member listings on every user.
+    """
     groups_by_name = {group["name"]: group["id"] for group in gal.groups.get_groups()}
 
     canadian_gid = groups_by_name.get(GROUP_NAME_CANADIAN_USERS_ALLOCATION)
@@ -242,8 +289,10 @@ def ensure_allocation_groups(gal):
 def main():
     ###################################################################################
     # 1. Fetch OIDC tokens for recent users not yet assigned to an allocation group.
-    #    Galaxy stores `galaxy_user.create_time` as a naive UTC timestamp (`TIMESTAMP WITHOUT TIME ZONE`),
-    #    so compute a naive UTC cutoff and pass all parameters via `%s` placeholders.
+    #    Galaxy stores `galaxy_user.create_time` as a naive UTC timestamp
+    #    (`TIMESTAMP WITHOUT TIME ZONE`), so compute a naive UTC cutoff and pass all
+    #    parameters via `%s` placeholders. Enforce read-only mode on both PostgreSQL
+    #    (`default_transaction_read_only=on`) and the psycopg2 session (`readonly=True`).
     cutoff_utc = datetime.now(timezone.utc).replace(tzinfo=None) - LOOKBACK_WINDOW
 
     try:
@@ -283,7 +332,9 @@ def main():
 
     ###################################################################################
     # 2. Decode JWT payloads in memory before touching NFS `edugain_idps.json` or the
-    #    Galaxy API. Warn and skip on malformed tokens, unexpected issuers, or missing `idp`.
+    #    Galaxy API. Warn and skip on malformed tokens, unexpected issuers, or missing
+    #    `idp` claims. Log only the email local-part (`user_label`) to avoid printing
+    #    full addresses.
     users_with_idp = []
     for user_email, token_extra_data in rows:
         user_label = user_email.split("@")[0]
@@ -304,11 +355,15 @@ def main():
             continue
         idp_entity_id = id_token_infos.get("idp")
         if not isinstance(idp_entity_id, str) or not idp_entity_id:
+            # A CILogon token without an `idp` claim usually indicates broken OIDC scope
+            # configuration (`org.cilogon.userinfo` not requested/released).
             logging.warning(
                 "Skipping user %s with missing or invalid OIDC idp claim",
                 user_label,
             )
             continue
+        # Carry `id_token["email"]` (signed OIDC assertion) rather than relying on
+        # mutable `galaxy_user.email` for Microsoft domain matching in Stage 3.
         users_with_idp.append((user_email, idp_entity_id, id_token_infos.get("email")))
 
     if not users_with_idp:
@@ -325,6 +380,8 @@ def main():
         logging.exception("Failed to load EduGAIN IDPs from %s", EDUGAIN_IDPS_FILE)
         return 1
 
+    # Fail loudly if `edugain_idps.json` contains an upstream error object (e.g.
+    # `{"error": ...}`) or no valid entity dicts, instead of silently skipping everyone.
     if not isinstance(raw_idps, list):
         logging.error("Unexpected EduGAIN IDPs format in %s: expected list", EDUGAIN_IDPS_FILE)
         return 1
@@ -342,10 +399,14 @@ def main():
     if not caf_scopes:
         logging.warning("No valid CAF scopes found in %s; Microsoft fallback disabled", EDUGAIN_IDPS_FILE)
 
-    # Match users by EduGAIN entityID first. For Microsoft CILogon logins (not in
-    # EduGAIN), fall back to matching the JWT-asserted email domain against CAF IdP
-    # scopes (e.g. `mail.utoronto.ca` -> `utoronto.ca`, `courrier.uqam.ca` -> `uqam.ca`).
-    # Other non-EduGAIN providers (e.g. ORCID, Google, GitHub) are skipped cleanly.
+    # Two-tier matching:
+    # 1. Exact EduGAIN `entityid` lookup (`CAF` -> Canadian, any other federation -> EduGAIN).
+    # 2. For Microsoft CILogon logins (whose `idp` is Microsoft's OAuth URI, not in EduGAIN),
+    #    fall back to matching the JWT-asserted `email` domain against CAF IdP `scopes`
+    #    (e.g. `mail.utoronto.ca` -> `utoronto.ca`, `courrier.uqam.ca` -> `uqam.ca`).
+    # Non-matching logins (Google, ORCID, GitHub, consumer Microsoft accounts like
+    # `@hotmail.ca`/`@outlook.ca`) stay silent on purpose: because unassigned users remain
+    # in the 7-day SQL window for 336 runs (48 runs/day), logging them would flood the log.
     assignments = []
     for user_email, idp_entity_id, token_email in users_with_idp:
         idp_entry = idp_by_entity.get(idp_entity_id)
@@ -380,6 +441,8 @@ def main():
     ###################################################################################
     # 4. Initialize the Galaxy API client and allocation group IDs once; fail fast if
     #    Galaxy is unavailable (maintenance mode, restart, or network outage).
+    #    Keep GET retry count low (`max_get_attempts=2`) so outages fail quickly instead
+    #    of blocking the cron job until the wrapper's 600s timeout kills it.
     gal = bioblend.galaxy.GalaxyInstance(GALAXY_URL, GALAXY_ADMIN_API_KEY, verify=True)
     gal.timeout = GALAXY_API_TIMEOUT
     gal.max_get_attempts = 2
@@ -419,6 +482,7 @@ def main():
                 match_source,
             )
         except requests.RequestException as exc:
+            # Network/TLS/timeout failure mid-batch: abort remaining users until next run.
             logging.warning(
                 "Galaxy API unreachable; aborting remaining users: %s",
                 _summarize_error(exc),
@@ -427,6 +491,7 @@ def main():
         except bioblend.ConnectionError as exc:
             status_code = getattr(exc, "status_code", None)
             if status_code in (401, 403):
+                # Invalid or revoked admin API key: retrying remaining users cannot succeed.
                 logging.error(
                     "Galaxy API authentication/authorization failed (status=%s); aborting remaining users: %s",
                     status_code,
@@ -434,12 +499,14 @@ def main():
                 )
                 return 1
             if status_code is None or status_code in (502, 503, 504):
+                # Gateway/maintenance/non-JSON HTML response: abort until Galaxy recovers.
                 logging.warning(
                     "Galaxy API unavailable (status=%s); aborting remaining users: %s",
                     status_code,
                     _summarize_error(exc),
                 )
                 return 1
+            # Per-user HTTP error (e.g. 400/404/500): record error and continue batch.
             had_errors = True
             logging.error(
                 "Failed to assign %s allocation group for user %s (status=%s): %s",
