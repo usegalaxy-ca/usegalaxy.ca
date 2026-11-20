@@ -4,7 +4,7 @@ galaxy_separate_privileges: true # Best practices for security, configuration is
 galaxy_manage_paths: false # False by default as your administrator might e.g. have root_squash enabled on NFS. Here we can create the directories so it's fine.
 
 galaxy_privsep_user: pgalaxy
-galaxy_config_perms: 0664
+galaxy_config_perms: "0640"
 galaxy_layout: root-dir
 galaxy_root: /mnt/nfs/galaxy
 galaxy_server_dir: "{{ galaxy_root }}/server"
@@ -241,13 +241,6 @@ galaxy_config_templates:
     dest: "{{ galaxy_config.galaxy.containers_resolvers_config_file }}"
   - src: templates/galaxy/config/dependency_resolvers_conf.xml
     dest: "{{ galaxy_config.galaxy.dependency_resolvers_config_file }}"
-  # cron scripts
-  - src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.py.j2
-    dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.py"
-  - src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.bash.j2
-    dest: "{{ galaxy_root }}/server/cron/set_new_users_allocation_groups.bash"
-  - src: templates/galaxy/cron_scripts/fetch-edugain-idps.bash.j2
-    dest: "{{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
   # Pulsar
   - src: templates/galaxy/config/user_preferences_extra_conf.yml
     dest: "{{ galaxy_config.galaxy.user_preferences_extra_conf_path }}"
