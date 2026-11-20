@@ -104,13 +104,15 @@ ORDER BY u.id, t.id DESC
 """
 
 
-def decode_id_token_payload(extra_data):
+def decode_id_token_payload(extra_data, user_label=None):
     """Extract and Base64URL-decode the JWT payload from `oidc_user_authnz_tokens.extra_data`.
 
     Handles `extra_data` whether psycopg2 returns it as a `memoryview` (BYTEA), `bytes`,
     `str` (TEXT), or `dict` (JSON/JSONB), and uses `urlsafe_b64decode` with modulo-4
     padding as required by RFC 7515 (JWT Base64URL encoding uses `-` and `_`).
-    Returns an empty dict if `id_token` is absent or malformed.
+    Returns an empty dict if `id_token` is absent or malformed. When `user_label` is
+    provided, logs a warning for malformed `extra_data`/`id_token` (while staying silent
+    when `id_token` is simply absent).
     """
     if extra_data is None:
         return {}
@@ -122,31 +124,51 @@ def decode_id_token_payload(extra_data):
         elif isinstance(extra_data, dict):
             data_dict = extra_data
         else:
+            if user_label is not None:
+                logging.warning("Skipping user %s with unsupported OIDC extra_data type %s", user_label, type(extra_data).__name__)
             return {}
-    except (UnicodeDecodeError, json.JSONDecodeError):
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        if user_label is not None:
+            logging.warning("Skipping user %s with malformed OIDC extra_data: %s", user_label, _summarize_error(exc))
         return {}
 
     if not isinstance(data_dict, dict):
+        if user_label is not None:
+            logging.warning("Skipping user %s with non-object OIDC extra_data", user_label)
         return {}
 
     id_token = data_dict.get("id_token")
+    if id_token is None:
+        return {}
     if not isinstance(id_token, str):
+        if user_label is not None:
+            logging.warning("Skipping user %s with non-string OIDC id_token", user_label)
         return {}
 
     parts = id_token.split(".")
     if len(parts) < 2 or not parts[1]:
+        if user_label is not None:
+            logging.warning("Skipping user %s with malformed OIDC id_token structure", user_label)
         return {}
 
     # JWT segments omit Base64 '=' padding and use URL-safe alphabet ('-' and '_').
     payload_b64 = parts[1]
     if len(payload_b64) % 4 == 1:
+        if user_label is not None:
+            logging.warning("Skipping user %s with invalid Base64URL OIDC id_token length", user_label)
         return {}
     padded = payload_b64 + "=" * (-len(payload_b64) % 4)
     try:
         payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError) as exc:
+        if user_label is not None:
+            logging.warning("Skipping user %s with undecodable OIDC id_token payload: %s", user_label, _summarize_error(exc))
         return {}
-    return payload if isinstance(payload, dict) else {}
+    if not isinstance(payload, dict):
+        if user_label is not None:
+            logging.warning("Skipping user %s with non-object OIDC id_token payload", user_label)
+        return {}
+    return payload
 
 
 def _summarize_error(exc, max_len=200):
@@ -261,13 +283,14 @@ def main():
 
     ###################################################################################
     # 2. Decode JWT payloads in memory before touching NFS `edugain_idps.json` or the
-    #    Galaxy API. Skip non-CILogon tokens (with a warning) and users lacking an `idp` claim.
+    #    Galaxy API. Warn and skip on malformed tokens, unexpected issuers, or missing `idp`.
     users_with_idp = []
     for user_email, token_extra_data in rows:
+        user_label = user_email.split("@")[0]
         try:
-            id_token_infos = decode_id_token_payload(token_extra_data)
+            id_token_infos = decode_id_token_payload(token_extra_data, user_label=user_label)
         except Exception:
-            logging.exception("Failed to decode OIDC token for user %s", user_email.split("@")[0])
+            logging.exception("Failed to decode OIDC token for user %s", user_label)
             continue
         if not id_token_infos:
             continue
@@ -275,13 +298,18 @@ def main():
         if issuer != CILOGON_ISSUER:
             logging.warning(
                 "Skipping user %s with unexpected OIDC issuer %r",
-                user_email.split("@")[0],
+                user_label,
                 issuer,
             )
             continue
         idp_entity_id = id_token_infos.get("idp")
-        if isinstance(idp_entity_id, str) and idp_entity_id:
-            users_with_idp.append((user_email, idp_entity_id, id_token_infos.get("email")))
+        if not isinstance(idp_entity_id, str) or not idp_entity_id:
+            logging.warning(
+                "Skipping user %s with missing or invalid OIDC idp claim",
+                user_label,
+            )
+            continue
+        users_with_idp.append((user_email, idp_entity_id, id_token_infos.get("email")))
 
     if not users_with_idp:
         return 0
@@ -330,10 +358,21 @@ def main():
                 assignments.append(
                     (user_email, GROUP_NAME_EDUGAIN_USERS_ALLOCATION, "Edugain Users", "EduGAIN IdP")
                 )
-        elif idp_entity_id in MICROSOFT_IDP_ENTITY_IDS and matches_domain_scope(token_email, caf_scopes):
-            assignments.append(
-                (user_email, GROUP_NAME_CANADIAN_USERS_ALLOCATION, "Canadian Users", "Microsoft IdP + CAF email scope")
-            )
+        elif idp_entity_id in MICROSOFT_IDP_ENTITY_IDS:
+            if not isinstance(token_email, str) or not token_email:
+                logging.warning(
+                    "Skipping Microsoft user %s with missing OIDC email claim",
+                    user_email.split("@")[0],
+                )
+            elif matches_domain_scope(token_email, caf_scopes):
+                assignments.append(
+                    (
+                        user_email,
+                        GROUP_NAME_CANADIAN_USERS_ALLOCATION,
+                        "Canadian Users",
+                        "Microsoft IdP + CAF email scope",
+                    )
+                )
 
     if not assignments:
         return 0
@@ -359,6 +398,7 @@ def main():
 
     had_errors = False
     for user_email, target_group_name, group_label, match_source in assignments:
+        user_label = user_email.split("@")[0]
         try:
             # Look up the user's encoded Galaxy API ID. Because Galaxy's `/api/users?f_email=...`
             # performs a substring (`LIKE %...%`) search, filter for an exact email match.
@@ -368,13 +408,13 @@ def main():
                 None,
             )
             if matched_user is None:
-                logging.warning("No exact Galaxy user match found for %s", user_email.split("@")[0])
+                logging.warning("No exact Galaxy user match found for %s", user_label)
                 continue
 
             gal.groups.add_group_user(group_ids[target_group_name], matched_user["id"])
             logging.info(
                 "User %s is added to the %s allocation group (%s)",
-                user_email.split("@")[0],
+                user_label,
                 group_label,
                 match_source,
             )
@@ -386,6 +426,13 @@ def main():
             return 1
         except bioblend.ConnectionError as exc:
             status_code = getattr(exc, "status_code", None)
+            if status_code in (401, 403):
+                logging.error(
+                    "Galaxy API authentication/authorization failed (status=%s); aborting remaining users: %s",
+                    status_code,
+                    _summarize_error(exc),
+                )
+                return 1
             if status_code is None or status_code in (502, 503, 504):
                 logging.warning(
                     "Galaxy API unavailable (status=%s); aborting remaining users: %s",
@@ -395,14 +442,16 @@ def main():
                 return 1
             had_errors = True
             logging.error(
-                "Failed to assign allocation group for user %s: %s",
-                user_email.split("@")[0],
+                "Failed to assign %s allocation group for user %s (status=%s): %s",
+                group_label,
+                user_label,
+                status_code,
                 _summarize_error(exc),
             )
         except Exception:
             # Isolate unexpected per-user errors so a single record cannot block the batch.
             had_errors = True
-            logging.exception("Failed to process allocation group for user %s", user_email.split("@")[0])
+            logging.exception("Failed to process allocation group for user %s", user_label)
 
     return 1 if had_errors else 0
 
