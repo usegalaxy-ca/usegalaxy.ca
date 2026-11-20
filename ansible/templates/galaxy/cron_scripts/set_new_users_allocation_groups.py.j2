@@ -12,7 +12,7 @@ Allocation examples:
   -> skipped silently (keeps Galaxy's default allocation; not added to either group).
 
 Workflow:
-1. Query PostgreSQL (read-only) for active users created within the last 7 days who have
+1. Query PostgreSQL (read-only) for non-deleted users created within the last 7 days who have
    an OIDC token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
    `CanadianUsersAllocationGroup` or `EdugainUsersAllocationGroup`.
 2. Base64URL-decode each user's JWT `id_token` payload in memory, verify that its `iss`
@@ -107,7 +107,7 @@ VALID_SCOPE_RE = re.compile(r"^[a-z0-9-]+(?:\.[a-z0-9-]+)+$")
 # out in SQL (`NOT EXISTS`), so they are not re-processed on subsequent cron runs.
 LOOKBACK_WINDOW = timedelta(days=7)
 
-# Select only the most recent non-null OIDC token per active user
+# Select only the most recent non-null OIDC token per non-deleted user
 # (`DISTINCT ON (u.id) ... ORDER BY u.id, t.id DESC`) created after the UTC cutoff
 # who does not already belong to either allocation group.
 # Uses `IS NOT TRUE` (instead of `NOT ...`) so rows where `deleted IS NULL` are not
@@ -157,11 +157,19 @@ def decode_id_token_payload(extra_data, user_label=None):
             data_dict = extra_data
         else:
             if user_label is not None:
-                logging.warning("Skipping user %s with unsupported OIDC extra_data type %s", user_label, type(extra_data).__name__)
+                logging.warning(
+                    "Skipping user %s with unsupported OIDC extra_data type %s",
+                    user_label,
+                    type(extra_data).__name__,
+                )
             return {}
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         if user_label is not None:
-            logging.warning("Skipping user %s with malformed OIDC extra_data: %s", user_label, _summarize_error(exc))
+            logging.warning(
+                "Skipping user %s with malformed OIDC extra_data: %s",
+                user_label,
+                _summarize_error(exc),
+            )
         return {}
 
     if not isinstance(data_dict, dict):
@@ -198,7 +206,11 @@ def decode_id_token_payload(extra_data, user_label=None):
         payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
     except (ValueError, UnicodeDecodeError) as exc:
         if user_label is not None:
-            logging.warning("Skipping user %s with undecodable OIDC id_token payload: %s", user_label, _summarize_error(exc))
+            logging.warning(
+                "Skipping user %s with undecodable OIDC id_token payload: %s",
+                user_label,
+                _summarize_error(exc),
+            )
         return {}
     if not isinstance(payload, dict):
         if user_label is not None:
@@ -496,7 +508,8 @@ def main():
             if status_code in (401, 403):
                 # Invalid or revoked admin API key: retrying remaining users cannot succeed.
                 logging.error(
-                    "Galaxy API authentication/authorization failed (status=%s); aborting remaining users: %s",
+                    "Galaxy API authentication/authorization failed (status=%s); "
+                    "aborting remaining users: %s",
                     status_code,
                     _summarize_error(exc),
                 )

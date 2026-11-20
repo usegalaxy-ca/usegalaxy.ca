@@ -71,12 +71,12 @@
         - set_new_users_allocation_groups.bash
         - fetch-edugain-idps.bash
     - name: fetch edugain idps the first time
-      command: "bash /opt/fetch-edugain-idps.bash"
+      ansible.builtin.command: "bash /opt/fetch-edugain-idps.bash"
       become: true
-      become_user: pgalaxy
+      become_user: "{{ galaxy_privsep_user }}"
     - name: set cron jobs
       ansible.builtin.cron:
         name: "cron jobs to adjust allocations group for canadian users"
         minute: "*/30"
-        user: pgalaxy
+        user: "{{ galaxy_privsep_user }}"
         job: "bash /opt/set_new_users_allocation_groups.bash"
