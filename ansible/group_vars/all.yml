@@ -33,7 +33,7 @@ slurm_cgroup_config:
   ConstrainCores: yes
   TaskAffinity: no
   ConstrainRAMSpace: yes
-  ConstrainSwapSpace: no
+  ConstrainSwapSpace: yes
   ConstrainDevices: no
   AllowedRamSpace: 100
   AllowedSwapSpace: 0
@@ -49,10 +49,9 @@ galaxy_job_metrics_plugins:
   - type: core
   - type: cpuinfo
   - type: meminfo
-  - type: uname
   - type: env
   - type: cgroup
-  - type: hostname
+    params: "cpuacct.usage,memory.failcnt,memory.max_usage_in_bytes,memory.memsw.max_usage_in_bytes,memory.oom_control.oom_kill_disable,memory.oom_control.under_oom"
 
 # Telegraf
 telegraf_agent_package_state: latest
