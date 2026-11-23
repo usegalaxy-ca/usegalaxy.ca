@@ -1,5 +1,6 @@
 ---
 # TIaaS setup
+tiaas_version: 0da0f5e190f70a0a3fb007577aa97c66fec2c2eb  # latest main commit (0da0f5e); tag 2.1.0 is old
 tiaas_dir: /opt/tiaas
 tiaas_user: tiaas
 tiaas_group: tiaas
