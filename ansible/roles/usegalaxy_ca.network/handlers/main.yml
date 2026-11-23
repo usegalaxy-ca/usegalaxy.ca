@@ -1,0 +1,4 @@
+---
+# reconfigure reinstalls the address without a lifetime
+- name: reconfigure network
+  ansible.builtin.shell: "networkctl reload && networkctl reconfigure {{ network_interface }}"

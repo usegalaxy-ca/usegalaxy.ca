@@ -1,6 +1,6 @@
 - name: galaxy galaxyctl graceful restart
   command:
-    cmd: galaxyctl graceful
+    cmd: "galaxyctl graceful{{ ' --start-if-stopped' if galaxy_gravity_graceful_start_if_stopped | default(false) else '' }}"
 
 - name: galaxy nginx restart
   systemd:

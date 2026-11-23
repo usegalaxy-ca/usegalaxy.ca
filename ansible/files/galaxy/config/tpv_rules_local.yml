@@ -17,6 +17,15 @@ tools:
   toolshed.g2.bx.psu.edu/repos/galaxyp/diann/diann/.*:
     cores: 16
     mem: 110
+  toolshed.g2.bx.psu.edu/repos/iuc/dada2_dada/dada2_dada/.*:
+    cores: 4
+    mem: 14
+  toolshed.g2.bx.psu.edu/repos/iuc/dada2_filterandtrim/dada2_filterAndTrim/.*:
+    cores: 4
+    mem: 14
+  toolshed.g2.bx.psu.edu/repos/iuc/dada2_learnerrors/dada2_learnErrors/.*:
+    cores: 4
+    mem: 14
   toolshed.g2.bx.psu.edu/repos/iuc/dada2_assigntaxonomyaddspecies/.*:
     mem: 50
   toolshed.g2.bx.psu.edu/repos/q2d2/qiime2__dada2__denoise_paired/.*:
@@ -140,7 +149,7 @@ destinations:
       - name: APPTAINER_TMPDIR
         value: /tmp
       - name: _JAVA_OPTIONS
-        value: -Djava.io.tmpdir=$_GALAXY_JOB_TMP_DIR -Xmx{int(mem)}G -Xms256M
+        value: -Djava.io.tmpdir=$_GALAXY_JOB_TMP_DIR -Xmx{max(int(mem * 0.85), 1)}G -Xms256M
       - name: SINGULARITYENV__JAVA_OPTIONS
         value: $_JAVA_OPTIONS
       - execute: ulimit -f 1048576000  # 500GB, our default quota
@@ -157,6 +166,7 @@ destinations:
         /mnt/nfs1/data/datasets:ro,
         /mnt/nfs2/data/datasets:ro,
         /cvmfs/data.galaxyproject.org:ro,
+        /cvmfs/idc.galaxyproject.org:ro,
         /mnt/nfs/galaxy/var/tool_data:ro"
       tmp_dir: true
 

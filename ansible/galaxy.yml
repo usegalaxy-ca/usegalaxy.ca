@@ -23,6 +23,13 @@
           ]
       tags:
         - always
+    - name: ensure nginx cilogon cache directory exists
+      ansible.builtin.file:
+        path: "{{ nginx_cilogon_cache_dir }}"
+        state: directory
+        owner: "{{ nginx_user.name }}"
+        group: "{{ nginx_group.name }}"
+        mode: "0700"
   roles:
     - role: galaxyproject.galaxy
       tags:
@@ -54,6 +61,14 @@
         - cleanup
 
   post_tasks:
+    - name: restrict permissions on allocation groups cron script
+      ansible.builtin.file:
+        path: "{{ galaxy_server_dir }}/cron/set_new_users_allocation_groups.py"
+        owner: "{{ galaxy_privsep_user }}"
+        group: "{{ galaxy_privsep_user }}"
+        mode: "0600"
+      become: true
+      become_user: "{{ galaxy_privsep_user }}"
     - name: fetch edugain idps the first time
       command: "bash {{ galaxy_root }}/server/cron/fetch-edugain-idps.bash"
       become: true

@@ -1,4 +1,11 @@
 ---
+- hosts: all
+  become: true
+  become_user: root
+  roles:
+    - role: usegalaxy_ca.network
+      tags: network
+
 - name: volumes
   import_playbook: volumes.yml
 
@@ -29,6 +36,18 @@
     - usegalaxy_ca.gxadmin
     - galaxyproject.gxadmin
     - usegalaxy_ca.backup_pg
+    - role: usegalaxy_ca.kui
+      when: inventory_hostname.startswith('prod-') # only set it up on prod
+      tags:
+        - never
+        - kui
+  post_tasks:
+    - name: Enable pgcrypto extension for galaxy database
+      community.postgresql.postgresql_ext:
+        name: pgcrypto
+        db: "{{ galaxy_db_name }}"
+      become: true
+      become_user: postgres
 
 - name: tusd
   import_playbook: tusd.yml
