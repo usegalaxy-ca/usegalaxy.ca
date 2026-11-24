@@ -228,11 +228,11 @@ def _summarize_error(exc, max_len=200):
 def build_caf_scopes(raw_idps):
     """Extract normalized CAF IdP domain scopes from EduGAIN `list_entities` JSON.
 
-    Each element in `raw_idps` is a 1-element list wrapping an entity dict. For Canadian
-    Access Federation (`code == "CAF"`) Identity Providers (`roles & 4`, which matches
-    both `4`=IdP and `5`=IdP+AttributeAuthority), EduGAIN joins multiple SAML `shibmd:Scope`
-    domains with `==` (e.g. `ens.uqam.ca==uqam.ca`). Only plain multi-label DNS domains
-    passing `VALID_SCOPE_RE` are included.
+    Each element in `raw_idps` is a list whose first item (`entry[0]`) is the entity dict.
+    For Canadian Access Federation (`code == "CAF"`) Identity Providers (`roles & 4`, which
+    matches both `4`=IdP and `5`=IdP+AttributeAuthority), EduGAIN joins multiple SAML
+    `shibmd:Scope` domains with `==` (e.g. `ens.uqam.ca==uqam.ca`). Only plain multi-label
+    DNS domains passing `VALID_SCOPE_RE` are included.
     """
     caf_scopes = set()
     for entry in raw_idps:
@@ -401,7 +401,13 @@ def main():
     idp_by_entity = {
         idp[0]["entityid"]: idp[0]
         for idp in raw_idps
-        if isinstance(idp, list) and idp and isinstance(idp[0], dict) and "entityid" in idp[0]
+        if (
+            isinstance(idp, list)
+            and idp
+            and isinstance(idp[0], dict)
+            and isinstance(idp[0].get("entityid"), str)
+            and idp[0]["entityid"]
+        )
     }
     if not idp_by_entity:
         logging.error("EduGAIN IDPs file %s contained no valid IDP entries", EDUGAIN_IDPS_FILE)
