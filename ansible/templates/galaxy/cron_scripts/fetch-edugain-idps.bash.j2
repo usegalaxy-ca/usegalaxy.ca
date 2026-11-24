@@ -11,10 +11,13 @@ tmp_file="$(mktemp "$USEGALAXYCA_VAR_DIR/.edugain_idps.json.XXXXXX")"
 # Clean up the temp file on any exit (e.g. curl failure); no-op after `mv -f`.
 trap 'rm -f "$tmp_file"' EXIT
 
-curl --fail --silent --max-time 60 \
+curl --fail --silent --show-error --max-time 60 \
   "https://technical.edugain.org/api.php?action=list_entities" \
   -H "Accept: application/json" \
   --output "$tmp_file"
+
+# Refuse to replace a good file with an error object, HTML page, or empty list.
+jq -e 'type == "array" and length > 0' "$tmp_file" > /dev/null
 
 # `mktemp` creates files with mode 0600; restore 0644 so non-pgalaxy readers can read it.
 chmod 0644 "$tmp_file"

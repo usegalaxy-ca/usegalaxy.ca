@@ -15,6 +15,7 @@
             "acl",
             "bzip2",
             "git",
+            "jq",
             "make",
             "tar",
             "python3-venv",
