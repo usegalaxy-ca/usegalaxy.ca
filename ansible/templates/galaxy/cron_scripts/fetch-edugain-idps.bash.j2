@@ -3,10 +3,7 @@ set -euo pipefail
 
 USEGALAXYCA_VAR_DIR="{{ galaxy_root }}/var/usegalaxy.ca"
 
-if [ ! -d "$USEGALAXYCA_VAR_DIR" ]; then
-    # Create dir
-    mkdir $USEGALAXYCA_VAR_DIR
-fi
+mkdir -p "$USEGALAXYCA_VAR_DIR"
 
 # Create the temp file in the same directory so `mv -f` is an atomic same-filesystem
 # rename, preventing readers from seeing a partially written file on NFS.
