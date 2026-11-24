@@ -4,7 +4,7 @@ galaxy_separate_privileges: true # Best practices for security, configuration is
 galaxy_manage_paths: false # False by default as your administrator might e.g. have root_squash enabled on NFS. Here we can create the directories so it's fine.
 
 galaxy_privsep_user: pgalaxy
-galaxy_config_perms: "0640"
+galaxy_config_perms: 0664
 galaxy_layout: root-dir
 galaxy_root: /mnt/nfs/galaxy
 galaxy_server_dir: "{{ galaxy_root }}/server"
