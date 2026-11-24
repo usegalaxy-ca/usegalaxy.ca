@@ -23,6 +23,12 @@
           ]
       tags:
         - always
+    - name: ensure galaxy vault encryption key is configured
+      ansible.builtin.assert:
+        that:
+          - GALAXY_VAULT_ENCRYPTION_KEY | length > 0
+        fail_msg: "GALAXY_VAULT_ENCRYPTION_KEY environment variable must be set to a valid Fernet key."
+        quiet: true
     - name: ensure nginx cilogon cache directory exists
       ansible.builtin.file:
         path: "{{ nginx_cilogon_cache_dir }}"
@@ -61,6 +67,12 @@
         - cleanup
 
   post_tasks:
+    - name: restrict permissions on galaxy vault config
+      ansible.builtin.file:
+        path: "{{ galaxy_config.galaxy.vault_config_file }}"
+        mode: "0640"
+      become: true
+      become_user: "{{ galaxy_privsep_user }}"
     - name: restrict permissions on allocation groups cron script
       ansible.builtin.file:
         path: "{{ galaxy_server_dir }}/cron/set_new_users_allocation_groups.py"
