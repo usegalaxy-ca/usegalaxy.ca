@@ -479,9 +479,14 @@ def main():
         user_label = user_email.split("@")[0]
         try:
             # Look up the user's encoded Galaxy API ID. Because Galaxy's `/api/users?f_email=...`
-            # performs a substring (`LIKE %...%`) search, filter for an exact email match.
+            # performs a substring (`ILIKE %...%`) search, prefer an exact case-sensitive match
+            # first (since `user_email` comes verbatim from `galaxy_user.email`) before falling
+            # back to a case-insensitive match.
             candidates = gal.users.get_users(f_email=user_email)
             matched_user = next(
+                (u for u in candidates if u.get("email") == user_email),
+                None,
+            ) or next(
                 (u for u in candidates if (u.get("email") or "").lower() == user_email.lower()),
                 None,
             )
