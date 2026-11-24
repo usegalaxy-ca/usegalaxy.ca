@@ -7,6 +7,7 @@
     - group_vars/secret.yml
     - group_vars/slurm.yml
     - group_vars/cvmfsclient.yml
+    - group_vars/tiaas.yml
   pre_tasks:
     - name: install dependencies
       package:
@@ -23,6 +24,13 @@
           ]
       tags:
         - always
+    - name: ensure nginx cilogon cache directory exists
+      ansible.builtin.file:
+        path: "{{ nginx_cilogon_cache_dir }}"
+        state: directory
+        owner: "{{ nginx_user.name }}"
+        group: "{{ nginx_group.name }}"
+        mode: "0700"
   roles:
     - role: galaxyproject.galaxy
       tags:
@@ -39,6 +47,7 @@
       become: true
       become_user: "{{ galaxy_user_name }}"
     - usegalaxy_ca.maintenance
+    - galaxyproject.tiaas2
     - galaxyproject.nginx
     - usegalaxy_ca.drmaa
     - role: usegalaxy_ca.restart_galaxy

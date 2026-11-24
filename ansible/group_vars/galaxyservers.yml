@@ -271,6 +271,7 @@ certbot_agree_tos: --agree-tos
 
 # NGINX
 nginx_selinux_allow_local_connections: true
+nginx_cilogon_cache_dir: /var/cache/nginx/cilogon
 nginx_servers:
   - redirect-ssl
 nginx_ssl_servers:
@@ -279,6 +280,7 @@ nginx_ssl_servers:
 nginx_enable_default_server: false
 nginx_conf_http:
   client_max_body_size: 1g
+  proxy_cache_path: "{{ nginx_cilogon_cache_dir }} levels=1:2 keys_zone=cilogon_idps:1m max_size=10m inactive=7d use_temp_path=off"
   # gzip: "on" # This is enabled by default in Ubuntu, and the duplicate directive will cause a crash.
   gzip_proxied: "any"
   gzip_static: "on" # The ngx_http_gzip_static_module module allows sending precompressed files with the ".gz" filename extension instead of regular files.
