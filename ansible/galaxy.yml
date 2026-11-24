@@ -37,6 +37,9 @@
         group: "{{ nginx_group.name }}"
         mode: "0700"
   roles:
+    # Must precede galaxyproject.galaxy: its restart handler is flushed inside
+    # galaxyproject.nginx (ssl-external.yml), and the Slurm runner needs libdrmaa.
+    - usegalaxy_ca.drmaa
     - role: galaxyproject.galaxy
       tags:
         - never
@@ -54,7 +57,6 @@
     - usegalaxy_ca.maintenance
     - galaxyproject.tiaas2
     - galaxyproject.nginx
-    - usegalaxy_ca.drmaa
     - role: usegalaxy_ca.cleanup
       become: true
       become_user: root
