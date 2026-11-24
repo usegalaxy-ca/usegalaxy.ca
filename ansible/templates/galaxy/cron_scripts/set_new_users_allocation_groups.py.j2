@@ -514,8 +514,10 @@ def main():
                     _summarize_error(exc),
                 )
                 return 1
-            if status_code is None or status_code in (502, 503, 504):
+            if status_code is None or status_code in (200, 405, 502, 503, 504):
                 # Gateway/maintenance/non-JSON HTML response: abort until Galaxy recovers.
+                # Inside `bioblend.ConnectionError`, 200 only occurs on empty/non-JSON bodies
+                # (e.g. nginx serving maintenance.html on GET) and 405 on PUT to maintenance.html.
                 logging.warning(
                     "Galaxy API unavailable (status=%s); aborting remaining users: %s",
                     status_code,
