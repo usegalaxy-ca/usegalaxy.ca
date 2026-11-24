@@ -71,10 +71,9 @@
     # Runs after the role handlers (restart galaxy, reload nginx) have flushed,
     # so the API key request doesn't hit a stale nginx config (e.g. maintenance page).
     - name: Setup service account
-      ansible.builtin.include_role:
+      ansible.builtin.import_role:
         name: usegalaxy_ca.service_account
-        apply:
-          become: false
+      become: false
     - name: restrict permissions on galaxy vault config
       ansible.builtin.file:
         path: "{{ galaxy_config.galaxy.vault_config_file }}"
