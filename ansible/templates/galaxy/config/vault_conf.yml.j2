@@ -1,0 +1,8 @@
+type: database
+path_prefix: /galaxy
+# Encryption keys must be valid fernet keys
+# To generate a valid key:
+#   python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode('utf-8'))"
+# For more details, see: https://cryptography.io/en/latest/fernet/
+encryption_keys:
+  - "{{ GALAXY_VAULT_ENCRYPTION_KEY }}"

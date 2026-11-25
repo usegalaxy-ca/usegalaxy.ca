@@ -24,6 +24,12 @@
           ]
       tags:
         - always
+    - name: ensure galaxy vault encryption key is configured
+      ansible.builtin.assert:
+        that:
+          - GALAXY_VAULT_ENCRYPTION_KEY | length > 0
+        fail_msg: "GALAXY_VAULT_ENCRYPTION_KEY environment variable must be set to a valid Fernet key."
+        quiet: true
     - name: ensure nginx cilogon cache directory exists
       ansible.builtin.file:
         path: "{{ nginx_cilogon_cache_dir }}"
@@ -32,6 +38,9 @@
         group: "{{ nginx_group.name }}"
         mode: "0700"
   roles:
+    # Must precede galaxyproject.galaxy: its restart handler is flushed inside
+    # galaxyproject.nginx (ssl-external.yml), and the Slurm runner needs libdrmaa.
+    - usegalaxy_ca.drmaa
     - role: galaxyproject.galaxy
       tags:
         - never
@@ -49,12 +58,6 @@
     - usegalaxy_ca.maintenance
     - galaxyproject.tiaas2
     - galaxyproject.nginx
-    - usegalaxy_ca.drmaa
-    - role: usegalaxy_ca.restart_galaxy
-      become: true
-      become_user: root
-    - role: usegalaxy_ca.service_account
-      become: false
     - role: usegalaxy_ca.cleanup
       become: true
       become_user: root
@@ -62,6 +65,22 @@
         - cleanup
 
   post_tasks:
+    - name: galaxy nginx restart
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+    # Runs after the role handlers (restart galaxy, reload nginx) have flushed,
+    # so the API key request doesn't hit a stale nginx config (e.g. maintenance page).
+    - name: Setup service account
+      ansible.builtin.import_role:
+        name: usegalaxy_ca.service_account
+      become: false
+    - name: restrict permissions on galaxy vault config
+      ansible.builtin.file:
+        path: "{{ galaxy_config.galaxy.vault_config_file }}"
+        mode: "0640"
+      become: true
+      become_user: "{{ galaxy_privsep_user }}"
     - name: deploy allocation groups python script
       ansible.builtin.template:
         src: templates/galaxy/cron_scripts/set_new_users_allocation_groups.py.j2
