@@ -133,7 +133,7 @@ ORDER BY u.id, t.id DESC
 """
 
 
-def decode_id_token_payload(extra_data, user_label=None):
+def decode_id_token_payload(extra_data, user_email=None):
     """Extract and Base64URL-decode the JWT payload from `oidc_user_authnz_tokens.extra_data`.
 
     Galaxy's SQLAlchemy `JSONType` column stores `extra_data` as `BYTEA` on PostgreSQL
@@ -141,7 +141,7 @@ def decode_id_token_payload(extra_data, user_label=None):
     `str` (`TEXT`), or `dict` (`JSON`/`JSONB`). Decodes the JWT payload segment using
     RFC 7515 Base64URL (`urlsafe_b64decode`) with modulo-4 `=` padding.
 
-    Returns an empty dict if `id_token` is absent or malformed. When `user_label` is
+    Returns an empty dict if `id_token` is absent or malformed. When `user_email` is
     provided, logs a warning for malformed `extra_data`/`id_token` while remaining silent
     when `id_token` is simply absent (`None`).
     """
@@ -156,25 +156,25 @@ def decode_id_token_payload(extra_data, user_label=None):
         elif isinstance(extra_data, dict):
             data_dict = extra_data
         else:
-            if user_label is not None:
+            if user_email is not None:
                 logging.warning(
                     "Skipping user %s with unsupported OIDC extra_data type %s",
-                    user_label,
+                    user_email,
                     type(extra_data).__name__,
                 )
             return {}
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        if user_label is not None:
+        if user_email is not None:
             logging.warning(
                 "Skipping user %s with malformed OIDC extra_data: %s",
-                user_label,
+                user_email,
                 _summarize_error(exc),
             )
         return {}
 
     if not isinstance(data_dict, dict):
-        if user_label is not None:
-            logging.warning("Skipping user %s with non-object OIDC extra_data", user_label)
+        if user_email is not None:
+            logging.warning("Skipping user %s with non-object OIDC extra_data", user_email)
         return {}
 
     # Step 2: Extract `id_token` JWT string (`header.payload.signature`). Absent `id_token`
@@ -183,14 +183,14 @@ def decode_id_token_payload(extra_data, user_label=None):
     if id_token is None:
         return {}
     if not isinstance(id_token, str):
-        if user_label is not None:
-            logging.warning("Skipping user %s with non-string OIDC id_token", user_label)
+        if user_email is not None:
+            logging.warning("Skipping user %s with non-string OIDC id_token", user_email)
         return {}
 
     parts = id_token.split(".")
     if len(parts) < 2 or not parts[1]:
-        if user_label is not None:
-            logging.warning("Skipping user %s with malformed OIDC id_token structure", user_label)
+        if user_email is not None:
+            logging.warning("Skipping user %s with malformed OIDC id_token structure", user_email)
         return {}
 
     # Step 3: Base64URL-decode the payload segment (`parts[1]`). JWT segments omit '='
@@ -198,23 +198,23 @@ def decode_id_token_payload(extra_data, user_label=None):
     # mathematically invalid Base64 and would raise binascii.Error.
     payload_b64 = parts[1]
     if len(payload_b64) % 4 == 1:
-        if user_label is not None:
-            logging.warning("Skipping user %s with invalid Base64URL OIDC id_token length", user_label)
+        if user_email is not None:
+            logging.warning("Skipping user %s with invalid Base64URL OIDC id_token length", user_email)
         return {}
     padded = payload_b64 + "=" * (-len(payload_b64) % 4)
     try:
         payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
     except (ValueError, UnicodeDecodeError) as exc:
-        if user_label is not None:
+        if user_email is not None:
             logging.warning(
                 "Skipping user %s with undecodable OIDC id_token payload: %s",
-                user_label,
+                user_email,
                 _summarize_error(exc),
             )
         return {}
     if not isinstance(payload, dict):
-        if user_label is not None:
-            logging.warning("Skipping user %s with non-object OIDC id_token payload", user_label)
+        if user_email is not None:
+            logging.warning("Skipping user %s with non-object OIDC id_token payload", user_email)
         return {}
     return payload
 
@@ -345,15 +345,13 @@ def main():
     ###################################################################################
     # 2. Decode JWT payloads in memory before touching NFS `edugain_idps.json` or the
     #    Galaxy API. Warn and skip on malformed tokens, unexpected issuers, or missing
-    #    `idp` claims. Log only the email local-part (`user_label`) to avoid printing
-    #    full addresses.
+    #    `idp` claims.
     users_with_idp = []
     for user_email, token_extra_data in rows:
-        user_label = user_email.split("@")[0]
         try:
-            id_token_infos = decode_id_token_payload(token_extra_data, user_label=user_label)
+            id_token_infos = decode_id_token_payload(token_extra_data, user_email=user_email)
         except Exception:
-            logging.exception("Failed to decode OIDC token for user %s", user_label)
+            logging.exception("Failed to decode OIDC token for user %s", user_email)
             continue
         if not id_token_infos:
             continue
@@ -361,7 +359,7 @@ def main():
         if issuer != CILOGON_ISSUER:
             logging.warning(
                 "Skipping user %s with unexpected OIDC issuer %r",
-                user_label,
+                user_email,
                 issuer,
             )
             continue
@@ -371,7 +369,7 @@ def main():
             # configuration (`org.cilogon.userinfo` not requested/released).
             logging.warning(
                 "Skipping user %s with missing or invalid OIDC idp claim",
-                user_label,
+                user_email,
             )
             continue
         # Carry `id_token["email"]` (signed OIDC assertion) rather than relying on
@@ -444,7 +442,7 @@ def main():
             if not isinstance(token_email, str) or not token_email:
                 logging.warning(
                     "Skipping Microsoft user %s with missing OIDC email claim",
-                    user_email.split("@")[0],
+                    user_email,
                 )
             elif matches_domain_scope(token_email, caf_scopes):
                 assignments.append(
@@ -482,7 +480,6 @@ def main():
 
     had_errors = False
     for user_email, target_group_name, group_label, match_source in assignments:
-        user_label = user_email.split("@")[0]
         try:
             # Look up the user's encoded Galaxy API ID. Because Galaxy's `/api/users?f_email=...`
             # performs a substring (`ILIKE %...%`) search, prefer an exact case-sensitive match
@@ -497,13 +494,13 @@ def main():
                 None,
             )
             if matched_user is None:
-                logging.warning("No exact Galaxy user match found for %s", user_label)
+                logging.warning("No exact Galaxy user match found for %s", user_email)
                 continue
 
             gal.groups.add_group_user(group_ids[target_group_name], matched_user["id"])
             logging.info(
                 "User %s is added to the %s allocation group (%s)",
-                user_label,
+                user_email,
                 group_label,
                 match_source,
             )
@@ -540,14 +537,14 @@ def main():
             logging.error(
                 "Failed to assign %s allocation group for user %s (status=%s): %s",
                 group_label,
-                user_label,
+                user_email,
                 status_code,
                 _summarize_error(exc),
             )
         except Exception:
             # Isolate unexpected per-user errors so a single record cannot block the batch.
             had_errors = True
-            logging.exception("Failed to process allocation group for user %s", user_label)
+            logging.exception("Failed to process allocation group for user %s", user_email)
 
     return 1 if had_errors else 0
 
