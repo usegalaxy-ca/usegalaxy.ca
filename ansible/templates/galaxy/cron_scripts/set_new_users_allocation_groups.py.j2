@@ -3,9 +3,10 @@
 Allocation examples:
 - `alice@usherbrooke.ca` via Université de Sherbrooke (CAF SAML IdP in EduGAIN):
   -> `CanadianUsersAllocationGroup` (matched by `entityid`, `code == "CAF"`).
-- `bob@mail.utoronto.ca` or `carol@courrier.uqam.ca` via Microsoft on CILogon:
-  -> `CanadianUsersAllocationGroup` (Microsoft IdP fallback matches parent domain
-     `utoronto.ca` / `uqam.ca` against CAF IdP `scopes` in `edugain_idps.json`).
+- `bob@mail.utoronto.ca` or `carol@courrier.uqam.ca` via Microsoft on CILogon, or
+  `grace@mun.ca` / `heidi@my.yorku.ca` via Google Workspace on CILogon:
+  -> `CanadianUsersAllocationGroup` (Microsoft/Google IdP fallback matches domain or
+     parent domain against CAF IdP `scopes` in `edugain_idps.json`).
 - `dave@stanford.edu` via Stanford University (InCommon SAML IdP in EduGAIN):
   -> `EdugainUsersAllocationGroup` (matched by `entityid`, `code != "CAF"`).
 - `eve@hotmail.ca` via Microsoft, `frank@gmail.com` via Google, or ORCID/GitHub logins:
@@ -96,14 +97,16 @@ GROUP_NAME_EDUGAIN_USERS_ALLOCATION = "EdugainUsersAllocationGroup"
 # minted by any other OIDC provider if more providers are enabled in Galaxy later.
 CILOGON_ISSUER = "https://cilogon.org"
 
-# Microsoft IdP URIs emitted by CILogon in `id_token["idp"]`. Production currently emits
-# the `http://` form; keep `https://` as well in case CILogon migrates schemes later.
-MICROSOFT_IDP_ENTITY_IDS = frozenset(
-    {
-        "http://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
-    }
-)
+# Cloud identity provider URIs emitted by CILogon in `id_token["idp"]` that Canadian
+# universities commonly host institutional accounts on (Microsoft 365 / Google Workspace),
+# mapped to their display label for logging. Production currently emits the `http://`
+# forms; keep `https://` as well in case CILogon migrates schemes later.
+CAF_SCOPE_FALLBACK_IDPS = {
+    "http://login.microsoftonline.com/common/oauth2/v2.0/authorize": "Microsoft",
+    "https://login.microsoftonline.com/common/oauth2/v2.0/authorize": "Microsoft",
+    "http://google.com/accounts/o8/id": "Google",
+    "https://google.com/accounts/o8/id": "Google",
+}
 
 # EduGAIN `roles` bitmask: 4 = IDPSSODescriptor, 2 = SPSSODescriptor,
 # 1 = AttributeAuthorityDescriptor. Checking `roles & 4` captures both pure IdPs (`4`)
@@ -473,7 +476,7 @@ def main():
             )
             continue
         # Carry `id_token["email"]` (signed OIDC assertion) rather than relying on
-        # mutable `galaxy_user.email` for Microsoft domain matching in Stage 3.
+        # mutable `galaxy_user.email` for Microsoft/Google CAF domain matching in Stage 3.
         users_with_idp.append(
             (user_id, user_email, token_id, idp_entity_id, id_token_infos.get("email"))
         )
@@ -516,23 +519,30 @@ def main():
 
     caf_scopes = build_caf_scopes(raw_idps)
     if not caf_scopes:
-        logging.warning("No valid CAF scopes found in %s; Microsoft fallback disabled", EDUGAIN_IDPS_FILE)
+        logging.warning(
+            "No valid CAF scopes found in %s; Microsoft/Google CAF fallback disabled",
+            EDUGAIN_IDPS_FILE,
+        )
 
     # Two-tier matching:
     # 1. Exact EduGAIN `entityid` lookup (`CAF` -> Canadian, any other federation -> EduGAIN).
-    # 2. For Microsoft CILogon logins (whose `idp` is Microsoft's OAuth URI, not in EduGAIN),
-    #    fall back to matching the JWT-asserted `email` domain against CAF IdP `scopes`
-    #    (e.g. `mail.utoronto.ca` -> `utoronto.ca`, `courrier.uqam.ca` -> `uqam.ca`).
-    #    Note: CILogon does not emit `email_verified` or Entra `xms_edov` claims for
-    #    Microsoft logins. Trusting `id_token["email"]` here is an accepted trade-off
-    #    since this script only assigns the Canadian quota group (not data access).
-    # Non-matching logins (Google, ORCID, GitHub, consumer Microsoft accounts like
-    # `@hotmail.ca`/`@outlook.ca`) are recorded into `unallocated` and logged once per
-    # `(email, reason)` via `UNALLOCATED_STATE_FILE`, while still being re-evaluated on
-    # every run in case `edugain_idps.json` or the user's OIDC identity changes.
+    # 2. For Microsoft 365 and Google Workspace CILogon logins (whose `idp` is Microsoft's
+    #    or Google's generic URI, not an EduGAIN entityID), fall back to matching the
+    #    JWT-asserted `email` domain against CAF IdP `scopes` (e.g. `mail.utoronto.ca` ->
+    #    `utoronto.ca`, `mun.ca` -> `mun.ca`, `my.yorku.ca` -> `yorku.ca`).
+    #    Note: CILogon does not emit `email_verified`, Entra `tid`/`xms_edov`, or Google
+    #    Workspace `hd` claims for these logins. Consumer domains (`@gmail.com`,
+    #    `@hotmail.ca`, `@outlook.ca`, etc.) are never in `caf_scopes`; trusting
+    #    `id_token["email"]` for CAF domains is an accepted trade-off since this script
+    #    only assigns the Canadian quota group (not data access).
+    # Non-matching logins (ORCID, GitHub, consumer Microsoft/Google accounts like
+    # `@hotmail.ca`/`@outlook.ca`/`@gmail.com`) are recorded into `unallocated` and logged
+    # once per `(email, reason)` via `UNALLOCATED_STATE_FILE`, while still being
+    # re-evaluated on every run in case `edugain_idps.json` or the user's OIDC identity changes.
     assignments = []
     for user_id, user_email, token_id, idp_entity_id, token_email in users_with_idp:
         idp_entry = idp_by_entity.get(idp_entity_id)
+        fallback_provider = CAF_SCOPE_FALLBACK_IDPS.get(idp_entity_id)
         if idp_entry is not None:
             if idp_entry.get("code") == "CAF":
                 assignments.append(
@@ -542,7 +552,7 @@ def main():
                 assignments.append(
                     (user_email, GROUP_NAME_EDUGAIN_USERS_ALLOCATION, "Edugain Users", "EduGAIN IdP")
                 )
-        elif idp_entity_id in MICROSOFT_IDP_ENTITY_IDS:
+        elif fallback_provider is not None:
             if not isinstance(token_email, str) or not token_email:
                 unallocated.append(
                     (
@@ -550,7 +560,7 @@ def main():
                         user_email,
                         token_id,
                         logging.WARNING,
-                        "Microsoft IdP with missing OIDC email claim",
+                        f"{fallback_provider} IdP with missing OIDC email claim",
                     )
                 )
             elif matches_domain_scope(token_email, caf_scopes):
@@ -559,7 +569,7 @@ def main():
                         user_email,
                         GROUP_NAME_CANADIAN_USERS_ALLOCATION,
                         "Canadian Users",
-                        "Microsoft IdP + CAF email scope",
+                        f"{fallback_provider} IdP + CAF email scope",
                     )
                 )
             elif not caf_scopes:
@@ -569,15 +579,16 @@ def main():
                         user_email,
                         token_id,
                         logging.WARNING,
-                        "Microsoft IdP; CAF scopes unavailable",
+                        f"{fallback_provider} IdP; CAF scopes unavailable",
                     )
                 )
             else:
                 if token_email.lower() == (user_email or "").lower():
-                    reason = "Microsoft IdP; email domain not in CAF scopes"
+                    reason = f"{fallback_provider} IdP; email domain not in CAF scopes"
                 else:
                     reason = (
-                        f"Microsoft IdP; OIDC email {_summarize_text(token_email)} not in CAF scopes"
+                        f"{fallback_provider} IdP; OIDC email {_summarize_text(token_email)} "
+                        "not in CAF scopes"
                     )
                 unallocated.append((user_id, user_email, token_id, logging.INFO, reason))
         else:
