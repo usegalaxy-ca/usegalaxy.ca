@@ -280,7 +280,7 @@ def record_unallocated_users(state_path, unallocated_users):
     are pruned automatically. Disk writes are skipped when the state is unchanged.
     """
     previous_state, needs_rewrite = load_unallocated_state(state_path)
-    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now_local = datetime.now().astimezone().isoformat(timespec="seconds")
     next_state = {}
 
     for user_id, user_email, token_id, log_level, reason in unallocated_users:
@@ -304,7 +304,7 @@ def record_unallocated_users(state_path, unallocated_users):
                 "email": user_email,
                 "token_id": token_id,
                 "reason": reason,
-                "logged_at": now_utc,
+                "logged_at": now_local,
             }
 
     if needs_rewrite or next_state != previous_state:
