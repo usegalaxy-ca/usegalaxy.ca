@@ -6,6 +6,8 @@
     missingok
     notifempty
     copytruncate
+    olddir {{ galaxy_log_dir }}/old
+    createolddir 0750 {{ galaxy_user_name }} {{ galaxy_user_name }}
     su {{ galaxy_user_name }} {{ galaxy_user_name }}
     dateext
     dateyesterday
