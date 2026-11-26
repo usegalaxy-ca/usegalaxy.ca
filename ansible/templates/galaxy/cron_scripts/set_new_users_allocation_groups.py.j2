@@ -9,19 +9,22 @@ Allocation examples:
 - `dave@stanford.edu` via Stanford University (InCommon SAML IdP in EduGAIN):
   -> `EdugainUsersAllocationGroup` (matched by `entityid`, `code != "CAF"`).
 - `eve@hotmail.ca` via Microsoft, `frank@gmail.com` via Google, or ORCID/GitHub logins:
-  -> skipped silently (keeps Galaxy's default allocation; not added to either group).
+  -> not added to either group (keeps Galaxy's default allocation); logged once per
+     `(email, reason)` via the deduplication state file on NFS.
 
 Workflow:
 1. Query PostgreSQL (read-only) for non-deleted users created within the last 7 days who have
    an OIDC token (`oidc_user_authnz_tokens`) and are NOT yet assigned to either
    `CanadianUsersAllocationGroup` or `EdugainUsersAllocationGroup`.
 2. Base64URL-decode each user's JWT `id_token` payload in memory, verify that its `iss`
-   claim matches `https://cilogon.org`, and extract its `idp` and `email` claims; exit
-   immediately (without reading `edugain_idps.json` or calling the Galaxy API) if no
-   users have a valid `idp` claim.
+   claim matches `https://cilogon.org`, and extract its `idp` and `email` claims; record
+   any unallocated/invalid tokens and exit immediately (without reading `edugain_idps.json`
+   or calling the Galaxy API) if no users have a valid `idp` claim.
 3. Load `edugain_idps.json`, index entries by `entityid` (O(1) lookup) and CAF IdP
-   domain `scopes`, and classify users into target allocation groups. Exit immediately
-   without calling the Galaxy API if no users match.
+   domain `scopes`, and classify users into target allocation groups vs. unallocated users.
+   Log newly seen unallocated users once (deduplicated via `UNALLOCATED_STATE_FILE`, pruned
+   to the active 7-day window), and exit immediately without calling the Galaxy API if no
+   users match.
 4. Initialize the Galaxy BioBlend client and allocation groups once (failing fast if
    Galaxy is unreachable, unauthorized, or in maintenance mode), then assign matched
    users via the API.
@@ -37,9 +40,11 @@ from contextlib import closing
 from datetime import datetime, timedelta, timezone
 import json
 import logging
+import os
 from pathlib import Path
 import re
 import sys
+import tempfile
 
 import bioblend.galaxy
 import psycopg2
@@ -62,6 +67,13 @@ logging.getLogger("bioblend").setLevel(logging.CRITICAL)
 # Local NFS copy of EduGAIN's `action=list_entities` JSON feed, refreshed by
 # `/opt/fetch-edugain-idps.bash`.
 EDUGAIN_IDPS_FILE = Path("{{ galaxy_root }}/var/usegalaxy.ca/edugain_idps.json")
+
+# Deduplication state file for unallocated users in the 7-day lookback window so each
+# unallocated user is logged once per `(email, reason)` instead of every 30 minutes.
+# Stored next to `edugain_idps.json` on NFS with mode 0600 (contains user emails).
+UNALLOCATED_STATE_FILE = Path(
+    "{{ galaxy_root }}/var/usegalaxy.ca/allocation_groups_unallocated_state.json"
+)
 
 # Galaxy REST API settings (only contacted in Stage 4 when matched users exist).
 GALAXY_URL = "https://{{ usegalaxy_domain }}"
@@ -114,7 +126,9 @@ LOOKBACK_WINDOW = timedelta(days=7)
 # silently dropped by SQL three-valued logic.
 UNASSIGNED_USERS_QUERY = """
 SELECT DISTINCT ON (u.id)
+    u.id,
     u.email,
+    t.id,
     t.extra_data
 FROM galaxy_user u
 JOIN oidc_user_authnz_tokens t ON u.id = t.user_id
@@ -133,7 +147,7 @@ ORDER BY u.id, t.id DESC
 """
 
 
-def decode_id_token_payload(extra_data, user_email=None):
+def decode_id_token_payload(extra_data):
     """Extract and Base64URL-decode the JWT payload from `oidc_user_authnz_tokens.extra_data`.
 
     Galaxy's SQLAlchemy `JSONType` column stores `extra_data` as `BYTEA` on PostgreSQL
@@ -141,12 +155,11 @@ def decode_id_token_payload(extra_data, user_email=None):
     `str` (`TEXT`), or `dict` (`JSON`/`JSONB`). Decodes the JWT payload segment using
     RFC 7515 Base64URL (`urlsafe_b64decode`) with modulo-4 `=` padding.
 
-    Returns an empty dict if `id_token` is absent or malformed. When `user_email` is
-    provided, logs a warning for malformed `extra_data`/`id_token` while remaining silent
-    when `id_token` is simply absent (`None`).
+    Returns `(payload, None, None)` on success, or `(None, reason, log_level)` when
+    `id_token` is absent or malformed so the caller can log it once via state deduplication.
     """
     if extra_data is None:
-        return {}
+        return None, "missing OIDC extra_data", logging.INFO
     # Step 1: Parse outer `extra_data` JSON object from whichever Python type psycopg2 returned.
     try:
         if isinstance(extra_data, (bytes, bytearray, memoryview)):
@@ -156,73 +169,146 @@ def decode_id_token_payload(extra_data, user_email=None):
         elif isinstance(extra_data, dict):
             data_dict = extra_data
         else:
-            if user_email is not None:
-                logging.warning(
-                    "Skipping user %s with unsupported OIDC extra_data type %s",
-                    user_email,
-                    type(extra_data).__name__,
-                )
-            return {}
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        if user_email is not None:
-            logging.warning(
-                "Skipping user %s with malformed OIDC extra_data: %s",
-                user_email,
-                _summarize_error(exc),
+            return (
+                None,
+                f"unsupported OIDC extra_data type {type(extra_data).__name__}",
+                logging.WARNING,
             )
-        return {}
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return None, f"malformed OIDC extra_data: {_summarize_text(exc)}", logging.WARNING
 
     if not isinstance(data_dict, dict):
-        if user_email is not None:
-            logging.warning("Skipping user %s with non-object OIDC extra_data", user_email)
-        return {}
+        return None, "non-object OIDC extra_data", logging.WARNING
 
-    # Step 2: Extract `id_token` JWT string (`header.payload.signature`). Absent `id_token`
-    # is treated as normal (no warning); wrong type or broken structure logs a warning.
+    # Step 2: Extract `id_token` JWT string (`header.payload.signature`).
     id_token = data_dict.get("id_token")
     if id_token is None:
-        return {}
+        return None, "missing OIDC id_token", logging.INFO
     if not isinstance(id_token, str):
-        if user_email is not None:
-            logging.warning("Skipping user %s with non-string OIDC id_token", user_email)
-        return {}
+        return None, "non-string OIDC id_token", logging.WARNING
 
     parts = id_token.split(".")
     if len(parts) < 2 or not parts[1]:
-        if user_email is not None:
-            logging.warning("Skipping user %s with malformed OIDC id_token structure", user_email)
-        return {}
+        return None, "malformed OIDC id_token structure", logging.WARNING
 
     # Step 3: Base64URL-decode the payload segment (`parts[1]`). JWT segments omit '='
     # padding and use '-'/'_' instead of '+'/'/'. A length congruent to 1 mod 4 is
     # mathematically invalid Base64 and would raise binascii.Error.
     payload_b64 = parts[1]
     if len(payload_b64) % 4 == 1:
-        if user_email is not None:
-            logging.warning("Skipping user %s with invalid Base64URL OIDC id_token length", user_email)
-        return {}
+        return None, "invalid Base64URL OIDC id_token length", logging.WARNING
     padded = payload_b64 + "=" * (-len(payload_b64) % 4)
     try:
         payload = json.loads(base64.urlsafe_b64decode(padded).decode("utf-8"))
     except (ValueError, UnicodeDecodeError) as exc:
-        if user_email is not None:
-            logging.warning(
-                "Skipping user %s with undecodable OIDC id_token payload: %s",
-                user_email,
-                _summarize_error(exc),
-            )
-        return {}
+        return None, f"undecodable OIDC id_token payload: {_summarize_text(exc)}", logging.WARNING
     if not isinstance(payload, dict):
-        if user_email is not None:
-            logging.warning("Skipping user %s with non-object OIDC id_token payload", user_email)
-        return {}
-    return payload
+        return None, "non-object OIDC id_token payload", logging.WARNING
+    return payload, None, None
 
 
-def _summarize_error(exc, max_len=200):
-    """Collapse whitespace and truncate verbose HTTP/HTML error bodies for compact logging."""
-    msg = " ".join(str(exc).split())
+def _summarize_text(value, max_len=200):
+    """Collapse whitespace and truncate verbose strings/errors for compact single-line logging."""
+    msg = " ".join(str(value).split())
     return f"{msg[:max_len]}..." if len(msg) > max_len else msg
+
+
+def load_unallocated_state(state_path):
+    """Load the unallocated-user deduplication state file from NFS.
+
+    Returns `(state_dict, needs_rewrite)`. Missing files return `({}, False)` cleanly.
+    Corrupt/unreadable files log a warning and return `({}, True)` so allocations continue
+    uninterrupted and the file is repaired on save.
+    """
+    if not state_path.exists():
+        return {}, False
+    try:
+        with state_path.open(encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        logging.warning(
+            "Failed to load unallocated user state from %s; starting fresh: %s",
+            state_path,
+            _summarize_text(exc),
+        )
+        return {}, True
+    if not isinstance(data, dict):
+        logging.warning(
+            "Unexpected unallocated user state format in %s (expected object); starting fresh",
+            state_path,
+        )
+        return {}, True
+    return data, False
+
+
+def save_unallocated_state(state_path, state):
+    """Atomically write the unallocated-user state JSON to NFS with mode 0600."""
+    tmp_path = None
+    try:
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=state_path.parent,
+            prefix=f".{state_path.name}.",
+            delete=False,
+        ) as tmp_file:
+            tmp_path = Path(tmp_file.name)
+            os.chmod(tmp_path, 0o600)
+            json.dump(state, tmp_file, indent=2, sort_keys=True)
+            tmp_file.write("\n")
+        os.replace(tmp_path, state_path)
+    except Exception as exc:
+        logging.warning(
+            "Failed to save unallocated user state to %s: %s",
+            state_path,
+            _summarize_text(exc),
+        )
+        if tmp_path is not None:
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+
+
+def record_unallocated_users(state_path, unallocated_users):
+    """Log newly seen/changed unallocated users once and prune stale entries from state.
+
+    Deduplication compares `(email, reason)` per `user_id` so repeated logins with the
+    same non-matching IdP do not re-log, while a changed IdP/reason or email logs once
+    and updates the state file. Users who leave the 7-day SQL window (or become allocated)
+    are pruned automatically. Disk writes are skipped when the state is unchanged.
+    """
+    previous_state, needs_rewrite = load_unallocated_state(state_path)
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    next_state = {}
+
+    for user_id, user_email, token_id, log_level, reason in unallocated_users:
+        key = str(user_id)
+        prev = previous_state.get(key)
+        already_logged = (
+            isinstance(prev, dict)
+            and prev.get("email") == user_email
+            and prev.get("reason") == reason
+        )
+        if already_logged:
+            next_state[key] = prev
+        else:
+            logging.log(
+                log_level,
+                "User %s was not allocated (%s)",
+                user_email,
+                reason,
+            )
+            next_state[key] = {
+                "email": user_email,
+                "token_id": token_id,
+                "reason": reason,
+                "logged_at": now_utc,
+            }
+
+    if needs_rewrite or next_state != previous_state:
+        save_unallocated_state(state_path, next_state)
 
 
 def build_caf_scopes(raw_idps):
@@ -334,49 +420,66 @@ def main():
                 )
                 rows = cursor.fetchall()
     except psycopg2.Error as exc:
-        logging.error("PostgreSQL query failed: %s", _summarize_error(exc))
+        logging.error("PostgreSQL query failed: %s", _summarize_text(exc))
         return 1
 
     # Fast path: exit before decoding tokens, reading `edugain_idps.json`, or calling
     # the Galaxy API when there are no unassigned users in the lookback window.
+    # Still prune any expired entries from the unallocated state file if it exists.
     if not rows:
+        if UNALLOCATED_STATE_FILE.exists():
+            record_unallocated_users(UNALLOCATED_STATE_FILE, [])
         return 0
 
     ###################################################################################
     # 2. Decode JWT payloads in memory before touching NFS `edugain_idps.json` or the
-    #    Galaxy API. Warn and skip on malformed tokens, unexpected issuers, or missing
-    #    `idp` claims.
+    #    Galaxy API. Collect malformed tokens, unexpected issuers, or missing `idp`
+    #    claims into `unallocated` so each is logged once via state deduplication.
     users_with_idp = []
-    for user_email, token_extra_data in rows:
+    unallocated = []
+    for user_id, user_email, token_id, token_extra_data in rows:
         try:
-            id_token_infos = decode_id_token_payload(token_extra_data, user_email=user_email)
+            id_token_infos, decode_reason, decode_level = decode_id_token_payload(token_extra_data)
         except Exception:
             logging.exception("Failed to decode OIDC token for user %s", user_email)
             continue
-        if not id_token_infos:
+        if decode_reason is not None:
+            unallocated.append((user_id, user_email, token_id, decode_level, decode_reason))
             continue
         issuer = id_token_infos.get("iss")
         if issuer != CILOGON_ISSUER:
-            logging.warning(
-                "Skipping user %s with unexpected OIDC issuer %r",
-                user_email,
-                issuer,
+            unallocated.append(
+                (
+                    user_id,
+                    user_email,
+                    token_id,
+                    logging.WARNING,
+                    f"unexpected OIDC issuer {issuer!r}",
+                )
             )
             continue
         idp_entity_id = id_token_infos.get("idp")
         if not isinstance(idp_entity_id, str) or not idp_entity_id:
             # A CILogon token without an `idp` claim usually indicates broken OIDC scope
             # configuration (`org.cilogon.userinfo` not requested/released).
-            logging.warning(
-                "Skipping user %s with missing or invalid OIDC idp claim",
-                user_email,
+            unallocated.append(
+                (
+                    user_id,
+                    user_email,
+                    token_id,
+                    logging.WARNING,
+                    "missing or invalid OIDC idp claim",
+                )
             )
             continue
         # Carry `id_token["email"]` (signed OIDC assertion) rather than relying on
         # mutable `galaxy_user.email` for Microsoft domain matching in Stage 3.
-        users_with_idp.append((user_email, idp_entity_id, id_token_infos.get("email")))
+        users_with_idp.append(
+            (user_id, user_email, token_id, idp_entity_id, id_token_infos.get("email"))
+        )
 
     if not users_with_idp:
+        record_unallocated_users(UNALLOCATED_STATE_FILE, unallocated)
         return 0
 
     ###################################################################################
@@ -424,10 +527,11 @@ def main():
     #    Microsoft logins. Trusting `id_token["email"]` here is an accepted trade-off
     #    since this script only assigns the Canadian quota group (not data access).
     # Non-matching logins (Google, ORCID, GitHub, consumer Microsoft accounts like
-    # `@hotmail.ca`/`@outlook.ca`) stay silent on purpose: because unassigned users remain
-    # in the 7-day SQL window for 336 runs (48 runs/day), logging them would flood the log.
+    # `@hotmail.ca`/`@outlook.ca`) are recorded into `unallocated` and logged once per
+    # `(email, reason)` via `UNALLOCATED_STATE_FILE`, while still being re-evaluated on
+    # every run in case `edugain_idps.json` or the user's OIDC identity changes.
     assignments = []
-    for user_email, idp_entity_id, token_email in users_with_idp:
+    for user_id, user_email, token_id, idp_entity_id, token_email in users_with_idp:
         idp_entry = idp_by_entity.get(idp_entity_id)
         if idp_entry is not None:
             if idp_entry.get("code") == "CAF":
@@ -440,9 +544,14 @@ def main():
                 )
         elif idp_entity_id in MICROSOFT_IDP_ENTITY_IDS:
             if not isinstance(token_email, str) or not token_email:
-                logging.warning(
-                    "Skipping Microsoft user %s with missing OIDC email claim",
-                    user_email,
+                unallocated.append(
+                    (
+                        user_id,
+                        user_email,
+                        token_id,
+                        logging.WARNING,
+                        "Microsoft IdP with missing OIDC email claim",
+                    )
                 )
             elif matches_domain_scope(token_email, caf_scopes):
                 assignments.append(
@@ -453,6 +562,36 @@ def main():
                         "Microsoft IdP + CAF email scope",
                     )
                 )
+            elif not caf_scopes:
+                unallocated.append(
+                    (
+                        user_id,
+                        user_email,
+                        token_id,
+                        logging.WARNING,
+                        "Microsoft IdP; CAF scopes unavailable",
+                    )
+                )
+            else:
+                if token_email.lower() == (user_email or "").lower():
+                    reason = "Microsoft IdP; email domain not in CAF scopes"
+                else:
+                    reason = (
+                        f"Microsoft IdP; OIDC email {_summarize_text(token_email)} not in CAF scopes"
+                    )
+                unallocated.append((user_id, user_email, token_id, logging.INFO, reason))
+        else:
+            unallocated.append(
+                (
+                    user_id,
+                    user_email,
+                    token_id,
+                    logging.INFO,
+                    f"non-EduGAIN IdP: {_summarize_text(idp_entity_id)}",
+                )
+            )
+
+    record_unallocated_users(UNALLOCATED_STATE_FILE, unallocated)
 
     if not assignments:
         return 0
@@ -470,7 +609,7 @@ def main():
     try:
         canadian_gid, edugain_gid = ensure_allocation_groups(gal)
     except (bioblend.ConnectionError, requests.RequestException) as exc:
-        logging.warning("Galaxy API unavailable; aborting run: %s", _summarize_error(exc))
+        logging.warning("Galaxy API unavailable; aborting run: %s", _summarize_text(exc))
         return 1
 
     group_ids = {
@@ -508,7 +647,7 @@ def main():
             # Network/TLS/timeout failure mid-batch: abort remaining users until next run.
             logging.warning(
                 "Galaxy API unreachable; aborting remaining users: %s",
-                _summarize_error(exc),
+                _summarize_text(exc),
             )
             return 1
         except bioblend.ConnectionError as exc:
@@ -519,7 +658,7 @@ def main():
                     "Galaxy API authentication/authorization failed (status=%s); "
                     "aborting remaining users: %s",
                     status_code,
-                    _summarize_error(exc),
+                    _summarize_text(exc),
                 )
                 return 1
             if status_code is None or status_code in (200, 405, 502, 503, 504):
@@ -529,7 +668,7 @@ def main():
                 logging.warning(
                     "Galaxy API unavailable (status=%s); aborting remaining users: %s",
                     status_code,
-                    _summarize_error(exc),
+                    _summarize_text(exc),
                 )
                 return 1
             # Per-user HTTP error (e.g. 400/404/500): record error and continue batch.
@@ -539,7 +678,7 @@ def main():
                 group_label,
                 user_email,
                 status_code,
-                _summarize_error(exc),
+                _summarize_text(exc),
             )
         except Exception:
             # Isolate unexpected per-user errors so a single record cannot block the batch.
