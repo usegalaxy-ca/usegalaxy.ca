@@ -215,10 +215,6 @@ galaxy_config:
     celery:
       concurrency: 2
       loglevel: DEBUG
-    tusd:
-      enable: true
-      tusd_path: /usr/local/sbin/tusd
-      upload_dir: "{{ galaxy_tus_upload_store }}"
     handlers:
       handler:
         processes: 2
