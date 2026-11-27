@@ -1,3 +1,6 @@
 ---
 - name: reload nfs
   command: "exportfs -ra"
+
+- name: update initramfs
+  command: "update-initramfs -u"
