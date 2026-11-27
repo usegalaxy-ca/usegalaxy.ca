@@ -206,12 +206,18 @@ galaxy_config:
         restart_timeout: 10800
         extra_args: '--forwarded-allow-ips="*"'
         preload: true
+        environment:
+          GALAXY_CONFIG_SERVER_NAME: main-0
+          GALAXY_CONFIG_LOG_LEVEL: INFO
       - bind: "unix:{{ galaxy_root }}/gunicorn1.sock"
         workers: 2
         timeout: 600
         restart_timeout: 10800
         extra_args: '--forwarded-allow-ips="*"'
         preload: true
+        environment:
+          GALAXY_CONFIG_SERVER_NAME: main-1
+          GALAXY_CONFIG_LOG_LEVEL: INFO
     celery:
       concurrency: 2
       loglevel: DEBUG
