@@ -104,6 +104,40 @@
   service: "name=nfs-kernel-server state=started enabled=yes"
   when: nfs_exports|length
 
+- name: Check if ZFS ARC parameter is available
+  stat:
+    path: /sys/module/zfs/parameters/zfs_arc_max
+  register: zfs_arc_max_param
+
+- name: Configure ZFS ARC max size
+  when:
+    - zfs_arc_max_param.stat.exists
+    - (ansible_memtotal_mb | int) > (nfs_zfs_min_os_ram_mb | int)
+  vars:
+    nfs_zfs_arc_max_mb: "{{ [((ansible_memtotal_mb * (nfs_zfs_arc_max_ratio | float)) | int), ((ansible_memtotal_mb | int) - (nfs_zfs_min_os_ram_mb | int))] | min }}"
+    nfs_zfs_arc_max_bytes: "{{ (nfs_zfs_arc_max_mb | int) * 1024 * 1024 }}"
+  block:
+    - name: Persist ZFS ARC max in modprobe config
+      copy:
+        dest: /etc/modprobe.d/zz-zfs-arc.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          # Managed by Ansible (usegalaxy_ca.nfs_server)
+          options zfs zfs_arc_max={{ nfs_zfs_arc_max_bytes }}
+      notify: update initramfs
+
+    - name: Read current ZFS ARC max
+      command: cat /sys/module/zfs/parameters/zfs_arc_max
+      register: zfs_arc_max_current
+      changed_when: false
+      check_mode: false
+
+    - name: Apply ZFS ARC max live
+      shell: "echo {{ nfs_zfs_arc_max_bytes }} > /sys/module/zfs/parameters/zfs_arc_max"
+      when: zfs_arc_max_current.stdout | trim != (nfs_zfs_arc_max_bytes | string)
+
 - name: Configure swap
   when: nfs_swap_enabled | bool
   block:
