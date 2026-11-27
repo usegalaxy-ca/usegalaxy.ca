@@ -37,6 +37,13 @@
         owner: "{{ nginx_user.name }}"
         group: "{{ nginx_group.name }}"
         mode: "0700"
+    - name: ensure galaxy local cache directory exists
+      ansible.builtin.file:
+        path: "{{ galaxy_cache_dir }}"
+        state: directory
+        owner: "{{ galaxy_user.name }}"
+        group: "{{ galaxy_group.name }}"
+        mode: "0755"
   roles:
     # Must precede galaxyproject.galaxy: its restart handler is flushed inside
     # galaxyproject.nginx (ssl-external.yml), and the Slurm runner needs libdrmaa.

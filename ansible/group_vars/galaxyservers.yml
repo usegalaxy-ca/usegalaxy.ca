@@ -12,7 +12,7 @@ galaxy_venv_dir: "{{ galaxy_root }}/venv"
 galaxy_config_dir: "{{ galaxy_root }}/config"
 galaxy_mutable_data_dir: "{{ galaxy_root }}/var"
 galaxy_mutable_config_dir: "{{ galaxy_mutable_data_dir }}/config"
-galaxy_cache_dir: "{{ galaxy_mutable_data_dir }}/cache"
+galaxy_cache_dir: /var/cache/galaxy
 galaxy_local_tools_dir: "{{ galaxy_root }}/local_tools"
 galaxy_shed_tools_dir: "{{ galaxy_mutable_data_dir }}/shed_tools"
 galaxy_log_dir: "{{ galaxy_mutable_data_dir }}/log"
@@ -136,6 +136,9 @@ galaxy_config:
     enable_per_request_sql_debugging: true
     # File serving Performance
     nginx_x_accel_redirect_base: /_x_accel_redirect
+    # Local SSD cache (Singularity container caches remain on NFS in container_resolvers_conf.yml.j2)
+    cache_dir: "{{ galaxy_cache_dir }}"
+    tool_search_index_dir: "{{ galaxy_cache_dir }}/tool_search_index"
     # Automation / Ease of Use / User-facing features
     watch_job_rules: "auto"
     allow_path_paste: true
